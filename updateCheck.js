@@ -3,6 +3,7 @@ let updateScript = function(scriptData) {
         name: scriptData.scriptName.text,
         data: $data({ string: scriptData.newData })
     })
+    $ui.toast("更新完毕")
 }
 
 let renderUI = function (UIData) {
