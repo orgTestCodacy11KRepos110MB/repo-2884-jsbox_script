@@ -57,9 +57,9 @@ let renderUI = function (UIData) {
     })
 }
 
+$app.tips("更新完后重新运行即可检查是否成功")
+
 renderUI([])
-
-
 
 let scripts = $addin.list.filter(item => item.url)
 
