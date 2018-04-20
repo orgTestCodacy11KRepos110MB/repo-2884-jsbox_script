@@ -1,9 +1,9 @@
 let updateScript = function(scriptData) {
-    $addin.save({
-        name: scriptData.scriptName.text,
-        data: $data({ string: scriptData.newData })
-    })
-    $ui.toast("更新完毕")
+    let name = scriptData.scriptName.text
+    let url = scriptData.data.url
+    let icon = scriptData.data.icon
+    let installUrl = `jsbox://install?url=${encodeURI(url)}&name=${encodeURI(name)}&icon=${encodeURI(icon)}`
+    $app.openURL(installUrl)
 }
 
 let renderUI = function (UIData) {

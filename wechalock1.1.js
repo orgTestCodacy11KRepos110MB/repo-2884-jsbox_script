@@ -1,5 +1,6 @@
 FILE = "password.js"
 
+
 if ($file.exists(FILE)) {
   let pass = $file.read(FILE).string
   $ui.render({
