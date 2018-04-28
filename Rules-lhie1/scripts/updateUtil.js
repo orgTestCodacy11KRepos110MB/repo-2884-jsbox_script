@@ -13,9 +13,8 @@ function getLatestVersion(params) {
 }
 
 function updateScript(version) {
-    let url = 'https://github.com/Fndroid/jsbox_script/blob/master/Rules-lhie1/.output/Rules-lhie1.box?raw=true' + '&t=' + new Date().getTime()
-    // let installURL = `jsbox://install?name=${"Rules-lhie1"}&url=${encodeURIComponent(url)}&version=${encodeURIComponent(version)}`
-    // $app.openURL(installURL)
+    let url = 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/.output/Rules-lhie1.box' + '?t=' + new Date().getTime()
+    $ui.loading(true)
     $http.download({
         url: url,
         progress: (writed, total) => {
@@ -35,6 +34,7 @@ function updateScript(version) {
             }
         },
         handler: resp => {
+            $ui.loading(false)
             let box = resp.data
             $addin.save({
                 name: "Rules-lhie1",
