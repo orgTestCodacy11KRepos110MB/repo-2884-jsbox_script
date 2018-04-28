@@ -3,7 +3,7 @@ const updateUtil = require('scripts/updateUtil')
 
 updateUtil.getLatestVersion({
     handler: version => {
-        console.log('最新版本： ' + version)        
+        console.log([version, updateUtil.getCurVersion()])        
         if (version == updateUtil.getCurVersion()) {
             app.renderUI()
         } else {
@@ -18,7 +18,7 @@ updateUtil.getLatestVersion({
                             type: "markdown",
                             props: {
                                 id: "",
-                                content: resp.data
+                                content: `## 新版：${version}\n> 当前：${updateUtil.getCurVersion()}\n\n${resp.data}`
                             },
                             layout: (make, view) => {
                                 make.size.equalTo(view.super)
