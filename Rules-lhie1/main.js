@@ -10,7 +10,7 @@ updateUtil.getLatestVersion({
             
         } else {
             $http.get({
-                url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/updateLog.md',
+                url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/updateLog.md' + '?t=' + new Date().getTime(),
                 handler: resp=> {
                     $ui.push({
                         props: {
