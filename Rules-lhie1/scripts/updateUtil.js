@@ -5,7 +5,7 @@ function getCurVersion() {
 
 function getLatestVersion(params) {
     $http.get({
-        url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/config.json',
+        url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/config.json' + `?t=${new Date().getTime()}`,
         handler: res => {
             params.handler(res.data.info.version)
         }
@@ -13,7 +13,7 @@ function getLatestVersion(params) {
 }
 
 function updateScript(version) {
-    let url = 'https://github.com/Fndroid/jsbox_script/blob/master/Rules-lhie1/.output/Rules-lhie1.box?raw=true'
+    let url = 'https://github.com/Fndroid/jsbox_script/blob/master/Rules-lhie1/.output/Rules-lhie1.box?raw=true' + `?t=${new Date().getTime()}`
     let installURL = `jsbox://install?name=${"Rules-lhie1"}&url=${encodeURI(url)}`
     $app.openURL(installURL)
 }
