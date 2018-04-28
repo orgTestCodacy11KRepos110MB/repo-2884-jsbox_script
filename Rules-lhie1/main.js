@@ -1,16 +1,18 @@
 const app = require('scripts/app')
 const updateUtil = require('scripts/updateUtil')
 
+app.renderUI()
+
 updateUtil.getLatestVersion({
     handler: version => {
         console.log([version, updateUtil.getCurVersion()])        
         if (version == updateUtil.getCurVersion()) {
-            app.renderUI()
+            
         } else {
             $http.get({
-                url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/updateLog.md' + `?t=${new Date().getTime()}`,
+                url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/updateLog.md',
                 handler: resp=> {
-                    $ui.render({
+                    $ui.push({
                         props: {
                             title: "更新可用"
                         },

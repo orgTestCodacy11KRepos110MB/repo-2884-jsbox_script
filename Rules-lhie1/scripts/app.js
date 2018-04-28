@@ -227,17 +227,17 @@ function renderUI() {
                         return getAutoRules(pu.apple)
                     }).then(res => {
                         rules += '\n' + res
-                        return getAutoRules(pu.proxy)
-                    }).then(res => {
-                        rules += '\n' + res
-                        return getAutoRules(pu.direct)
-                    }).then(res => {
-                        rules += '\n' + res
                         if (ads) {
                             return getAutoRules(pu.reject)
                         } else {
                             return Promise.resolve('')
                         }
+                    }).then(res => {
+                        rules += '\n' + res
+                        return getAutoRules(pu.proxy)
+                    }).then(res => {
+                        rules += '\n' + res
+                        return getAutoRules(pu.direct)
                     }).then(res => {
                         rules += '\n' + res
                         if (isTF) {
