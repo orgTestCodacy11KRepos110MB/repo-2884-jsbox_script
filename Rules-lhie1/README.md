@@ -18,4 +18,4 @@ lhie1规则生成
 
 ### 下载脚本
 
-[下载SurgeConfig](https://xteko.com/redir?name=Rules-lhie1&url=https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/.output/Rules-lhie1.box)
+[下载Rules-lhie1](https://xteko.com/redir?name=Rules-lhie1&url=https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/.output/Rules-lhie1.box)
