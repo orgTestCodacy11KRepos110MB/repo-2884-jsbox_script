@@ -227,10 +227,10 @@ function renderUI() {
                         return getAutoRules(pu.apple)
                     }).then(res => {
                         rules += '\n' + res
-                        return getAutoRules(pu.direct)
+                        return getAutoRules(pu.proxy)
                     }).then(res => {
                         rules += '\n' + res
-                        return getAutoRules(pu.proxy)
+                        return getAutoRules(pu.direct)
                     }).then(res => {
                         rules += '\n' + res
                         if (ads) {
