@@ -15,7 +15,6 @@ function getLatestVersion(params) {
 function updateScript(version) {
     let url = 'https://github.com/Fndroid/jsbox_script/blob/master/Rules-lhie1/.output/Rules-lhie1.box?raw=true'
     let installURL = `jsbox://install?name=${"Rules-lhie1"}&url=${encodeURIComponent(url)}&version=${encodeURIComponent(version)}`
-    console.log(installURL)
     $app.openURL(installURL)
 }
 
