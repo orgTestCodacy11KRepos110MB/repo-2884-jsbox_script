@@ -1,5 +1,6 @@
 function getCurVersion() {
-    return $addin.current.version + ''
+    let config = JSON.parse($file.read("config.json").string)
+    return config.info.version
 }
 
 function getLatestVersion(params) {
@@ -13,7 +14,7 @@ function getLatestVersion(params) {
 
 function updateScript(version) {
     let url = 'https://github.com/Fndroid/jsbox_script/blob/master/Rules-lhie1/.output/Rules-lhie1.box?raw=true'
-    let installURL = `jsbox://install?name=${"Rules-lhie2"}&url=${encodeURI(url)}`
+    let installURL = `jsbox://install?name=${"Rules-lhie1"}&url=${encodeURI(url)}`
     $app.openURL(installURL)
 }
 
