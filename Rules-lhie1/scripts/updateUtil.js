@@ -7,7 +7,7 @@ function getLatestVersion(params) {
     $http.get({
         url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/version.fndroid',
         handler: res => {
-            params.handler(res.data.info.version)
+            params.handler(res.data)
         }
     })
 }
