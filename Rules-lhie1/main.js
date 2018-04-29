@@ -6,9 +6,7 @@ app.renderUI()
 updateUtil.getLatestVersion({
     handler: version => {
         console.log([version, updateUtil.getCurVersion()])        
-        if (version == updateUtil.getCurVersion()) {
-            
-        } else {
+        if (version > updateUtil.getCurVersion()) {
             $http.get({
                 url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/updateLog.md' + '?t=' + new Date().getTime(),
                 handler: resp=> {

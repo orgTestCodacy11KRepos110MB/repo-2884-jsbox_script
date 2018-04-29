@@ -4,17 +4,23 @@ function getServersFromConfFile(params) {
             url: params.confURL,
             handler: function (resp) {
                 let data = resp.data
+                let matcher = resp.response.runtimeValue().invoke('allHeaderFields').rawValue()["Content-Disposition"].match(/filename=(.*?).conf/)
+                let filename = matcher && matcher.length == 2? matcher[1]: params.confURL
+                console.log(filename)                
                 let servers = data.match(/\[Proxy\]\n([\s\S]*?)\n\[Proxy Group\]/)
                 if (servers != null) {
-                    resolve(servers[1])
+                    resolve({
+                        servers: servers[1], 
+                        filename: filename
+                    })
                 } else {
                     reject()
                 }
             }
         })
     }).then(res => {
-        let servers = res.split(/[\n]+/).filter(item => item != '')
-        params.handler(servers)
+        let servers = res.servers.split(/[\n]+/).filter(item => item != '')
+        params.handler({servers: servers, filename: res.filename})
     }).catch(reason => {
         params.handler(null)
     })
@@ -60,7 +66,7 @@ function decodeScheme(params) {
     if (plugin != undefined) {
         proxy += `, ${plugin}`
     }
-    params.handler([proxy])
+    params.handler({servers: [proxy], sstag: tag})
 }
 
 module.exports = {

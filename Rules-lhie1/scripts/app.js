@@ -1,4 +1,5 @@
 const proxyUtil = require('scripts/proxyUitl')
+const su = require('scripts/sizeUtil')
 const FILE = 'data.js'
 
 if (!$file.exists(FILE)) {
@@ -7,6 +8,8 @@ if (!$file.exists(FILE)) {
         path: FILE
     })
 }
+
+console.log(su.pc)
 
 let selectedProxies = []
 
@@ -79,7 +82,6 @@ function renderUI() {
                     actions: [{
                         title: "delete"
                     }],
-                    // rowHeight: 40,
                     borderWidth: 3,
                     borderColor: $color("#f0f5f5"),
                     template: {
@@ -93,12 +95,25 @@ function renderUI() {
                             layout: $layout.fill
                         }]
                     },
+                    header: {
+                        type: "label",
+                        props: {
+                            text: "倒序查看",
+                            align: $align.center
+                        },
+                        events: {
+                            tapped: sender => {
+                                let rd = $("serverEditor").data.reverse()
+                                $("serverEditor").data = rd
+                            }
+                        }
+                    },
                     radius: 5
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(150)
+                    make.height.equalTo(su.pc(50))
                     make.top.equalTo($("serverURL").bottom).offset(10)
                 },
                 events: {
@@ -124,12 +139,12 @@ function renderUI() {
                     borderColor: $color("#f0f5f5"),
                     // font: $font(12),
                     align: $align.center,
-                    text: 'Auto节点，点击☝️选择至少一个'
+                    text: 'Auto节点\n从☝️列表选择\n留空默认只有DIRECT'
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(80)
+                    make.height.equalTo(su.pc(40))
                     make.top.equalTo($("serverEditor").bottom).offset(10)
                 }
             }, {
@@ -210,7 +225,7 @@ function renderUI() {
                     let ads = $("adsSwitch").on
                     let isTF = $("tfSwitch").on
 
-                    let autoGroup = selectedProxies.join(', ')
+                    let autoGroup = selectedProxies.join(', ') || 'DIRECT'
                     let proxies = $("serverEditor").data.map(i => i.proxyLink).join('\n')
                     let proxyHeaders = $("serverEditor").data.map(i => i.proxyName.text).join(', ')
                     let rules = ''
@@ -319,7 +334,7 @@ function importMenu(params) {
     let savedURLS = JSON.parse($file.read(FILE).string).urls
     console.log(savedURLS)
     for (let i = 0; i < savedURLS.length && i < 3; i++) {
-        staticItems.unshift(savedURLS[i])
+        staticItems.unshift(savedURLS[i].name || savedURLS[i])
     }
     $ui.menu({
         items: staticItems,
@@ -343,7 +358,9 @@ function importMenu(params) {
                     }
                 })
             } else {
-                linkHandler(title, params)
+                let lm = savedURLS.length - 1
+                let url = savedURLS[lm - idx].url || savedURLS[lm - idx]
+                linkHandler(url, params)
             }
         }
     })
@@ -354,31 +371,41 @@ function linkHandler (url, params) {
         proxyUtil.proxyFromURL({
             ssURL: url.trim(),
             handler: res => {
-                params.handler(res)
+                params.handler(res.servers)
+                saveURL(url, res.sstag)
             }
         })
-        saveURL(url)
+        
     } else if (url.startsWith('http')) {
         $ui.loading(true)
         proxyUtil.proxyFromConf({
             confURL: url.trim(),
             handler: res => {
-                params.handler(res)
+                params.handler(res.servers)
                 $ui.loading(false)
+                saveURL(url, res.filename)
             }
-        })
-        saveURL(url)
+        })  
     } else {
         params.handler(null)
     }
 }
 
-function saveURL (url) {
+function saveURL (url, name) {
     let urls = JSON.parse($file.read(FILE).string).urls
-    if (urls.indexOf(url) >= 0) {
-        urls.splice(urls.indexOf(url), 1)
+    // if (urls.indexOf(url) >= 0) {
+    //     urls.splice(urls.indexOf(url), 1)
+    // }
+    let idx = -1
+    urls.forEach((item, i) => {
+        if (item == url || item.url == url) {
+            idx = i
+        }
+    })
+    if (idx > -1) {
+        urls.splice(idx, 1)
     }
-    urls.push(url)
+    urls.push({url: url, name: name})
     if (urls.length > 3) {
         urls.shift()
     }
