@@ -4,10 +4,12 @@ const FILE = 'data.js'
 
 if (!$file.exists(FILE)) {
     $file.write({
-        data: $data({ "string": JSON.stringify({ "urls": [] })}),
+        data: $data({ "string": JSON.stringify({ "urls": [] }) }),
         path: FILE
     })
 }
+
+const screenHeight = $device.info.screen.height
 
 console.log(su.pc)
 
@@ -61,15 +63,14 @@ function renderUI() {
                                 if (!res) {
                                     $ui.alert("没有检测到节点信息")
                                 }
+                                let listData = $("serverEditor").data || []
                                 for (let idx in res) {
-                                    $("serverEditor").insert({
-                                        index: 0,
-                                        value: {
-                                            proxyName: { text: res[idx].split('=')[0].trim() },
-                                            proxyLink: res[idx]
-                                        }
+                                    listData.push({
+                                        proxyName: { text: res[idx].split('=')[0].trim() },
+                                        proxyLink: res[idx]
                                     })
                                 }
+                                $("serverEditor").data = listData
                             }
                         })
                     }
@@ -96,15 +97,35 @@ function renderUI() {
                         }]
                     },
                     header: {
-                        type: "label",
+                        type: "matrix",
                         props: {
-                            text: "倒序查看",
-                            align: $align.center
+                            columns: 2,
+                            itemHeight: 40,
+                            bgcolor: $color("#f0f5f5"),
+                            data: [{
+                                title: { text: '倒序' }
+                            }, {
+                                title: { text: '添加所有' }
+                            }],
+                            template: [{
+                                type: "label",
+                                props: {
+                                    id: "title",
+                                    align: $align.center
+                                },
+                                layout: $layout.fill
+                            }]
                         },
                         events: {
-                            tapped: sender => {
-                                let rd = $("serverEditor").data.reverse()
-                                $("serverEditor").data = rd
+                            didSelect: (sender, indexPath, data) => {
+                                if (indexPath.item == 0) {
+                                    let rd = $("serverEditor").data.reverse()
+                                    $("serverEditor").data = rd
+                                } else if (indexPath.item == 1) {
+                                    selectedProxies = $("serverEditor").data.map(i => i.proxyName.text)
+                                    console.log(selectedProxies)
+                                    $("autoGroup").text = selectedProxies.join('\n')
+                                }
                             }
                         }
                     },
@@ -113,7 +134,7 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(su.pc(50))
+                    make.height.equalTo((screenHeight - 330)* 0.6)
                     make.top.equalTo($("serverURL").bottom).offset(10)
                 },
                 events: {
@@ -144,7 +165,7 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(su.pc(40))
+                    make.height.equalTo((screenHeight - 330) * 0.4)
                     make.top.equalTo($("serverEditor").bottom).offset(10)
                 }
             }, {
@@ -366,7 +387,7 @@ function importMenu(params) {
     })
 }
 
-function linkHandler (url, params) {
+function linkHandler(url, params) {
     if (url.startsWith('ss')) {
         proxyUtil.proxyFromURL({
             ssURL: url.trim(),
@@ -375,7 +396,7 @@ function linkHandler (url, params) {
                 saveURL(url, res.sstag)
             }
         })
-        
+
     } else if (url.startsWith('http')) {
         $ui.loading(true)
         proxyUtil.proxyFromConf({
@@ -385,13 +406,13 @@ function linkHandler (url, params) {
                 $ui.loading(false)
                 saveURL(url, res.filename)
             }
-        })  
+        })
     } else {
         params.handler(null)
     }
 }
 
-function saveURL (url, name) {
+function saveURL(url, name) {
     let urls = JSON.parse($file.read(FILE).string).urls
     // if (urls.indexOf(url) >= 0) {
     //     urls.splice(urls.indexOf(url), 1)
@@ -405,12 +426,12 @@ function saveURL (url, name) {
     if (idx > -1) {
         urls.splice(idx, 1)
     }
-    urls.push({url: url, name: name})
+    urls.push({ url: url, name: name })
     if (urls.length > 3) {
         urls.shift()
     }
     $file.write({
-        data: $data({ "string": JSON.stringify({ "urls": urls}) }),
+        data: $data({ "string": JSON.stringify({ "urls": urls }) }),
         path: FILE
     })
 }
