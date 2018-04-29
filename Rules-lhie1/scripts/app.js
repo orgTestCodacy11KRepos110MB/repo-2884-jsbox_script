@@ -99,13 +99,15 @@ function renderUI() {
                     header: {
                         type: "matrix",
                         props: {
-                            columns: 2,
+                            columns: 3,
                             itemHeight: 40,
                             bgcolor: $color("#f0f5f5"),
                             data: [{
                                 title: { text: '倒序' }
                             }, {
-                                title: { text: '添加所有' }
+                                title: { text: '添加全部' }
+                            }, {
+                                title: { text: '清空'}
                             }],
                             template: [{
                                 type: "label",
@@ -123,7 +125,10 @@ function renderUI() {
                                     $("serverEditor").data = rd
                                 } else if (indexPath.item == 1) {
                                     selectedProxies = $("serverEditor").data.map(i => i.proxyName.text)
-                                    console.log(selectedProxies)
+                                    $("autoGroup").text = selectedProxies.join('\n')
+                                } else if (indexPath.item == 2) {
+                                    $("serverEditor").data = []
+                                    selectedProxies = $("serverEditor").data.map(i => i.proxyName.text)
                                     $("autoGroup").text = selectedProxies.join('\n')
                                 }
                             }
