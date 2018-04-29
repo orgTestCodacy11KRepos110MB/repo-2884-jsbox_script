@@ -19,18 +19,20 @@ function updateScript(version) {
         url: url,
         progress: (writed, total) => {
             if (writed == total) {
-                $ui.alert({
-                    message: "更新成功，是否重启？",
-                    actions: [{
-                        title: "Cancel",
-                        handler: function () {}
-                    }, {
-                        title: "OK",
-                        handler: function () {
-                            $addin.run("Rules-lhie1")
-                        }
-                    }]
-                })
+                $delay(2, function() {
+                    $ui.alert({
+                        message: "更新成功，是否重启？",
+                        actions: [{
+                            title: "Cancel",
+                            handler: function () {}
+                        }, {
+                            title: "OK",
+                            handler: function () {
+                                $addin.run("Rules-lhie1")
+                            }
+                        }]
+                    })
+                })  
             }
         },
         handler: resp => {
