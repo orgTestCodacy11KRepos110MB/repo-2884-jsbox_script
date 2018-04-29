@@ -1,11 +1,18 @@
+const filenameUtil = require('scripts/filenameUtil')
+
 function getServersFromConfFile(params) {
     new Promise((resolve, reject) => {
         $http.get({
             url: params.confURL,
             handler: function (resp) {
                 let data = resp.data
-                let matcher = resp.response.runtimeValue().invoke('allHeaderFields').rawValue()["Content-Disposition"].match(/filename=(.*?).conf/)
-                let filename = matcher && matcher.length == 2? matcher[1]: params.confURL
+                let filename = params.confURL
+                try{
+                    let matcher = resp.response.runtimeValue().invoke('allHeaderFields').rawValue()["Content-Disposition"].match(/filename=(.*?).conf/)
+                    filename = matcher[1]
+                }catch{
+                    filename = filenameUtil.getConfName(params.confURL)
+                }
                 console.log(filename)                
                 let servers = data.match(/\[Proxy\]\n([\s\S]*?)\n\[Proxy Group\]/)
                 if (servers != null) {
