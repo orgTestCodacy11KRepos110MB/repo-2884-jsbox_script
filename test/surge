@@ -1,4 +1,4 @@
-#!MANAGED-CONFIG https://api.rixcloud.io/v1/common/service/7297/subscribe/surge?auth=6e9e316e40eff559b6a775b224d36840 interval=259200 strict=true
+#!MANAGED-CONFIG https://raw.githubusercontent.com/Fndroid/jsbox_script/master/test/surge?auth=12120dsakfjaslfdj interval=259200 strict=true
 #Powered by rixCloud
 #Version 20180429
 
