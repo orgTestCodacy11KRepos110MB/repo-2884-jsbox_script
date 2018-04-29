@@ -21,7 +21,8 @@ updateUtil.getLatestVersion({
                                 content: `## 新版：${version}\n> 当前：${updateUtil.getCurVersion()}\n\n${resp.data}`
                             },
                             layout: (make, view) => {
-                                make.size.equalTo(view.super)
+                                make.width.equalTo(view.super)
+                                make.height.equalTo(view.super).offset(-50)
                             }
                         }, {
                             type: 'button',
