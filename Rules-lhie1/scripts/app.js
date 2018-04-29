@@ -252,7 +252,9 @@ function renderUI() {
                     let isTF = $("tfSwitch").on
 
                     let autoGroup = selectedProxies.join(', ') || 'DIRECT'
-                    let proxies = $("serverEditor").data.map(i => i.proxyLink).join('\n')
+                    let proxies = $("serverEditor").data.map(i => {
+                        return i.proxyLink + (isTF? ',udp-relay=true': '')
+                    }).join('\n')
                     let proxyHeaders = $("serverEditor").data.map(i => i.proxyName.text).join(', ')
                     let rules = ''
                     let prototype = ''
