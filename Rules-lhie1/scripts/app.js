@@ -216,7 +216,7 @@ function renderUI() {
             },
             events: {
                 tapped: sender => {
-
+                    renderAdvanceUI()
                 }
             }
         }, {
@@ -250,6 +250,8 @@ function renderUI() {
                     }
                     let ads = $("adsSwitch").on
                     let isTF = $("tfSwitch").on
+
+                    let advanceSettings = JSON.parse($file.read(FILE).string)
 
                     let autoGroup = $("serverEditor").data.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyName.text).join(',')
                     let proxies = $("serverEditor").data.map(i => {
@@ -310,7 +312,9 @@ function renderUI() {
                         mitm = res
 
                         $ui.loading(false)
-
+                        
+                        prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system')
+                        prototype = prototype.replace('# Custom', advanceSettings.customSettings || '')
                         prototype = prototype.replace('Proxys', proxies)
                         prototype = prototype.split('Proxy Header').join(proxyHeaders)
                         prototype = prototype.replace('ProxyHeader', autoGroup)
@@ -321,7 +325,7 @@ function renderUI() {
                         prototype = prototype.replace('# URL REJECT', urlReject)
                         prototype = prototype.replace('# Header Rewrite', headerRewrite)
                         prototype = prototype.replace('// Hostname', hostName)
-                        prototype = prototype.replace('# MITM', mitm)
+                        prototype = prototype.replace('# MITM', advanceSettings.mitmSettings || mitm)
 
                         console.log(prototype)
                         $share.sheet([($("fileName").text || 'lhie1') + '.conf', $data({ "string": prototype })])
@@ -443,6 +447,88 @@ function saveURL(url, name) {
     })
 }
 
+function write2file(key, value) {
+    let content = JSON.parse($file.read(FILE).string)
+    content[key] = value
+    $file.write({
+        data: $data({ "string": JSON.stringify(content) }),
+        path: FILE
+    })
+}
+
+function renderAdvanceUI() {
+    let previewData = JSON.parse($file.read(FILE).string)
+    $ui.push({
+        props: {
+            title: "进阶设置"
+        },
+        views: [{
+            type: "view",
+            props: {
+                id: "advanceMainView"
+            },
+            layout: $layout.fill,
+            views: [{
+                type: "text",
+                props: {
+                    id: "dnsSettings",
+                    bgcolor: $color("#f0f5f5"),
+                    radius: 5,
+                    text: previewData.dnsSettings || 'dns-server = system'
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(10)
+                    make.centerX.equalTo(view.super)
+                    make.height.equalTo(80)
+                    make.width.equalTo(view.super).offset(-20)
+                },
+                events: {
+                    didEndEditing: sender => {
+                        write2file("dnsSettings", $("dnsSettings").text)
+                    }
+                }
+            }, {
+                type: "text",
+                props: {
+                    id: "customSettings",
+                    bgcolor: $color("#f0f5f5"),
+                    radius: 5,
+                    text: previewData.customSettings || '# Custom'
+                },
+                layout: (make, view) => {
+                    make.top.equalTo($("dnsSettings").bottom).offset(10)
+                    make.centerX.equalTo(view.super)
+                    make.height.equalTo((screenHeight - 190) * 0.6)
+                    make.width.equalTo(view.super).offset(-20)
+                },
+                events: {
+                    didEndEditing: sender => {
+                        write2file("customSettings", $("customSettings").text)
+                    }
+                }
+            }, {
+                type: "text",
+                props: {
+                    id: "mitmSettings",
+                    bgcolor: $color("#f0f5f5"),
+                    radius: 5,
+                    text: previewData.mitmSettings || '# MITM'
+                },
+                layout: (make, view) => {
+                    make.top.equalTo($("customSettings").bottom).offset(10)
+                    make.centerX.equalTo(view.super)
+                    make.height.equalTo((screenHeight - 190) * 0.4)
+                    make.width.equalTo(view.super).offset(-20)
+                },
+                events: {
+                    didEndEditing: sender => {
+                        write2file("mitmSettings", $("mitmSettings").text)
+                    }
+                }
+            }]
+        }]
+    })
+}
 
 module.exports = {
     renderUI: renderUI
