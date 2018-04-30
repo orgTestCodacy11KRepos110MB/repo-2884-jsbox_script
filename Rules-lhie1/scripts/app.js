@@ -1,5 +1,6 @@
 const proxyUtil = require('scripts/proxyUitl')
 const su = require('scripts/sizeUtil')
+const cu = require('scripts/colorUtil')
 const FILE = 'data.js'
 
 if (!$file.exists(FILE)) {
@@ -10,10 +11,10 @@ if (!$file.exists(FILE)) {
 }
 
 const screenHeight = $device.info.screen.height
+const screenWidth = $device.info.screen.width
 
-console.log(su.pc)
-
-let selectedProxies = []
+const selectedColor = $color("#d1e0e0")
+const defaultColor = $color("#ffffff")
 
 function renderUI() {
     $ui.render({
@@ -31,13 +32,13 @@ function renderUI() {
                 props: {
                     id: "fileName",
                     text: '',
-                    placeholder: "文件名（不带.conf），留空则为lhie1"
+                    placeholder: "配置名（lhie1)"
                 },
                 layout: (make, view) => {
-                    make.width.equalTo(view.super).offset(-20)
-                    make.centerX.equalTo(view.super)
+                    make.width.equalTo(screenWidth / 2 - 15)
+                    // make.centerX.equalTo(view.super)
                     make.height.equalTo(40)
-                    make.top.equalTo(10)
+                    make.left.top.equalTo(10)
                 },
                 events: {
                     returned: sender => {
@@ -51,10 +52,12 @@ function renderUI() {
                     title: "导入节点"
                 },
                 layout: (make, view) => {
-                    make.width.equalTo(view.super).offset(-20)
-                    make.centerX.equalTo(view.super)
+                    make.width.equalTo(screenWidth / 2 - 15)
+                    // make.centerX.equalTo(view.super)
                     make.height.equalTo(40)
-                    make.top.equalTo($("fileName").bottom).offset(10)
+                    // make.top.equalTo($("fileName").bottom).offset(10)
+                    make.left.equalTo($("fileName").right).offset(10)
+                    make.top.right.equalTo(10)
                 },
                 events: {
                     tapped: sender => {
@@ -66,7 +69,7 @@ function renderUI() {
                                 let listData = $("serverEditor").data || []
                                 for (let idx in res) {
                                     listData.push({
-                                        proxyName: { text: res[idx].split('=')[0].trim() },
+                                        proxyName: { text: res[idx].split('=')[0].trim(), bgcolor: defaultColor },
                                         proxyLink: res[idx]
                                     })
                                 }
@@ -99,15 +102,13 @@ function renderUI() {
                     header: {
                         type: "matrix",
                         props: {
-                            columns: 3,
+                            columns: 2,
                             itemHeight: 40,
                             bgcolor: $color("#f0f5f5"),
                             data: [{
                                 title: { text: '倒序' }
                             }, {
-                                title: { text: '添加全部' }
-                            }, {
-                                title: { text: '清空'}
+                                title: { text: '全部Auto' }
                             }],
                             template: [{
                                 type: "label",
@@ -124,12 +125,13 @@ function renderUI() {
                                     let rd = $("serverEditor").data.reverse()
                                     $("serverEditor").data = rd
                                 } else if (indexPath.item == 1) {
-                                    selectedProxies = $("serverEditor").data.map(i => i.proxyName.text)
-                                    $("autoGroup").text = selectedProxies.join('\n')
-                                } else if (indexPath.item == 2) {
-                                    $("serverEditor").data = []
-                                    selectedProxies = $("serverEditor").data.map(i => i.proxyName.text)
-                                    $("autoGroup").text = selectedProxies.join('\n')
+                                    let data = $("serverEditor").data.map(i => {
+                                        i.proxyName.bgcolor = selectedColor
+                                        return i
+                                    })
+                                    $("serverEditor").data = data
+                                } else  {
+                                    
                                 }
                             }
                         }
@@ -139,39 +141,18 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo((screenHeight - 330)* 0.6)
+                    make.height.equalTo(screenHeight - 280)
                     make.top.equalTo($("serverURL").bottom).offset(10)
                 },
                 events: {
                     didSelect: (sender, indexPath, data) => {
                         let proxyName = data.proxyName.text
-                        let itemIdx = selectedProxies.indexOf(proxyName)
-                        if (itemIdx < 0) {
-                            selectedProxies.push(proxyName)
-                        } else {
-                            selectedProxies.splice(itemIdx, 1)
-                        }
-                        $("autoGroup").text = selectedProxies.join('\n')
+
+                        data.proxyName.bgcolor = cu.isEqual(data.proxyName.bgcolor, selectedColor)? defaultColor: selectedColor
+                        let uiData = $("serverEditor").data
+                        uiData[indexPath.row] = data
+                        $("serverEditor").data = uiData
                     }
-                }
-            }, {
-                type: "text",
-                props: {
-                    id: "autoGroup",
-                    radius: 5,
-                    editable: false,
-                    // bgcolor: $color("#f0f5f5"),
-                    borderWidth: 3,
-                    borderColor: $color("#f0f5f5"),
-                    // font: $font(12),
-                    align: $align.center,
-                    text: 'Auto节点\n从☝️列表选择\n留空默认只有DIRECT'
-                },
-                layout: (make, view) => {
-                    make.width.equalTo(view.super).offset(-20)
-                    make.centerX.equalTo(view.super)
-                    make.height.equalTo((screenHeight - 330) * 0.4)
-                    make.top.equalTo($("serverEditor").bottom).offset(10)
                 }
             }, {
                 type: "switch",
@@ -181,8 +162,8 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(40)
                     make.height.equalTo(40)
-                    make.top.equalTo($("autoGroup").bottom).offset(10)
-                    make.right.equalTo($("autoGroup").right).offset(-10)
+                    make.top.equalTo($("serverEditor").bottom).offset(10)
+                    make.right.equalTo($("serverEditor").right).offset(-10)
                 }
             }, {
                 type: "label",
@@ -193,7 +174,7 @@ function renderUI() {
                     make.width.equalTo(200)
                     make.height.equalTo(40)
                     make.left.equalTo(10)
-                    make.top.equalTo($("autoGroup").bottom).offset(6)
+                    make.top.equalTo($("serverEditor").bottom).offset(6)
                 }
             }, {
                 type: "switch",
@@ -223,13 +204,32 @@ function renderUI() {
         }, {
             type: "button",
             props: {
-                id: "genBtn",
-                title: "拉取规则并生成配置文件"
+                id: "advanceBtn",
+                title: "进阶设置"
             },
             layout: (make, view) => {
-                make.width.equalTo(view.super).offset(-20)
-                make.centerX.equalTo(view.super)
-                make.height.equalTo(40)
+                make.width.equalTo(screenWidth * 0.4 - 15)
+                // make.centerX.equalTo(view.super)
+                make.left.equalTo(10)
+                make.height.equalTo(45)
+                make.bottom.equalTo(view.super).offset(-10)
+            },
+            events: {
+                tapped: sender => {
+
+                }
+            }
+        }, {
+            type: "button",
+            props: {
+                id: "genBtn",
+                title: "拉取规则生成配置"
+            },
+            layout: (make, view) => {
+                make.width.equalTo(screenWidth * 0.6 - 15)
+                // make.centerX.equalTo(view.super)
+                make.height.equalTo(45)
+                make.left.equalTo($("advanceBtn").right).offset(10)
                 make.bottom.equalTo(view.super).offset(-10)
             },
             events: {
@@ -251,7 +251,7 @@ function renderUI() {
                     let ads = $("adsSwitch").on
                     let isTF = $("tfSwitch").on
 
-                    let autoGroup = selectedProxies.join(', ') || 'DIRECT'
+                    let autoGroup = $("serverEditor").data.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyName.text).join(',')
                     let proxies = $("serverEditor").data.map(i => {
                         return i.proxyLink + (isTF? ',udp-relay=true': '')
                     }).join('\n')
@@ -442,6 +442,7 @@ function saveURL(url, name) {
         path: FILE
     })
 }
+
 
 module.exports = {
     renderUI: renderUI
