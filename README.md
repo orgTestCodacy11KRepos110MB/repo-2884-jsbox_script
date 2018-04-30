@@ -18,7 +18,8 @@
 
 #### 9. [SS转Surge](https://jsboxbbs.com/d/193-ss-surge-proxy)
 
-#### 10. [Surge3配置生成](https://jsboxbbs.com/d/214-surge3)
+#### 10. [lhie1规则生成](https://jsboxbbs.com/d/290-lhie1)
+
 
 *欢迎打赏,感谢老板!*
 
