@@ -141,7 +141,7 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(screenHeight - 280)
+                    make.height.equalTo(screenHeight - 310)
                     make.top.equalTo($("serverURL").bottom).offset(10)
                 },
                 events: {
@@ -176,6 +176,28 @@ function renderUI() {
                     make.left.equalTo(10)
                     make.top.equalTo($("serverEditor").bottom).offset(6)
                 }
+            },{
+                type: "switch",
+                props: {
+                    id: "mitmSwitch"
+                },
+                layout: (make, view) => {
+                    make.width.equalTo(40)
+                    make.height.equalTo(40)
+                    make.top.equalTo($("adsSwitch").bottom)
+                    make.right.equalTo($("adsSwitch").right)
+                }
+            }, {
+                type: "label",
+                props: {
+                    text: "MITM",
+                },
+                layout: (make, view) => {
+                    make.width.equalTo(200)
+                    make.height.equalTo(40)
+                    make.left.equalTo(10)
+                    make.top.equalTo($("adsSwitch").bottom)
+                }
             }, {
                 type: "switch",
                 props: {
@@ -184,8 +206,8 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(40)
                     make.height.equalTo(40)
-                    make.top.equalTo($("adsSwitch").bottom)
-                    make.right.equalTo($("adsSwitch").right)
+                    make.top.equalTo($("mitmSwitch").bottom)
+                    make.right.equalTo($("mitmSwitch").right)
                     make.bottom.equalTo(view.super).offset(-50)
                 }
             }, {
@@ -197,7 +219,7 @@ function renderUI() {
                     make.width.equalTo(200)
                     make.height.equalTo(40)
                     make.left.equalTo(10)
-                    make.top.equalTo($("adsSwitch").bottom)
+                    make.top.equalTo($("mitmSwitch").bottom)
                     make.bottom.equalTo(view.super).offset(-50)
                 }
             }]
@@ -250,10 +272,11 @@ function renderUI() {
                     }
                     let ads = $("adsSwitch").on
                     let isTF = $("tfSwitch").on
+                    let isMitm = $("mitmSwitch").on
 
                     let advanceSettings = JSON.parse($file.read(FILE).string)
 
-                    let autoGroup = $("serverEditor").data.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyName.text).join(',')
+                    let autoGroup = $("serverEditor").data.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyName.text).join(',') || 'DIRECT'
                     let proxies = $("serverEditor").data.map(i => {
                         return i.proxyLink + (isTF? ',udp-relay=true': '')
                     }).join('\n')
@@ -322,7 +345,12 @@ function renderUI() {
                         prototype = prototype.replace('# URL REJECT', urlReject)
                         prototype = prototype.replace('# Header Rewrite', headerRewrite)
                         prototype = prototype.replace('// Hostname', hostName)
-                        prototype = prototype.replace('# MITM', advanceSettings.mitmSettings || mitm)
+
+                        if (isMitm) {
+                            prototype = prototype.replace('# MITM', advanceSettings.mitmSettings || '# MITM')
+                        }else {
+                            prototype = prototype.replace('# MITM', mitm)
+                        }
 
                         console.log(prototype)
                         $share.sheet([($("fileName").text || 'lhie1') + '.conf', $data({ "string": prototype })])
