@@ -102,13 +102,15 @@ function renderUI() {
                     header: {
                         type: "matrix",
                         props: {
-                            columns: 2,
+                            columns: 3,
                             itemHeight: 40,
                             bgcolor: $color("#f0f5f5"),
                             data: [{
                                 title: { text: '倒序' }
                             }, {
                                 title: { text: '全部Auto' }
+                            }, {
+                                title: { text: '清空' }
                             }],
                             template: [{
                                 type: "label",
@@ -130,8 +132,8 @@ function renderUI() {
                                         return i
                                     })
                                     $("serverEditor").data = data
-                                } else  {
-                                    
+                                } else if (indexPath.item == 2) {
+                                    $("serverEditor").data = []
                                 }
                             }
                         }
@@ -555,6 +557,42 @@ function renderAdvanceUI() {
         }]
     })
 }
+
+$app.listen({
+    ready: function() {
+        let workspace = JSON.parse($file.read(FILE).string).workspace
+        if (workspace) {
+            $("fileName").text = workspace.fileName
+            console.log(workspace.serverData)
+            $("serverEditor").data = workspace.serverData.map(i => {
+                i.proxyName.bgcolor = i.proxyName.bgcolor? selectedColor: defaultColor
+                return i
+            })
+            $("adsSwitch").on = workspace.isAds
+            $("tfSwitch").on = workspace.isTF
+            $("mitmSwitch").on = workspace.isMitm
+        }
+    },
+    exit: function() {
+        let workspace = {
+            fileName: $("fileName").text,
+            serverData: $("serverEditor").data.map(i => {
+                // 如果节点选上，则color为true
+                i.proxyName.bgcolor = cu.isEqual(selectedColor, i.proxyName.bgcolor)
+                return i
+            }),
+            isAds: $("adsSwitch").on,
+            isTF: $("tfSwitch").on,
+            isMitm: $("mitmSwitch").on
+        }
+        let file = JSON.parse($file.read(FILE).string)
+        file.workspace = workspace
+        $file.write({
+            data: $data({ string: JSON.stringify(file) }),
+            path: FILE
+        })
+    }
+})
 
 module.exports = {
     renderUI: renderUI
