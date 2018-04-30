@@ -5,6 +5,8 @@ $app.autoKeyboardEnabled = true
 $app.rotateDisabled = true
 $app.keyboardToolbarEnabled = true
 
+app.addListener()
+
 app.renderUI()
 
 updateUtil.getLatestVersion({
