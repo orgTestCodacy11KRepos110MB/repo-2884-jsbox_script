@@ -13,8 +13,7 @@ function getServersFromConfFile(params) {
                 }catch{
                     filename = filenameUtil.getConfName(params.confURL)
                 }
-                console.log(filename)                
-                let servers = data.match(/\[Proxy\]\n([\s\S]*?)\n\[Proxy Group\]/)
+                let servers = data.match(/\[Proxy\]([\s\S]*?)\[Proxy Group\]/)
                 if (servers != null) {
                     resolve({
                         servers: servers[1], 
@@ -26,7 +25,7 @@ function getServersFromConfFile(params) {
             }
         })
     }).then(res => {
-        let servers = res.servers.split(/[\n]+/).filter(item => item != '')
+        let servers = res.servers.split(/[\n\r]+/).filter(item => item != '')
         params.handler({servers: servers, filename: res.filename})
     }).catch(reason => {
         params.handler(null)
