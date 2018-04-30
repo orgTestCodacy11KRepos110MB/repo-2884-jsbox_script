@@ -43,6 +43,7 @@ function renderUI() {
                 events: {
                     returned: sender => {
                         $("fileName").blur()
+                        saveWorkspace()
                     }
                 }
             }, {
@@ -74,6 +75,7 @@ function renderUI() {
                                     })
                                 }
                                 $("serverEditor").data = listData
+                                saveWorkspace()
                             }
                         })
                     }
@@ -84,7 +86,10 @@ function renderUI() {
                     id: "serverEditor",
                     data: [],
                     actions: [{
-                        title: "delete"
+                        title: "delete",
+                        handler: (sender, indexPath) => {
+                            saveWorkspace()
+                        }
                     }],
                     borderWidth: 3,
                     borderColor: $color("#f0f5f5"),
@@ -135,6 +140,7 @@ function renderUI() {
                                 } else if (indexPath.item == 2) {
                                     $("serverEditor").data = []
                                 }
+                                saveWorkspace()
                             }
                         }
                     },
@@ -149,11 +155,11 @@ function renderUI() {
                 events: {
                     didSelect: (sender, indexPath, data) => {
                         let proxyName = data.proxyName.text
-
                         data.proxyName.bgcolor = cu.isEqual(data.proxyName.bgcolor, selectedColor)? defaultColor: selectedColor
                         let uiData = $("serverEditor").data
                         uiData[indexPath.row] = data
                         $("serverEditor").data = uiData
+                        saveWorkspace()
                     }
                 }
             }, {
@@ -166,6 +172,11 @@ function renderUI() {
                     make.height.equalTo(40)
                     make.top.equalTo($("serverEditor").bottom).offset(10)
                     make.right.equalTo($("serverEditor").right).offset(-10)
+                },
+                events: {
+                    changed: sender => {
+                        saveWorkspace()
+                    }
                 }
             }, {
                 type: "label",
@@ -188,6 +199,11 @@ function renderUI() {
                     make.height.equalTo(40)
                     make.top.equalTo($("adsSwitch").bottom)
                     make.right.equalTo($("adsSwitch").right)
+                },
+                events: {
+                    changed: sender => {
+                        saveWorkspace()
+                    }
                 }
             }, {
                 type: "label",
@@ -211,6 +227,11 @@ function renderUI() {
                     make.top.equalTo($("mitmSwitch").bottom)
                     make.right.equalTo($("mitmSwitch").right)
                     make.bottom.equalTo(view.super).offset(-50)
+                },
+                events: {
+                    changed: sender => {
+                        saveWorkspace()
+                    }
                 }
             }, {
                 type: "label",
@@ -576,24 +597,28 @@ function addListener() {
             }
         },
         exit: function() {
-            let workspace = {
-                fileName: $("fileName").text,
-                serverData: $("serverEditor").data.map(i => {
-                    // 如果节点选上，则color为true
-                    i.proxyName.bgcolor = cu.isEqual(selectedColor, i.proxyName.bgcolor)
-                    return i
-                }),
-                isAds: $("adsSwitch").on,
-                isTF: $("tfSwitch").on,
-                isMitm: $("mitmSwitch").on
-            }
-            let file = JSON.parse($file.read(FILE).string)
-            file.workspace = workspace
-            $file.write({
-                data: $data({ string: JSON.stringify(file) }),
-                path: FILE
-            })
+            
         }
+    })
+}
+
+function saveWorkspace() {
+    let workspace = {
+        fileName: $("fileName").text,
+        serverData: $("serverEditor").data.map(i => {
+            // 如果节点选上，则color为true
+            i.proxyName.bgcolor = cu.isEqual(selectedColor, i.proxyName.bgcolor)
+            return i
+        }),
+        isAds: $("adsSwitch").on,
+        isTF: $("tfSwitch").on,
+        isMitm: $("mitmSwitch").on
+    }
+    let file = JSON.parse($file.read(FILE).string)
+    file.workspace = workspace
+    $file.write({
+        data: $data({ string: JSON.stringify(file) }),
+        path: FILE
     })
 }
 
