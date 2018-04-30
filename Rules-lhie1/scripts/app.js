@@ -285,20 +285,17 @@ function renderUI() {
                         return getAutoRules(pu.direct)
                     }).then(res => {
                         rules += '\n' + res
-                        if (isTF) {
-                            return getAutoRules(pu.testflight)
-                        } else {
-                            return Promise.resolve('')
-                        }
-                    }).then(res => {
-                        testFlight = res
                         return getAutoRules(pu.host)
                     }).then(res => {
                         host = res
                         return getAutoRules(pu.urlrewrite)
                     }).then(res => {
                         urlRewrite += res
-                        return getAutoRules(pu.urlreject)
+                        if (ads) {
+                            return getAutoRules(pu.urlreject)
+                        }else {
+                            return Promise.resolve('')
+                        }
                     }).then(res => {
                         urlReject += res
                         return getAutoRules(pu.headerrewrite)
@@ -313,13 +310,13 @@ function renderUI() {
 
                         $ui.loading(false)
                         
-                        prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system')
+                        prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1')
                         prototype = prototype.replace('# Custom', advanceSettings.customSettings || '')
                         prototype = prototype.replace('Proxys', proxies)
                         prototype = prototype.split('Proxy Header').join(proxyHeaders)
                         prototype = prototype.replace('ProxyHeader', autoGroup)
                         prototype = prototype.replace('# All Rules', rules)
-                        prototype = prototype.replace('// TestFlight', testFlight)
+                        // prototype = prototype.replace('// TestFlight', testFlight)
                         prototype = prototype.replace('# Host', host)
                         prototype = prototype.replace('# URL Rewrite', urlRewrite)
                         prototype = prototype.replace('# URL REJECT', urlReject)
@@ -475,7 +472,7 @@ function renderAdvanceUI() {
                     id: "dnsSettings",
                     bgcolor: $color("#f0f5f5"),
                     radius: 5,
-                    text: previewData.dnsSettings || 'dns-server = system'
+                    text: previewData.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1'
                 },
                 layout: (make, view) => {
                     make.top.equalTo(10)
