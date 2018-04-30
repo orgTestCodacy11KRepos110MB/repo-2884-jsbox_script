@@ -424,7 +424,8 @@ function linkHandler(url, params) {
 }
 
 function saveURL(url, name) {
-    let urls = JSON.parse($file.read(FILE).string).urls
+    let settings = JSON.parse($file.read(FILE).string)
+    let urls = settings.urls
     // if (urls.indexOf(url) >= 0) {
     //     urls.splice(urls.indexOf(url), 1)
     // }
@@ -442,7 +443,7 @@ function saveURL(url, name) {
         urls.shift()
     }
     $file.write({
-        data: $data({ "string": JSON.stringify({ "urls": urls }) }),
+        data: $data({ "string": JSON.stringify(settings) }),
         path: FILE
     })
 }
