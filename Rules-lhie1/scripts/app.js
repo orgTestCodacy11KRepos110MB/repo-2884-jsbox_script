@@ -466,6 +466,9 @@ function linkHandler(url, params) {
                 saveURL(url, res.filename)
             }
         })
+    } else if (/[\S\s]+=[\s]*custom,/.test(url)) {
+        params.handler([url])
+        saveURL(url, url.split('=')[0].trim())
     } else {
         params.handler(null)
     }
