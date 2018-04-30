@@ -1,6 +1,10 @@
 const app = require('scripts/app')
 const updateUtil = require('scripts/updateUtil')
 
+$app.autoKeyboardEnabled = true
+$app.rotateDisabled = true
+$app.keyboardToolbarEnabled = true
+
 app.renderUI()
 
 updateUtil.getLatestVersion({
