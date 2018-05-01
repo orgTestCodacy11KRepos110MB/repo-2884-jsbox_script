@@ -210,7 +210,7 @@ function renderUI() {
                     }]
                 },
                 layout: (make, view) => {
-                    make.width.equalTo(view.super).offset(-20)
+                    make.width.equalTo(view.super).offset(-10)
                     make.centerX.equalTo(view.super)
                     make.height.equalTo(50)
                     make.top.equalTo($("serverEditor").bottom).offset(10)
