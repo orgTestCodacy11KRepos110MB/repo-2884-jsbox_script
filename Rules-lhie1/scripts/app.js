@@ -10,8 +10,13 @@ if (!$file.exists(FILE)) {
     })
 }
 
-const screenHeight = $device.info.screen.height
+let screenHeight = $device.info.screen.height
 const screenWidth = $device.info.screen.width
+
+const iPhoneX = screenWidth == 375 && screenHeight == 812
+if (iPhoneX) {
+    screenHeight -= 48
+}
 
 const selectedColor = $color("#d1e0e0")
 const defaultColor = $color("#ffffff")
@@ -172,7 +177,7 @@ function renderUI() {
                         saveWorkspace()
                     }
                 }
-            },  {
+            }, {
                 type: "matrix",
                 props: {
                     id: "usualSettings",
@@ -213,7 +218,7 @@ function renderUI() {
                 events: {
                     didSelect: (sender, indexPath, data) => {
                         data.title.bgcolor = cu.isEqual(data.title.bgcolor, tintColor) ? defaultColor : tintColor
-                        data.title.textColor = cu.isEqual(data.title.bgcolor, tintColor)? defaultColor : blackColor
+                        data.title.textColor = cu.isEqual(data.title.bgcolor, tintColor) ? defaultColor : blackColor
                         let uiData = $("usualSettings").data
                         uiData[indexPath.row] = data
                         $("usualSettings").data = uiData
@@ -232,7 +237,7 @@ function renderUI() {
                 // make.centerX.equalTo(view.super)
                 make.left.equalTo(10)
                 make.height.equalTo(40)
-                make.bottom.equalTo(view.super).offset(-10)
+                make.top.equalTo($("usualSettings").bottom).offset(5)
             },
             events: {
                 tapped: sender => {
@@ -250,7 +255,7 @@ function renderUI() {
                 // make.centerX.equalTo(view.super)
                 make.height.equalTo(40)
                 make.left.equalTo($("advanceBtn").right).offset(10)
-                make.bottom.equalTo(view.super).offset(-10)
+                make.top.equalTo($("usualSettings").bottom).offset(5)
             },
             events: {
                 tapped: sender => {
@@ -572,7 +577,7 @@ function addListener() {
                     return i
                 })
                 $("usualSettings").data = workspace.usualData.map(i => {
-                    i.title.bgcolor = i.title.bgcolor ? tintColor: defaultColor
+                    i.title.bgcolor = i.title.bgcolor ? tintColor : defaultColor
                     i.title.textColor = i.title.textColor ? defaultColor : blackColor
                     return i
                 })
