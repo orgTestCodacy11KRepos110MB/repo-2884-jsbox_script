@@ -15,6 +15,9 @@ const screenWidth = $device.info.screen.width
 
 const selectedColor = $color("#d1e0e0")
 const defaultColor = $color("#ffffff")
+const tintColor = $color("#ff2d55")
+const blackColor = $color("#000000")
+
 
 function renderUI() {
     $ui.render({
@@ -138,7 +141,7 @@ function renderUI() {
                             saveWorkspace()
                         }
                     }],
-                    borderWidth: 1,
+                    borderWidth: 2,
                     borderColor: $color("#f0f5f5"),
                     template: {
                         views: [{
@@ -156,7 +159,7 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(screenHeight - 340)
+                    make.height.equalTo(screenHeight - 280)
                     make.top.equalTo($("serverControl").bottom)
                 },
                 events: {
@@ -169,90 +172,55 @@ function renderUI() {
                         saveWorkspace()
                     }
                 }
-            }, {
-                type: "switch",
+            },  {
+                type: "matrix",
                 props: {
-                    id: "adsSwitch"
+                    id: "usualSettings",
+                    columns: 3,
+                    // radius: 5,
+                    itemHeight: 40,
+                    // bgcolor: $color("#f0f5f5"),
+                    // borderWidth: 1,
+                    // borderColor: $color("#f0f5f5"),
+                    spacing: 5,
+                    selectable: true,
+                    data: [{
+                        title: { text: '去广告', bgcolor: defaultColor, textColor: blackColor }
+                    }, {
+                        title: { text: '自定义MITM', bgcolor: defaultColor, textColor: blackColor }
+                    }, {
+                        title: { text: 'TestFlight', bgcolor: defaultColor, textColor: blackColor }
+                    }],
+                    template: [{
+                        type: "label",
+                        props: {
+                            id: "title",
+                            align: $align.center,
+                            font: $font(14),
+                            radius: 5,
+                            borderColor: tintColor,
+                            borderWidth: 1,
+                        },
+                        layout: $layout.fill
+                    }]
                 },
                 layout: (make, view) => {
-                    make.width.equalTo(40)
-                    make.height.equalTo(35)
+                    make.width.equalTo(view.super).offset(-20)
+                    make.centerX.equalTo(view.super)
+                    make.height.equalTo(50)
                     make.top.equalTo($("serverEditor").bottom).offset(10)
-                    make.right.equalTo($("serverEditor").right).offset(-10)
                 },
                 events: {
-                    changed: sender => {
+                    didSelect: (sender, indexPath, data) => {
+                        data.title.bgcolor = cu.isEqual(data.title.bgcolor, tintColor) ? defaultColor : tintColor
+                        data.title.textColor = cu.isEqual(data.title.bgcolor, tintColor)? defaultColor : blackColor
+                        let uiData = $("usualSettings").data
+                        uiData[indexPath.row] = data
+                        $("usualSettings").data = uiData
                         saveWorkspace()
                     }
                 }
-            }, {
-                type: "label",
-                props: {
-                    text: "去广告规则",
-                },
-                layout: (make, view) => {
-                    make.width.equalTo(200)
-                    make.height.equalTo(35)
-                    make.left.equalTo(10)
-                    make.top.equalTo($("serverEditor").bottom).offset(10)
-                }
-            }, {
-                type: "switch",
-                props: {
-                    id: "mitmSwitch"
-                },
-                layout: (make, view) => {
-                    make.width.equalTo(40)
-                    make.height.equalTo(35)
-                    make.top.equalTo($("adsSwitch").bottom)
-                    make.right.equalTo($("adsSwitch").right)
-                },
-                events: {
-                    changed: sender => {
-                        saveWorkspace()
-                    }
-                }
-            }, {
-                type: "label",
-                props: {
-                    text: "使用自定义MITM",
-                },
-                layout: (make, view) => {
-                    make.width.equalTo(200)
-                    make.height.equalTo(35)
-                    make.left.equalTo(10)
-                    make.top.equalTo($("adsSwitch").bottom)
-                }
-            }, {
-                type: "switch",
-                props: {
-                    id: "tfSwitch"
-                },
-                layout: (make, view) => {
-                    make.width.equalTo(40)
-                    make.height.equalTo(35)
-                    make.top.equalTo($("mitmSwitch").bottom)
-                    make.right.equalTo($("mitmSwitch").right)
-                    make.bottom.equalTo(view.super).offset(-50)
-                },
-                events: {
-                    changed: sender => {
-                        saveWorkspace()
-                    }
-                }
-            }, {
-                type: "label",
-                props: {
-                    text: "TestFlight（UDP支持）",
-                },
-                layout: (make, view) => {
-                    make.width.equalTo(200)
-                    make.height.equalTo(40)
-                    make.left.equalTo(10)
-                    make.top.equalTo($("mitmSwitch").bottom)
-                    make.bottom.equalTo(view.super).offset(-50)
-                }
-            }]
+            },]
         }, {
             type: "button",
             props: {
@@ -300,9 +268,11 @@ function renderUI() {
                         hostname: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Hostname.conf',
                         mitm: 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge/MITM.conf'
                     }
-                    let ads = $("adsSwitch").on
-                    let isTF = $("tfSwitch").on
-                    let isMitm = $("mitmSwitch").on
+                    let ads = cu.isEqual($("usualSettings").data[0].title.bgcolor, tintColor)
+                    let isMitm = cu.isEqual($("usualSettings").data[1].title.bgcolor, tintColor)
+                    let isTF = cu.isEqual($("usualSettings").data[2].title.bgcolor, tintColor)
+
+                    console.log([ads, isTF, isMitm])
 
                     let advanceSettings = JSON.parse($file.read(FILE).string)
 
@@ -601,9 +571,11 @@ function addListener() {
                     i.proxyName.bgcolor = i.proxyName.bgcolor ? selectedColor : defaultColor
                     return i
                 })
-                $("adsSwitch").on = workspace.isAds
-                $("tfSwitch").on = workspace.isTF
-                $("mitmSwitch").on = workspace.isMitm
+                $("usualSettings").data = workspace.usualData.map(i => {
+                    i.title.bgcolor = i.title.bgcolor ? tintColor: defaultColor
+                    i.title.textColor = i.title.textColor ? defaultColor : blackColor
+                    return i
+                })
             }
         },
         exit: function () {
@@ -620,9 +592,11 @@ function saveWorkspace() {
             i.proxyName.bgcolor = cu.isEqual(selectedColor, i.proxyName.bgcolor)
             return i
         }),
-        isAds: $("adsSwitch").on,
-        isTF: $("tfSwitch").on,
-        isMitm: $("mitmSwitch").on
+        usualData: $("usualSettings").data.map(i => {
+            i.title.bgcolor = cu.isEqual(tintColor, i.title.bgcolor)
+            i.title.textColor = cu.isEqual(defaultColor, i.title.textColor)
+            return i
+        })
     }
     let file = JSON.parse($file.read(FILE).string)
     file.workspace = workspace
