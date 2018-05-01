@@ -81,6 +81,53 @@ function renderUI() {
                     }
                 }
             }, {
+                type: "matrix",
+                props: {
+                    id: "serverControl",
+                    columns: 3,
+                    // radius: 5,
+                    itemHeight: 40,
+                    bgcolor: $color("#f0f5f5"),
+                    data: [{
+                        title: { text: '倒序' }
+                    }, {
+                        title: { text: '全部Auto' }
+                    }, {
+                        title: { text: '清空' }
+                    }],
+                    template: [{
+                        type: "label",
+                        props: {
+                            id: "title",
+                            align: $align.center
+                        },
+                        layout: $layout.fill
+                    }]
+                },
+                layout: (make, view) => {
+                    make.width.equalTo(view.super).offset(-20)
+                    make.centerX.equalTo(view.super)
+                    make.height.equalTo(40)
+                    make.top.equalTo($("serverURL").bottom).offset(10)
+                },
+                events: {
+                    didSelect: (sender, indexPath, data) => {
+                        if (indexPath.item == 0) {
+                            let rd = $("serverEditor").data.reverse()
+                            $("serverEditor").data = rd
+                        } else if (indexPath.item == 1) {
+                            let data = $("serverEditor").data.map(i => {
+                                i.proxyName.bgcolor = selectedColor
+                                return i
+                            })
+                            $("serverEditor").data = data
+                        } else if (indexPath.item == 2) {
+                            $("serverEditor").data = []
+                        }
+                        saveWorkspace()
+                    }
+                }
+            }, {
                 type: "list",
                 props: {
                     id: "serverEditor",
@@ -91,7 +138,7 @@ function renderUI() {
                             saveWorkspace()
                         }
                     }],
-                    borderWidth: 3,
+                    borderWidth: 1,
                     borderColor: $color("#f0f5f5"),
                     template: {
                         views: [{
@@ -104,58 +151,18 @@ function renderUI() {
                             layout: $layout.fill
                         }]
                     },
-                    header: {
-                        type: "matrix",
-                        props: {
-                            columns: 3,
-                            itemHeight: 40,
-                            bgcolor: $color("#f0f5f5"),
-                            data: [{
-                                title: { text: '倒序' }
-                            }, {
-                                title: { text: '全部Auto' }
-                            }, {
-                                title: { text: '清空' }
-                            }],
-                            template: [{
-                                type: "label",
-                                props: {
-                                    id: "title",
-                                    align: $align.center
-                                },
-                                layout: $layout.fill
-                            }]
-                        },
-                        events: {
-                            didSelect: (sender, indexPath, data) => {
-                                if (indexPath.item == 0) {
-                                    let rd = $("serverEditor").data.reverse()
-                                    $("serverEditor").data = rd
-                                } else if (indexPath.item == 1) {
-                                    let data = $("serverEditor").data.map(i => {
-                                        i.proxyName.bgcolor = selectedColor
-                                        return i
-                                    })
-                                    $("serverEditor").data = data
-                                } else if (indexPath.item == 2) {
-                                    $("serverEditor").data = []
-                                }
-                                saveWorkspace()
-                            }
-                        }
-                    },
-                    radius: 5
+                    // radius: 5
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(screenHeight - 310)
-                    make.top.equalTo($("serverURL").bottom).offset(10)
+                    make.height.equalTo(screenHeight - 340)
+                    make.top.equalTo($("serverControl").bottom)
                 },
                 events: {
                     didSelect: (sender, indexPath, data) => {
                         let proxyName = data.proxyName.text
-                        data.proxyName.bgcolor = cu.isEqual(data.proxyName.bgcolor, selectedColor)? defaultColor: selectedColor
+                        data.proxyName.bgcolor = cu.isEqual(data.proxyName.bgcolor, selectedColor) ? defaultColor : selectedColor
                         let uiData = $("serverEditor").data
                         uiData[indexPath.row] = data
                         $("serverEditor").data = uiData
@@ -169,7 +176,7 @@ function renderUI() {
                 },
                 layout: (make, view) => {
                     make.width.equalTo(40)
-                    make.height.equalTo(40)
+                    make.height.equalTo(35)
                     make.top.equalTo($("serverEditor").bottom).offset(10)
                     make.right.equalTo($("serverEditor").right).offset(-10)
                 },
@@ -181,22 +188,22 @@ function renderUI() {
             }, {
                 type: "label",
                 props: {
-                    text: "去广告",
+                    text: "去广告规则",
                 },
                 layout: (make, view) => {
                     make.width.equalTo(200)
-                    make.height.equalTo(40)
+                    make.height.equalTo(35)
                     make.left.equalTo(10)
-                    make.top.equalTo($("serverEditor").bottom).offset(6)
+                    make.top.equalTo($("serverEditor").bottom).offset(10)
                 }
-            },{
+            }, {
                 type: "switch",
                 props: {
                     id: "mitmSwitch"
                 },
                 layout: (make, view) => {
                     make.width.equalTo(40)
-                    make.height.equalTo(40)
+                    make.height.equalTo(35)
                     make.top.equalTo($("adsSwitch").bottom)
                     make.right.equalTo($("adsSwitch").right)
                 },
@@ -208,11 +215,11 @@ function renderUI() {
             }, {
                 type: "label",
                 props: {
-                    text: "MITM",
+                    text: "使用自定义MITM",
                 },
                 layout: (make, view) => {
                     make.width.equalTo(200)
-                    make.height.equalTo(40)
+                    make.height.equalTo(35)
                     make.left.equalTo(10)
                     make.top.equalTo($("adsSwitch").bottom)
                 }
@@ -223,7 +230,7 @@ function renderUI() {
                 },
                 layout: (make, view) => {
                     make.width.equalTo(40)
-                    make.height.equalTo(40)
+                    make.height.equalTo(35)
                     make.top.equalTo($("mitmSwitch").bottom)
                     make.right.equalTo($("mitmSwitch").right)
                     make.bottom.equalTo(view.super).offset(-50)
@@ -236,7 +243,7 @@ function renderUI() {
             }, {
                 type: "label",
                 props: {
-                    text: "TestFlight",
+                    text: "TestFlight（UDP支持）",
                 },
                 layout: (make, view) => {
                     make.width.equalTo(200)
@@ -256,7 +263,7 @@ function renderUI() {
                 make.width.equalTo(screenWidth * 0.4 - 15)
                 // make.centerX.equalTo(view.super)
                 make.left.equalTo(10)
-                make.height.equalTo(45)
+                make.height.equalTo(40)
                 make.bottom.equalTo(view.super).offset(-10)
             },
             events: {
@@ -273,7 +280,7 @@ function renderUI() {
             layout: (make, view) => {
                 make.width.equalTo(screenWidth * 0.6 - 15)
                 // make.centerX.equalTo(view.super)
-                make.height.equalTo(45)
+                make.height.equalTo(40)
                 make.left.equalTo($("advanceBtn").right).offset(10)
                 make.bottom.equalTo(view.super).offset(-10)
             },
@@ -301,7 +308,7 @@ function renderUI() {
 
                     let autoGroup = $("serverEditor").data.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyName.text).join(',') || 'DIRECT'
                     let proxies = $("serverEditor").data.map(i => {
-                        return i.proxyLink + (isTF? ',udp-relay=true': '')
+                        return i.proxyLink + (isTF ? ',udp-relay=true' : '')
                     }).join('\n')
                     let proxyHeaders = $("serverEditor").data.map(i => i.proxyName.text).join(', ')
                     let rules = ''
@@ -339,7 +346,7 @@ function renderUI() {
                         urlRewrite += res
                         if (ads) {
                             return getAutoRules(pu.urlreject)
-                        }else {
+                        } else {
                             return Promise.resolve('')
                         }
                     }).then(res => {
@@ -355,7 +362,7 @@ function renderUI() {
                         mitm = res
 
                         $ui.loading(false)
-                        
+
                         prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1')
                         prototype = prototype.replace('# Custom', advanceSettings.customSettings || '')
                         prototype = prototype.replace('Proxys', proxies)
@@ -371,7 +378,7 @@ function renderUI() {
 
                         if (isMitm) {
                             prototype = prototype.replace('# MITM', advanceSettings.mitmSettings || '# MITM')
-                        }else {
+                        } else {
                             prototype = prototype.replace('# MITM', mitm)
                         }
 
@@ -584,14 +591,14 @@ function renderAdvanceUI() {
 
 function addListener() {
     $app.listen({
-        ready: function() {
+        ready: function () {
             let file = JSON.parse($file.read(FILE).string)
             if (file && file.workspace) {
                 let workspace = file.workspace
                 $("fileName").text = workspace.fileName
                 console.log(workspace.serverData)
                 $("serverEditor").data = workspace.serverData.map(i => {
-                    i.proxyName.bgcolor = i.proxyName.bgcolor? selectedColor: defaultColor
+                    i.proxyName.bgcolor = i.proxyName.bgcolor ? selectedColor : defaultColor
                     return i
                 })
                 $("adsSwitch").on = workspace.isAds
@@ -599,8 +606,8 @@ function addListener() {
                 $("mitmSwitch").on = workspace.isMitm
             }
         },
-        exit: function() {
-            
+        exit: function () {
+
         }
     })
 }
