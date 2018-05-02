@@ -449,8 +449,13 @@ function linkHandler(url, params) {
             }
         })
     } else if (/[\S\s]+=[\s]*custom,/.test(url)) {
-        params.handler([url])
-        saveURL(url, url.split('=')[0].trim())
+        let urls = url.split('\n').map(i => i.trim()).filter(i => /[\S\s]+=[\s]*custom,/.test(i)).map(i => i.replace(/,[\s]*udp-relay=true/, ''))
+        let result = []
+        for (let idx in urls) {
+            result[idx] = urls[idx]
+        }
+        params.handler(result)
+        saveURL(url, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
     } else {
         params.handler(null)
     }
