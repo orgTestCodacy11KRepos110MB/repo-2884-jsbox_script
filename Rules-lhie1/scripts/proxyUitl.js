@@ -33,46 +33,51 @@ function getServersFromConfFile(params) {
 }
 
 function decodeScheme(params) {
-    let method, password, hostname, port, plugin, tag
+    let urls = params.ssURL.split('\n').map(i => i.trim()).filter(i => /ss:\/\//.test(i))
+    let result = []
+    let tag
 
-    let url = params.ssURL
-
-    if (!url.includes('#')) {
-        let name = '无节点名称'
-        url += `#${name}`
-    }
-
-    tag = $text.URLDecode(url.match(/#(.*?)$/)[1])
-    if (url.includes('?')) {
-        // tag = $text.URLDecode(url.match(/#(.*?)$/)[1])
-        let mdps = url.match(/ss:\/\/(.*?)@/)[1]
-        let padding = 4 - mdps.length % 4
-        if (padding < 4) {
-            mdps += Array(padding + 1).join('=')
+    for (let idx in urls) {
+        let url = urls[idx]
+        let method, password, hostname, port, plugin
+        if (!url.includes('#')) {
+            let name = '无节点名称'
+            url += `#${name}`
         }
-        let userinfo = $text.base64Decode(mdps)
-        method = userinfo.split(':')[0]
-        password = userinfo.split(':')[1]
-        let htpr = url.match(/@(.*?)\?/)[1].replace('\/', '')
-        hostname = htpr.split(':')[0]
-        port = htpr.split(':')[1]
-        let ps = $text.URLDecode(url.match(/\?(.*?)#/)[1])
-        let obfs = ps.match(/obfs=(.*?);/)[1]
-        let obfsHost = ps.match(/obfs-host=(.*?)$/)[1]
-        plugin = `obfs=${obfs}, obfs-host=${obfsHost}`
-    } else {
-        let mdps = url.match(/ss:\/\/(.*?)#/)[1]
-        let padding = 4 - mdps.length % 4
-        if (padding < 4) {
-            mdps += Array(padding + 1).join('=')
+        tag = $text.URLDecode(url.match(/#(.*?)$/)[1])
+        if (url.includes('?')) {
+            // tag = $text.URLDecode(url.match(/#(.*?)$/)[1])
+            let mdps = url.match(/ss:\/\/(.*?)@/)[1]
+            let padding = 4 - mdps.length % 4
+            if (padding < 4) {
+                mdps += Array(padding + 1).join('=')
+            }
+            let userinfo = $text.base64Decode(mdps)
+            method = userinfo.split(':')[0]
+            password = userinfo.split(':')[1]
+            let htpr = url.match(/@(.*?)\?/)[1].replace('\/', '')
+            hostname = htpr.split(':')[0]
+            port = htpr.split(':')[1]
+            let ps = $text.URLDecode(url.match(/\?(.*?)#/)[1])
+            let obfs = ps.match(/obfs=(.*?);/)[1]
+            let obfsHost = ps.match(/obfs-host=(.*?)$/)[1]
+            plugin = `obfs=${obfs}, obfs-host=${obfsHost}`
+        } else {
+            let mdps = url.match(/ss:\/\/(.*?)#/)[1]
+            let padding = 4 - mdps.length % 4
+            if (padding < 4) {
+                mdps += Array(padding + 1).join('=')
+            }
+            [method, password, hostname, port] = $text.base64Decode(mdps).split(/[:,@]/)
         }
-        [method, password, hostname, port] = $text.base64Decode(mdps).split(/[:,@]/)
+        let proxy = `${tag} = custom, ${hostname}, ${port}, ${method}, ${password}, http://omgib13x8.bkt.clouddn.com/SSEncrypt.module`
+        if (plugin != undefined) {
+            proxy += `, ${plugin}`
+        }
+        result[idx] = proxy
     }
-    let proxy = `${tag} = custom, ${hostname}, ${port}, ${method}, ${password}, http://omgib13x8.bkt.clouddn.com/SSEncrypt.module`
-    if (plugin != undefined) {
-        proxy += `, ${plugin}`
-    }
-    params.handler({ servers: [proxy], sstag: tag })
+
+    params.handler({ servers: result, sstag: result.length > 1? `批量ss节点（${result.length}）`: tag })
 }
 
 module.exports = {
