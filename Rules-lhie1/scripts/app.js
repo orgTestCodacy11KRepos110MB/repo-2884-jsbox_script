@@ -359,6 +359,9 @@ function renderUI() {
                             prototype = prototype.replace(/\[Proxy Group\][\s\S]+\[Rule\]/, advanceSettings.proxyGroupSettings + '\n\n[Rule]')
                         }
 
+                        console.log(proxyHeaders)
+                        console.log(prototype)
+
                         prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1')
                         prototype = prototype.replace('# Custom', advanceSettings.customSettings || '')
                         prototype = prototype.replace('Proxys', proxies)
@@ -588,7 +591,7 @@ function renderAdvanceUI() {
                     id: "proxyGroupSettings",
                     bgcolor: $color("#f0f5f5"),
                     radius: 5,
-                    text: previewData.proxyGroupSettings || "[Proxy Group]\n🍃 Proxy = select,🏃 Auto,🚀 Direct,Proxy Header\n\n🍂 Domestic = select,🚀 Direct,🍃 Proxy\n\n🍎 Only = select,🚀 Direct,Proxy Header\n\n☁️ Others =  select,🚀 Direct,🍃 Proxy\n\n🏃 Auto = url-test,Proxy Header,url = http://www.gstatic.com/generate_204,interval = 1200"
+                    text: previewData.proxyGroupSettings || "[Proxy Group]\n🍃 Proxy = select,🏃 Auto,🚀 Direct,Proxy Header\n\n🍂 Domestic = select,🚀 Direct,🍃 Proxy\n\n🍎 Only = select,🚀 Direct,Proxy Header\n\n☁️ Others =  select,🚀 Direct,🍃 Proxy\n\n🏃 Auto = url-test,ProxyHeader,url = http://www.gstatic.com/generate_204,interval = 1200"
                 },
                 layout: (make, view) => {
                     make.top.equalTo($("dnsSettings").bottom).offset(10)
