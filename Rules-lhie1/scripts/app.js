@@ -318,7 +318,7 @@ function renderUI() {
                         }
                     }).then(res => {
                         $("progressBar").value = 0.3
-                        rules += '\n' + res
+                        rules += '\n' + res.split("REJECT").join("REJECT-TINYGIF")
                         return getAutoRules(pu.proxy)
                     }).then(res => {
                         $("progressBar").value = 0.4
