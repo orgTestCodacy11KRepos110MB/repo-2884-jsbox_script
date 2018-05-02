@@ -355,6 +355,10 @@ function renderUI() {
                     }).then(res => {
                         mitm = res
 
+                        if (advanceSettings.proxyGroupSettings) {
+                            prototype = prototype.replace(/\[Proxy Group\][\s\S]+\[Rule\]/, advanceSettings.proxyGroupSettings + '\n\n[Rule]')
+                        }
+
                         prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1')
                         prototype = prototype.replace('# Custom', advanceSettings.customSettings || '')
                         prototype = prototype.replace('Proxys', proxies)
@@ -452,7 +456,7 @@ function getAutoRules(url) {
 }
 
 function importMenu(params) {
-    let staticItems = ['剪贴板', '相机扫码', '相册']
+    let staticItems = ['剪贴板', '相机扫码']
     let savedURLS = JSON.parse($file.read(FILE).string).urls
     console.log(savedURLS)
     for (let i = 0; i < savedURLS.length && i < 3; i++) {
@@ -469,14 +473,6 @@ function importMenu(params) {
                 $qrcode.scan({
                     handler(string) {
                         linkHandler(string, params)
-                    }
-                })
-            } else if (staticIdx == 2) {
-                $photo.pick({
-                    format: "image",
-                    handler: function (resp) {
-                        var image = resp.image
-                        linkHandler($qrcode.decode(image), params)
                     }
                 })
             } else {
@@ -562,7 +558,7 @@ function renderAdvanceUI() {
             title: "进阶设置"
         },
         views: [{
-            type: "view",
+            type: "scroll",
             props: {
                 id: "advanceMainView"
             },
@@ -589,15 +585,34 @@ function renderAdvanceUI() {
             }, {
                 type: "text",
                 props: {
+                    id: "proxyGroupSettings",
+                    bgcolor: $color("#f0f5f5"),
+                    radius: 5,
+                    text: previewData.proxyGroupSettings || "[Proxy Group]\n🍃 Proxy = select,🏃 Auto,🚀 Direct,Proxy Header\n\n🍂 Domestic = select,🚀 Direct,🍃 Proxy\n\n🍎 Only = select,🚀 Direct,Proxy Header\n\n☁️ Others =  select,🚀 Direct,🍃 Proxy\n\n🏃 Auto = url-test,Proxy Header,url = http://www.gstatic.com/generate_204,interval = 1200"
+                },
+                layout: (make, view) => {
+                    make.top.equalTo($("dnsSettings").bottom).offset(10)
+                    make.centerX.equalTo(view.super)
+                    make.height.equalTo(300)
+                    make.width.equalTo(view.super).offset(-20)
+                },
+                events: {
+                    didEndEditing: sender => {
+                        write2file("proxyGroupSettings", $("proxyGroupSettings").text)
+                    }
+                }
+            }, {
+                type: "text",
+                props: {
                     id: "customSettings",
                     bgcolor: $color("#f0f5f5"),
                     radius: 5,
                     text: previewData.customSettings || '# Custom'
                 },
                 layout: (make, view) => {
-                    make.top.equalTo($("dnsSettings").bottom).offset(10)
+                    make.top.equalTo($("proxyGroupSettings").bottom).offset(10)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo((screenHeight - 190) * 0.6)
+                    make.height.equalTo(300)
                     make.width.equalTo(view.super).offset(-20)
                 },
                 events: {
@@ -616,7 +631,7 @@ function renderAdvanceUI() {
                 layout: (make, view) => {
                     make.top.equalTo($("customSettings").bottom).offset(10)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo((screenHeight - 190) * 0.4)
+                    make.height.equalTo(300)
                     make.width.equalTo(view.super).offset(-20)
                 },
                 events: {

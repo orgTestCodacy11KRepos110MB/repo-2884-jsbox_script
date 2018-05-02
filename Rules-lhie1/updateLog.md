@@ -5,6 +5,8 @@
 2. 增加批量导入Surge节点（剪贴板）
 3. 增加生成的过渡动画代替默认的loading
 4. 修复TINYGIF的问题
+5. 增加配置Proxy Group，``Proxy Header``为Auto节点名，可更改Auto设置
+6. 删除导入的相册选择选项，如需此操作请更新JSBox
 
  感谢**Wangsc1 M**的咖啡
 
