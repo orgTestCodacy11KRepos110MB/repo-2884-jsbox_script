@@ -1,4 +1,4 @@
-** 更新了1.5.9版本的，自定义Proxy Group里面的Auto组别中的ProxyHeader请手动更改为Proxy Header（有空格），否则Auto会自动选择全部节点 **
+** 更新了1.5.9版本的，自定义Proxy Group里面的Auto组别中的Proxy Header请手动更改为ProxyHeader（有空格），否则Auto会自动选择全部节点 **
 
 #### 2018.05.02
 
