@@ -259,7 +259,16 @@ function renderUI() {
             },
             events: {
                 tapped: sender => {
-                    $ui.loading(true)
+                    // $ui.loading(true)
+                    $("progressView").hidden = false
+
+                    $ui.animate({
+                        duration: 0.2,
+                        animation: function () {
+                            $("progressView").alpha = 1
+                        }
+                    })
+
                     let pu = {
                         apple: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Apple.conf',
                         direct: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/DIRECT.conf',
@@ -296,9 +305,11 @@ function renderUI() {
                     let hostName = ''
                     let mitm = ''
                     getPrototype().then(res => {
+                        $("progressBar").value = 0.1
                         prototype = res
                         return getAutoRules(pu.apple)
                     }).then(res => {
+                        $("progressBar").value = 0.2
                         rules += '\n' + res
                         if (ads) {
                             return getAutoRules(pu.reject)
@@ -306,18 +317,23 @@ function renderUI() {
                             return Promise.resolve('')
                         }
                     }).then(res => {
+                        $("progressBar").value = 0.3
                         rules += '\n' + res
                         return getAutoRules(pu.proxy)
                     }).then(res => {
+                        $("progressBar").value = 0.4
                         rules += '\n' + res
                         return getAutoRules(pu.direct)
                     }).then(res => {
+                        $("progressBar").value = 0.5
                         rules += '\n' + res
                         return getAutoRules(pu.host)
                     }).then(res => {
+                        $("progressBar").value = 0.6
                         host = res
                         return getAutoRules(pu.urlrewrite)
                     }).then(res => {
+                        $("progressBar").value = 0.7
                         urlRewrite += res
                         if (ads) {
                             return getAutoRules(pu.urlreject)
@@ -325,18 +341,19 @@ function renderUI() {
                             return Promise.resolve('')
                         }
                     }).then(res => {
+                        $("progressBar").value = 0.8
                         urlReject += res
                         return getAutoRules(pu.headerrewrite)
                     }).then(res => {
+                        $("progressBar").value = 0.9
                         headerRewrite = res
                         return getAutoRules(pu.hostname)
                     }).then(res => {
+                        $("progressBar").value = 1
                         hostName = 'hostname = ' + res.split('\n').join(', ')
                         return getAutoRules(pu.mitm)
                     }).then(res => {
                         mitm = res
-
-                        $ui.loading(false)
 
                         prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1')
                         prototype = prototype.replace('# Custom', advanceSettings.customSettings || '')
@@ -357,14 +374,57 @@ function renderUI() {
                             prototype = prototype.replace('# MITM', mitm)
                         }
 
-                        console.log(prototype)
+                        $ui.animate({
+                            duration: 0.3,
+                            animation: function () {
+                                $("progressView").alpha = 0
+                            },
+                            completion: function () {
+                                $("progressView").value = 0
+                                $("progressView").hidden = true
+                            }
+                        })
+
                         $share.sheet([($("fileName").text || 'lhie1') + '.conf', $data({ "string": prototype })])
                     }).catch(() => {
-                        $ui.loading(false)
+                        $("progressView").value = 0
+                        $("progressView").hidden = true
+
                         $ui.alert("无法生成配置文件，可能是规则仓库发生变化或网络出现问题")
                     })
                 }
             }
+        }, {
+            type: "blur",
+            props: {
+                id: "progressView",
+                style: 1,
+                alpha: 0,
+                hidden: true
+            },
+            layout: $layout.fill,
+            views: [{
+                type: "label",
+                props: {
+                    text: "处理中，请稍后",
+                    textColor: $color("black"),
+                },
+                layout: (make, view) => {
+                    make.centerX.equalTo(view.super)
+                    make.centerY.equalTo(view.super).offset(-30)
+                }
+            }, {
+                type: "progress",
+                props: {
+                    id: "progressBar",
+                    value: 0
+                },
+                layout: (make, view) => {
+                    make.width.equalTo(screenWidth * 0.8)
+                    make.center.equalTo(view.super)
+                    make.height.equalTo(3)
+                }
+            }]
         }]
     })
 }
