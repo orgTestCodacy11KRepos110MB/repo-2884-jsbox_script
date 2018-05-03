@@ -196,7 +196,7 @@ function renderUI() {
                     }, {
                         title: { text: 'UDP', bgcolor: defaultColor, textColor: blackColor }
                     }, {
-                        title: { text: 'Action Scheet', bgcolor: defaultColor, textColor: blackColor}
+                        title: { text: 'Action Sheet', bgcolor: defaultColor, textColor: blackColor }
                     }],
                     template: [{
                         type: "label",
@@ -397,7 +397,7 @@ function renderUI() {
 
                         if (isActionSheet) {
                             $share.sheet([($("fileName").text || 'lhie1') + '.conf', $data({ "string": prototype })])
-                        }else{
+                        } else {
                             let fn = ($("fileName").text || 'lhie1') + '.conf'
                             if (!$file.exists("confs")) {
                                 $file.mkdir("confs")
@@ -406,24 +406,38 @@ function renderUI() {
                                 data: $data({ "string": prototype }),
                                 path: `confs/${fn}`
                             })
-                            $http.startServer({
-                                handler: res => {
-                                    console.log(encodeURI(fn))
-                                    fn = encodeURI(fn)
-                                    let surgeScheme = `surge:///install-config?url=${encodeURIComponent(res.url + "download?path=confs/" + fn)}`
-                                    $app.openURL(surgeScheme)
+
+                            $thread.background({
+                                delay: 0,
+                                handler: function () {
+                                    port: "49308"
+                                    $http.startServer({
+                                        path: "confs/",
+                                        handler: res => {
+                                            $http.get({
+                                                url: res.url + "list?path=" + fn,
+                                                handler: function (resp) {
+                                                    let surgeScheme = `surge:///install-config?url=${encodeURIComponent(res.url + "download?path=" + fn)}`
+                                                    // $ui.alert((res.url + "download?path=" + fn))
+                                                    $app.openURL(surgeScheme)
+                                                }
+                                            })
+
+                                        }
+                                    })
                                 }
                             })
+
                             $app.listen({
                                 resume: () => {
-                                    $http.stopServer()
-                                    $file.delete("confs/"+fn)
+                                    $http.stopServer()                                    
+                                    // $file.delete("confs/"+fn)
                                 }
                             })
                         }
 
-                        
-                        
+
+
                     }).catch(() => {
                         $("progressView").value = 0
                         $("progressView").hidden = true
@@ -691,8 +705,8 @@ function addListener() {
                 let nd = $("usualSettings").data.map(item => {
                     let sd = usualSettingsData.find(i => i.title.text == item.title.text)
                     if (sd) {
-                        item.title.bgcolor = sd.title.bgcolor? tintColor: defaultColor
-                        item.title.textColor = sd.title.textColor? defaultColor: blackColor
+                        item.title.bgcolor = sd.title.bgcolor ? tintColor : defaultColor
+                        item.title.textColor = sd.title.textColor ? defaultColor : blackColor
                     }
                     return item
                 })
