@@ -164,7 +164,7 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(screenHeight - 280)
+                    make.height.equalTo(screenHeight - 330)
                     make.top.equalTo($("serverControl").bottom)
                 },
                 events: {
@@ -181,7 +181,7 @@ function renderUI() {
                 type: "matrix",
                 props: {
                     id: "usualSettings",
-                    columns: 3,
+                    columns: 2,
                     // radius: 5,
                     itemHeight: 40,
                     // bgcolor: $color("#f0f5f5"),
@@ -194,7 +194,9 @@ function renderUI() {
                     }, {
                         title: { text: '自定义MITM', bgcolor: defaultColor, textColor: blackColor }
                     }, {
-                        title: { text: 'TestFlight', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: 'UDP', bgcolor: defaultColor, textColor: blackColor }
+                    }, {
+                        title: { text: 'Action Scheet', bgcolor: defaultColor, textColor: blackColor}
                     }],
                     template: [{
                         type: "label",
@@ -212,7 +214,7 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-10)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(50)
+                    make.height.equalTo(100)
                     make.top.equalTo($("serverEditor").bottom).offset(10)
                 },
                 events: {
@@ -285,6 +287,7 @@ function renderUI() {
                     let ads = cu.isEqual($("usualSettings").data[0].title.bgcolor, tintColor)
                     let isMitm = cu.isEqual($("usualSettings").data[1].title.bgcolor, tintColor)
                     let isTF = cu.isEqual($("usualSettings").data[2].title.bgcolor, tintColor)
+                    let isActionSheet = cu.isEqual($("usualSettings").data[3].title.bgcolor, tintColor)
 
                     console.log([ads, isTF, isMitm])
 
@@ -392,7 +395,35 @@ function renderUI() {
                             }
                         })
 
-                        $share.sheet([($("fileName").text || 'lhie1') + '.conf', $data({ "string": prototype })])
+                        if (isActionSheet) {
+                            $share.sheet([($("fileName").text || 'lhie1') + '.conf', $data({ "string": prototype })])
+                        }else{
+                            let fn = ($("fileName").text || 'lhie1') + '.conf'
+                            if (!$file.exists("confs")) {
+                                $file.mkdir("confs")
+                            }
+                            $file.write({
+                                data: $data({ "string": prototype }),
+                                path: `confs/${fn}`
+                            })
+                            $http.startServer({
+                                handler: res => {
+                                    console.log(encodeURI(fn))
+                                    fn = encodeURI(fn)
+                                    let surgeScheme = `surge:///install-config?url=${encodeURIComponent(res.url + "download?path=confs/" + fn)}`
+                                    $app.openURL(surgeScheme)
+                                }
+                            })
+                            $app.listen({
+                                resume: () => {
+                                    $http.stopServer()
+                                    $file.delete("confs/"+fn)
+                                }
+                            })
+                        }
+
+                        
+                        
                     }).catch(() => {
                         $("progressView").value = 0
                         $("progressView").hidden = true
@@ -523,9 +554,6 @@ function linkHandler(url, params) {
 function saveURL(url, name) {
     let settings = JSON.parse($file.read(FILE).string)
     let urls = settings.urls
-    // if (urls.indexOf(url) >= 0) {
-    //     urls.splice(urls.indexOf(url), 1)
-    // }
     let idx = -1
     urls.forEach((item, i) => {
         if (item == url || item.url == url) {
@@ -659,15 +687,17 @@ function addListener() {
                     i.proxyName.bgcolor = i.proxyName.bgcolor ? selectedColor : defaultColor
                     return i
                 })
-                $("usualSettings").data = workspace.usualData.map(i => {
-                    i.title.bgcolor = i.title.bgcolor ? tintColor : defaultColor
-                    i.title.textColor = i.title.textColor ? defaultColor : blackColor
-                    return i
+                let usualSettingsData = workspace.usualData
+                let nd = $("usualSettings").data.map(item => {
+                    let sd = usualSettingsData.find(i => i.title.text == item.title.text)
+                    if (sd) {
+                        item.title.bgcolor = sd.title.bgcolor? tintColor: defaultColor
+                        item.title.textColor = sd.title.textColor? defaultColor: blackColor
+                    }
+                    return item
                 })
+                $("usualSettings").data = nd
             }
-        },
-        exit: function () {
-
         }
     })
 }

@@ -1,6 +1,12 @@
 ** 更新了1.5.9版本的，自定义Proxy Group里面的Auto组别中的Proxy Header请手动更改为ProxyHeader（有空格），否则Auto会自动选择全部节点 **
 
 #### 2018.05.02
+1. 增加直接导出到Surge功能，但有限制，进入Surge后不要等待过长时间确定安装
+2. 更改TestFlight选项名为UDP
+
+ 感谢**Nicked**的咖啡
+
+#### 2018.05.02
 
 1. 增加批量导入ss节点（剪贴板）
 2. 增加批量导入Surge节点（剪贴板）
