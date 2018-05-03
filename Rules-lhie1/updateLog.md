@@ -3,7 +3,7 @@
 2. 更改TestFlight选项名为UDP
 3. 尝试突破Surge加载问题
 
- 感谢**Nicked**的咖啡
+ 感谢**Nicked、Mornwind**的咖啡
 
 #### 2018.05.02
 
