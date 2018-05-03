@@ -406,38 +406,26 @@ function renderUI() {
                                 data: $data({ "string": prototype }),
                                 path: `confs/${fn}`
                             })
-
-                            $thread.background({
-                                delay: 0,
-                                handler: function () {
-                                    port: "49308"
-                                    $http.startServer({
-                                        path: "confs/",
-                                        handler: res => {
-                                            $http.get({
-                                                url: res.url + "list?path=" + fn,
-                                                handler: function (resp) {
-                                                    let surgeScheme = `surge:///install-config?url=${encodeURIComponent(res.url + "download?path=" + fn)}`
-                                                    // $ui.alert((res.url + "download?path=" + fn))
-                                                    $app.openURL(surgeScheme)
-                                                }
-                                            })
-
+                            $http.startServer({
+                                path: "confs/",
+                                handler: res => {
+                                    let serverUrl = `http://127.0.0.1:${res.port}/`
+                                    $http.get({
+                                        url: serverUrl + "list?path=" + fn,
+                                        handler: function (resp) {
+                                            let surgeScheme = `surge:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fn)}`
+                                            // $ui.alert((res.url + "download?path=" + fn))
+                                            $app.openURL(surgeScheme)
                                         }
                                     })
                                 }
                             })
-
                             $app.listen({
                                 resume: () => {
-                                    $http.stopServer()                                    
-                                    // $file.delete("confs/"+fn)
+                                    $http.stopServer()
                                 }
                             })
                         }
-
-
-
                     }).catch(() => {
                         $("progressView").value = 0
                         $("progressView").hidden = true
