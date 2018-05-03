@@ -2,6 +2,7 @@
 1. 增加直接导出到Surge功能，但有限制，进入Surge后不要等待过长时间确定安装
 2. 更改TestFlight选项名为UDP
 3. 尝试突破Surge加载问题
+4. 修复托管direct多余问题
 
  感谢**Nicked、Mornwind**的咖啡
 

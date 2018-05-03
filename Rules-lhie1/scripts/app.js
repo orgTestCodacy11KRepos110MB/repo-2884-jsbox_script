@@ -77,6 +77,9 @@ function renderUI() {
                                 }
                                 let listData = $("serverEditor").data || []
                                 for (let idx in res) {
+                                    if (res[idx].split("=")[1].trim() == 'direct') {
+                                        continue
+                                    }
                                     listData.push({
                                         proxyName: { text: res[idx].split('=')[0].trim(), bgcolor: defaultColor },
                                         proxyLink: res[idx]
