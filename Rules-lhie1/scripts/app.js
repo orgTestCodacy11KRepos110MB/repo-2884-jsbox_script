@@ -39,7 +39,7 @@ function renderUI() {
                 willEndDragging: (sender, velocity) => {
                     let vy = velocity.runtimeValue().invoke("CGPointValue").y
                     $("serverEditor").updateLayout((make, view) => {
-                        make.height.equalTo(screenHeight - (vy >= 0 ? 380: 330))
+                        make.height.equalTo(screenHeight - (vy >= 0 ? 380 : 330))
                     })
                 }
             },
@@ -151,10 +151,31 @@ function renderUI() {
                 props: {
                     id: "serverEditor",
                     data: [],
+                    reorder: true,
                     actions: [{
                         title: "delete",
                         handler: (sender, indexPath) => {
                             saveWorkspace()
+                        }
+                    }, {
+                        title: "重命名",
+                        handler: (sender, indexPath) => {
+                            let titleText = sender.object(indexPath).proxyName.text
+                            $input.text({
+                                type: $kbType.default,
+                                placeholder: "请输入节点名",
+                                text: titleText == '无节点名称' ? "" : titleText,
+                                handler: function (text) {
+                                    let od = $("serverEditor").data
+                                    od[indexPath.row].proxyName.text = text
+                                    let proxyURLNoName = od[indexPath.row].proxyLink.split("=")
+                                    proxyURLNoName.shift()
+                                    od[indexPath.row].proxyLink = `${text} =${proxyURLNoName.join("=")}`
+                                    console.log(od[indexPath.row])                                    
+                                    $("serverEditor").data = od
+                                    saveWorkspace()
+                                }
+                            })
                         }
                     }],
                     borderWidth: 2,
@@ -185,6 +206,10 @@ function renderUI() {
                         let uiData = $("serverEditor").data
                         uiData[indexPath.row] = data
                         $("serverEditor").data = uiData
+                        saveWorkspace()
+                    },
+                    reorderFinished: data => {
+                        $("serverEditor").data = data
                         saveWorkspace()
                     }
                 }
@@ -509,7 +534,7 @@ function getAutoRules(url) {
 }
 
 function importMenu(params) {
-    let staticItems = ['剪贴板', '相机扫码']
+    let staticItems = ['剪贴板', '二维码']
     let savedURLS = JSON.parse($file.read(FILE).string).urls
     console.log(savedURLS)
     for (let i = 0; i < savedURLS.length && i < 3; i++) {
