@@ -3,12 +3,16 @@ const su = require('scripts/sizeUtil')
 const cu = require('scripts/colorUtil')
 const FILE = 'data.js'
 
+const settingKeys = ['generalSettings', 'proxyGroupSettings', 'customSettings', 'mitmSettings']
+
 if (!$file.exists(FILE)) {
     $file.write({
         data: $data({ "string": JSON.stringify({ "urls": [] }) }),
         path: FILE
     })
 }
+
+setDefaultSettings()
 
 let screenHeight = $device.info.screen.height
 const screenWidth = $device.info.screen.width
@@ -171,7 +175,7 @@ function renderUI() {
                                     let proxyURLNoName = od[indexPath.row].proxyLink.split("=")
                                     proxyURLNoName.shift()
                                     od[indexPath.row].proxyLink = `${text} =${proxyURLNoName.join("=")}`
-                                    console.log(od[indexPath.row])                                    
+                                    console.log(od[indexPath.row])
                                     $("serverEditor").data = od
                                     saveWorkspace()
                                 }
@@ -228,7 +232,7 @@ function renderUI() {
                     data: [{
                         title: { text: '去广告', bgcolor: defaultColor, textColor: blackColor }
                     }, {
-                        title: { text: '自定义MITM', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: '开启MITM', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: 'UDP', bgcolor: defaultColor, textColor: blackColor }
                     }, {
@@ -391,24 +395,24 @@ function renderUI() {
                     }).then(res => {
                         $("progressBar").value = 1
                         hostName = 'hostname = ' + res.split('\n').join(', ')
-                        return getAutoRules(pu.mitm)
-                    }).then(res => {
-                        mitm = res
 
                         if (advanceSettings.proxyGroupSettings) {
                             prototype = prototype.replace(/\[Proxy Group\][\s\S]+\[Rule\]/, advanceSettings.proxyGroupSettings + '\n\n[Rule]')
                         }
 
+                        if (advanceSettings.generalSettings) {
+                            prototype = prototype.replace(/\[General\][\s\S]+\[Proxy\]/, advanceSettings.generalSettings + '\n\n[Proxy]')
+                        }
+
                         console.log(proxyHeaders)
                         console.log(prototype)
 
-                        prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1')
-                        prototype = prototype.replace('# Custom', advanceSettings.customSettings || '')
+                        // prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1')
+                        prototype = prototype.replace('# Custom', advanceSettings.customSettings)
                         prototype = prototype.replace('Proxys', proxies)
                         prototype = prototype.split('Proxy Header').join(proxyHeaders)
                         prototype = prototype.replace('ProxyHeader', autoGroup)
                         prototype = prototype.replace('# All Rules', rules)
-                        // prototype = prototype.replace('// TestFlight', testFlight)
                         prototype = prototype.replace('# Host', host)
                         prototype = prototype.replace('# URL Rewrite', urlRewrite)
                         prototype = prototype.replace('# URL REJECT', urlReject)
@@ -416,9 +420,9 @@ function renderUI() {
                         prototype = prototype.replace('// Hostname', hostName)
 
                         if (isMitm) {
-                            prototype = prototype.replace('# MITM', advanceSettings.mitmSettings || '# MITM')
+                            prototype = prototype.replace('# MITM', advanceSettings.mitmSettings)
                         } else {
-                            prototype = prototype.replace('# MITM', mitm)
+                            prototype = prototype.replace('# MITM', "")
                         }
 
                         $ui.animate({
@@ -628,93 +632,116 @@ function write2file(key, value) {
 
 function renderAdvanceUI() {
     let previewData = JSON.parse($file.read(FILE).string)
+    let inputViewData = []
+    for (let idx in settingKeys) {
+        let content = previewData[settingKeys[idx]]
+        inputViewData.push({
+            type: "text",
+            props: {
+                text: content,
+                bgcolor: $color("#f0f5f5"),
+                font: $font(14)
+            },
+            events: {
+                didEndEditing: sender => {
+                    let content = sender.text
+                    if (sender.text == '') {
+                        content = $file.read('defaultConf/' + settingKeys[idx]).string
+                        sender.text = content
+                    }
+                    write2file(settingKeys[idx], content)
+                }
+            }
+        })
+    }
     $ui.push({
+        type:"scroll",
         props: {
             title: "进阶设置"
         },
         views: [{
-            type: "scroll",
+            type: "gallery",
             props: {
-                id: "advanceMainView"
+                id: "inputViews",
+                items: inputViewData,
+                interval: 0
             },
-            layout: $layout.fill,
-            views: [{
-                type: "text",
-                props: {
-                    id: "dnsSettings",
-                    bgcolor: $color("#f0f5f5"),
-                    radius: 5,
-                    text: previewData.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1'
-                },
-                layout: (make, view) => {
-                    make.top.equalTo(10)
-                    make.centerX.equalTo(view.super)
-                    make.height.equalTo(80)
-                    make.width.equalTo(view.super).offset(-20)
-                },
-                events: {
-                    didEndEditing: sender => {
-                        write2file("dnsSettings", $("dnsSettings").text)
-                    }
+            layout: (make, view) => {
+                make.height.equalTo(view.super).dividedBy(2)
+                make.width.equalTo(view.super)
+            }
+        }, {
+            type: "matrix",
+            props: {
+                columns: 2,
+                id: "settingsControl",
+                itemHeight: 40,
+                bgcolor: $color("#ffffff"),
+                spacing: 5,
+                data: [{
+                    title: { text: 'General', bgcolor: $color("#cc6666"), radius: 5, color: $color("#ffffff") }
+                }, {
+                    title: { text: 'Proxy Group', bgcolor: $color("#cc6666"), radius: 5, color: $color("#ffffff")  }
+                }, {
+                    title: { text: 'Custom Rule', bgcolor: $color("#cc6666"), radius: 5, color: $color("#ffffff")  }
+                }, {
+                    title: { text: 'MITM', bgcolor: $color("#cc6666"), radius: 5, color: $color("#ffffff")  }
+                }],
+                template: [{
+                    type: "label",
+                    props: {
+                        id: "title",
+                        align: $align.center
+                    },
+                    layout: $layout.fill
+                }]
+            },
+            layout: (make, view) => {
+                make.height.equalTo(100)
+                make.centerX.equalTo(view.super)
+                make.width.equalTo(view.super).offset(-30)
+                make.top.equalTo(view.prev.bottom).offset(10)
+            },
+            events: {
+                didSelect: (sender, indexPath, data) => {
+                    let idx = indexPath.row
+                    $("inputViews").page = idx
                 }
-            }, {
-                type: "text",
-                props: {
-                    id: "proxyGroupSettings",
-                    bgcolor: $color("#f0f5f5"),
-                    radius: 5,
-                    text: previewData.proxyGroupSettings || "[Proxy Group]\n🍃 Proxy = select,🏃 Auto,🚀 Direct,Proxy Header\n\n🍂 Domestic = select,🚀 Direct,🍃 Proxy\n\n🍎 Only = select,🚀 Direct,Proxy Header\n\n☁️ Others =  select,🚀 Direct,🍃 Proxy\n\n🏃 Auto = url-test,ProxyHeader,url = http://www.gstatic.com/generate_204,interval = 1200"
-                },
-                layout: (make, view) => {
-                    make.top.equalTo($("dnsSettings").bottom).offset(10)
-                    make.centerX.equalTo(view.super)
-                    make.height.equalTo(300)
-                    make.width.equalTo(view.super).offset(-20)
-                },
-                events: {
-                    didEndEditing: sender => {
-                        write2file("proxyGroupSettings", $("proxyGroupSettings").text)
-                    }
+            }
+        }, {
+            type: "label",
+            props: {
+                text: "上述设置如果出错，清空保存一次即可恢复",
+                font: $font(12),
+                textColor: $color("#595959"),
+                align: $align.center
+            },
+            layout: (make, view) => {
+                make.top.equalTo(view.prev.bottom).offset(00)
+                make.width.equalTo(view.super)
+                make.height.equalTo(30)
+                make.centerX.equalTo(view.super)
+            }
+        },{
+            type: "button",
+            props: {
+                title: "赏杯咖啡以示鼓励",
+                bgcolor: $color("#e6b800")
+            },
+            layout: (make, view) => {
+                make.top.equalTo(view.prev.bottom).offset(20)
+                make.width.equalTo(view.super).offset(-20)
+                make.centerX.equalTo(view.super)
+                make.height.equalTo(40)
+            },
+            events: {
+                tapped: sender => {
+                    $quicklook.open({
+                        type: "jpg",
+                        list: [$file.read("assets/thankyou2.jpg"), $file.read("assets/thankyou.jpg")]
+                    })
                 }
-            }, {
-                type: "text",
-                props: {
-                    id: "customSettings",
-                    bgcolor: $color("#f0f5f5"),
-                    radius: 5,
-                    text: previewData.customSettings || '# Custom'
-                },
-                layout: (make, view) => {
-                    make.top.equalTo($("proxyGroupSettings").bottom).offset(10)
-                    make.centerX.equalTo(view.super)
-                    make.height.equalTo(300)
-                    make.width.equalTo(view.super).offset(-20)
-                },
-                events: {
-                    didEndEditing: sender => {
-                        write2file("customSettings", $("customSettings").text)
-                    }
-                }
-            }, {
-                type: "text",
-                props: {
-                    id: "mitmSettings",
-                    bgcolor: $color("#f0f5f5"),
-                    radius: 5,
-                    text: previewData.mitmSettings || '# MITM'
-                },
-                layout: (make, view) => {
-                    make.top.equalTo($("customSettings").bottom).offset(10)
-                    make.centerX.equalTo(view.super)
-                    make.height.equalTo(300)
-                    make.width.equalTo(view.super).offset(-20)
-                },
-                events: {
-                    didEndEditing: sender => {
-                        write2file("mitmSettings", $("mitmSettings").text)
-                    }
-                }
-            }]
+            }
         }]
     })
 }
@@ -768,6 +795,20 @@ function saveWorkspace() {
     })
 }
 
+
+function setDefaultSettings() {
+    let previewData = JSON.parse($file.read(FILE).string)
+    for (let idx in settingKeys) {
+        if (!(settingKeys[idx] in previewData) || previewData[settingKeys[idx]] == "") {
+            let defaultValue = $file.read(`defaultConf/${settingKeys[idx]}`).string
+            previewData[settingKeys[idx]] = defaultValue
+        }
+    }
+    $file.write({
+        data: $data({ "string": JSON.stringify(previewData) }),
+        path: FILE
+    })
+}
 
 module.exports = {
     renderUI: renderUI,
