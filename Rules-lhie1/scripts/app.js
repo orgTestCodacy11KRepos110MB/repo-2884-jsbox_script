@@ -975,10 +975,10 @@ function autoGen() {
                     let fn = (workspace.fileName || 'lhie1') + '.conf'
                     let fnReg = /^[\x21-\x2A\x2C-\x2E\x30-\x3B\x3D\x3F-\x5B\x5D\x5F\x61-\x7B\x7D-\x7E]+$/
 
-                    // $share.sheet([fn, $data({ "string": prototype })])                                
+                                                 
 
                     if (isActionSheet || !fnReg.test(fn)) {
-                        $ui.alert("文件名不合法")
+                        $share.sheet([fn, $data({ "string": prototype })])
                     } else {
                         if (!$file.exists("confs")) {
                             $file.mkdir("confs")
