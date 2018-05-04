@@ -35,6 +35,14 @@ function renderUI() {
                 id: "mainView"
             },
             layout: $layout.fill,
+            events: {
+                willEndDragging: (sender, velocity) => {
+                    let vy = velocity.runtimeValue().invoke("CGPointValue").y
+                    $("serverEditor").updateLayout((make, view) => {
+                        make.height.equalTo(screenHeight - (vy >= 0 ? 380: 330))
+                    })
+                }
+            },
             views: [{
                 type: "input",
                 props: {
@@ -199,7 +207,7 @@ function renderUI() {
                     }, {
                         title: { text: 'UDP', bgcolor: defaultColor, textColor: blackColor }
                     }, {
-                        title: { text: 'Action Sheet', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: '分享配置', bgcolor: defaultColor, textColor: blackColor }
                     }],
                     template: [{
                         type: "label",
@@ -235,10 +243,11 @@ function renderUI() {
             type: "button",
             props: {
                 id: "advanceBtn",
-                title: "进阶设置"
+                title: "进阶设置",
+                bgcolor: $color("#808080")
             },
             layout: (make, view) => {
-                make.width.equalTo(screenWidth * 0.4 - 15)
+                make.width.equalTo(screenWidth * 0.314 - 15)
                 // make.centerX.equalTo(view.super)
                 make.left.equalTo(10)
                 make.height.equalTo(40)
@@ -256,7 +265,7 @@ function renderUI() {
                 title: "拉取规则生成配置"
             },
             layout: (make, view) => {
-                make.width.equalTo(screenWidth * 0.6 - 15)
+                make.width.equalTo(screenWidth * 0.686 - 15)
                 // make.centerX.equalTo(view.super)
                 make.height.equalTo(40)
                 make.left.equalTo($("advanceBtn").right).offset(10)
@@ -398,10 +407,12 @@ function renderUI() {
                             }
                         })
 
-                        if (isActionSheet) {
-                            $share.sheet([($("fileName").text || 'lhie1') + '.conf', $data({ "string": prototype })])
+                        let fn = ($("fileName").text || 'lhie1') + '.conf'
+                        let fnReg = /^[\x21-\x2A\x2C-\x2E\x30-\x3B\x3D\x3F-\x5B\x5D\x5F\x61-\x7B\x7D-\x7E]+$/
+
+                        if (isActionSheet || !fnReg.test(fn)) {
+                            $share.sheet([fn, $data({ "string": prototype })])
                         } else {
-                            let fn = ($("fileName").text || 'lhie1') + '.conf'
                             if (!$file.exists("confs")) {
                                 $file.mkdir("confs")
                             }
@@ -411,6 +422,9 @@ function renderUI() {
                             })
                             $http.startServer({
                                 path: "confs/",
+                                header: {
+                                    "Content-Disposition": "inline"
+                                },
                                 handler: res => {
                                     let serverUrl = `http://127.0.0.1:${res.port}/`
                                     $http.get({
