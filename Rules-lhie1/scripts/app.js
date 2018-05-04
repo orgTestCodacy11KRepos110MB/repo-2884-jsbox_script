@@ -654,8 +654,16 @@ function renderAdvanceUI() {
             }
         })
     }
+    let genControlBnts = function(idx) {
+        let titleTexts = ['General', 'Proxy Group', 'Custom Rule', 'MITM']
+        return titleTexts.map((item, i) => {
+            return {
+                title: { text: item, bgcolor: i == idx? $color("#ffcc66"): $color("#cc6666"), radius: 5, color: i == idx? $color("#595959"): $color("#ffffff") }
+            }
+        })
+    }
     $ui.push({
-        type:"scroll",
+        type: "scroll",
         props: {
             title: "进阶设置"
         },
@@ -678,15 +686,7 @@ function renderAdvanceUI() {
                 itemHeight: 40,
                 bgcolor: $color("#ffffff"),
                 spacing: 5,
-                data: [{
-                    title: { text: 'General', bgcolor: $color("#cc6666"), radius: 5, color: $color("#ffffff") }
-                }, {
-                    title: { text: 'Proxy Group', bgcolor: $color("#cc6666"), radius: 5, color: $color("#ffffff")  }
-                }, {
-                    title: { text: 'Custom Rule', bgcolor: $color("#cc6666"), radius: 5, color: $color("#ffffff")  }
-                }, {
-                    title: { text: 'MITM', bgcolor: $color("#cc6666"), radius: 5, color: $color("#ffffff")  }
-                }],
+                data: genControlBnts(0),
                 template: [{
                     type: "label",
                     props: {
@@ -705,6 +705,7 @@ function renderAdvanceUI() {
             events: {
                 didSelect: (sender, indexPath, data) => {
                     let idx = indexPath.row
+                    $("settingsControl").data = genControlBnts(idx)
                     $("inputViews").page = idx
                 }
             }
@@ -722,7 +723,7 @@ function renderAdvanceUI() {
                 make.height.equalTo(30)
                 make.centerX.equalTo(view.super)
             }
-        },{
+        }, {
             type: "button",
             props: {
                 title: "赏杯咖啡以示鼓励",

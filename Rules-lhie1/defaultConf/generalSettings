@@ -1,7 +1,7 @@
 [General]
 // Auto
 loglevel = notify
-dns-server = system
+dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1
 skip-proxy = 127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,100.64.0.0/10,17.0.0.0/8,localhost,*.local,*.crashlytics.com
 
 // iOS
@@ -25,4 +25,5 @@ replica = false
 [Replica]
 hide-apple-request = true
 hide-crashlytics-request = true
+hide-udp = false
 use-keyword-filter = false
