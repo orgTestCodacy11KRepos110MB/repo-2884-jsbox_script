@@ -457,11 +457,14 @@ function renderUI() {
                                 handler: res => {
                                     let serverUrl = `http://127.0.0.1:${res.port}/`
                                     $http.get({
-                                        url: serverUrl + "list?path=" + fn,
+                                        url: serverUrl + "list?path=",
                                         handler: function (resp) {
-                                            let surgeScheme = `surge:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fn)}`
-                                            // $ui.alert((res.url + "download?path=" + fn))
-                                            $app.openURL(surgeScheme)
+                                            if (resp.response.statusCode == 200) {
+                                                let surgeScheme = `surge3:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fn)}`
+                                                $app.openURL(surgeScheme)
+                                            } else {
+                                                $ui.alert("内置服务器启动失败，请重试")
+                                            }
                                         }
                                     })
                                 }
@@ -654,11 +657,11 @@ function renderAdvanceUI() {
             }
         })
     }
-    let genControlBnts = function(idx) {
+    let genControlBnts = function (idx) {
         let titleTexts = ['General', 'Proxy Group', 'Custom Rule', 'MITM']
         return titleTexts.map((item, i) => {
             return {
-                title: { text: item, bgcolor: i == idx? $color("#ffcc66"): $color("#cc6666"), radius: 5, color: i == idx? $color("#595959"): $color("#ffffff") }
+                title: { text: item, bgcolor: i == idx ? $color("#ffcc66") : $color("#cc6666"), radius: 5, color: i == idx ? $color("#595959") : $color("#ffffff") }
             }
         })
     }
@@ -811,7 +814,213 @@ function setDefaultSettings() {
     })
 }
 
+function autoGen() {
+    let settings = JSON.parse($file.read(FILE).string)
+    console.log(settings)
+    $ui.render({
+        props: {
+            title: ""
+        },
+        layout: $layout.fill,
+        views: [{
+            type: "blur",
+            props: {
+                id: "progressView",
+                style: 1
+            },
+            layout: $layout.fill,
+            views: [{
+                type: "label",
+                props: {
+                    text: "处理中，请稍后",
+                    textColor: $color("black"),
+                },
+                layout: (make, view) => {
+                    make.centerX.equalTo(view.super)
+                    make.centerY.equalTo(view.super).offset(-30)
+                }
+            }, {
+                type: "progress",
+                props: {
+                    id: "progressBar",
+                    value: 0
+                },
+                layout: (make, view) => {
+                    make.width.equalTo(screenWidth * 0.8)
+                    make.center.equalTo(view.super)
+                    make.height.equalTo(3)
+                }
+            }]
+        }]
+    })
+    $app.listen({
+        ready: function() {
+            try {
+                let pu = {
+                    apple: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Apple.conf',
+                    direct: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/DIRECT.conf',
+                    proxy: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/PROXY.conf',
+                    reject: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/REJECT.conf',
+                    testflight: 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge/TestFlight.conf',
+                    host: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/HOST.conf',
+                    urlrewrite: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/URL%20Rewrite.conf',
+                    urlreject: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/URL%20REJECT.conf',
+                    headerrewrite: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Header%20Rewrite.conf',
+                    hostname: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Hostname.conf',
+                    mitm: 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge/MITM.conf'
+                }
+                let advanceSettings = JSON.parse($file.read(FILE).string)
+                let workspace = advanceSettings.workspace
+                let usualData = workspace.usualData
+                let ads = usualData.find(i => i.title.text == '去广告').title.bgcolor
+                let isMitm = usualData.find(i => i.title.text == '开启MITM').title.bgcolor
+                let isTF = usualData.find(i => i.title.text == 'UDP').title.bgcolor
+                let isActionSheet = usualData.find(i => i.title.text == '分享配置').title.bgcolor
+
+                console.log([ads, isTF, isMitm, isActionSheet])
+
+                let serverEditorData = workspace.serverData
+
+                let autoGroup = serverEditorData.filter(i => i.proxyName.bgcolor).map(i => i.proxyName.text).join(',') || 'DIRECT'
+                console.log(autoGroup)
+                let proxies = serverEditorData.map(i => {
+                    return i.proxyLink + (isTF ? ',udp-relay=true' : '')
+                }).join('\n')
+                let proxyHeaders = serverEditorData.map(i => i.proxyName.text).join(', ')
+
+                console.log([autoGroup, proxies, proxyHeaders])
+                let rules = ''
+                let prototype = ''
+                let testFlight = ''
+                let host = ''
+                let urlRewrite = ''
+                let urlReject = ''
+                let headerRewrite = ''
+                let hostName = ''
+                let mitm = ''
+                getPrototype().then(res => {
+                    $("progressBar").value = 0.1
+                    prototype = res
+                    return getAutoRules(pu.apple)
+                }).then(res => {
+                    $("progressBar").value = 0.2
+                    rules += '\n' + res
+                    if (ads) {
+                        return getAutoRules(pu.reject)
+                    } else {
+                        return Promise.resolve('')
+                    }
+                }).then(res => {
+                    $("progressBar").value = 0.3
+                    rules += '\n' + res.split("REJECT").join("REJECT-TINYGIF")
+                    return getAutoRules(pu.proxy)
+                }).then(res => {
+                    $("progressBar").value = 0.4
+                    rules += '\n' + res
+                    return getAutoRules(pu.direct)
+                }).then(res => {
+                    $("progressBar").value = 0.5
+                    rules += '\n' + res
+                    return getAutoRules(pu.host)
+                }).then(res => {
+                    $("progressBar").value = 0.6
+                    host = res
+                    return getAutoRules(pu.urlrewrite)
+                }).then(res => {
+                    $("progressBar").value = 0.7
+                    urlRewrite += res
+                    if (ads) {
+                        return getAutoRules(pu.urlreject)
+                    } else {
+                        return Promise.resolve('')
+                    }
+                }).then(res => {
+                    $("progressBar").value = 0.8
+                    urlReject += res
+                    return getAutoRules(pu.headerrewrite)
+                }).then(res => {
+                    $("progressBar").value = 0.9
+                    headerRewrite = res
+                    return getAutoRules(pu.hostname)
+                }).then(res => {
+                    $("progressBar").value = 1
+                    hostName = 'hostname = ' + res.split('\n').join(', ')
+
+                    if (advanceSettings.proxyGroupSettings) {
+                        prototype = prototype.replace(/\[Proxy Group\][\s\S]+\[Rule\]/, advanceSettings.proxyGroupSettings + '\n\n[Rule]')
+                    }
+
+                    if (advanceSettings.generalSettings) {
+                        prototype = prototype.replace(/\[General\][\s\S]+\[Proxy\]/, advanceSettings.generalSettings + '\n\n[Proxy]')
+                    }
+
+                    // prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1')
+                    prototype = prototype.replace('# Custom', advanceSettings.customSettings)
+                    prototype = prototype.replace('Proxys', proxies)
+                    prototype = prototype.split('Proxy Header').join(proxyHeaders)
+                    prototype = prototype.replace('ProxyHeader', autoGroup)
+                    prototype = prototype.replace('# All Rules', rules)
+                    prototype = prototype.replace('# Host', host)
+                    prototype = prototype.replace('# URL Rewrite', urlRewrite)
+                    prototype = prototype.replace('# URL REJECT', urlReject)
+                    prototype = prototype.replace('# Header Rewrite', headerRewrite)
+                    prototype = prototype.replace('// Hostname', hostName)
+
+                    if (isMitm) {
+                        prototype = prototype.replace('# MITM', advanceSettings.mitmSettings)
+                    } else {
+                        prototype = prototype.replace('# MITM', "")
+                    }
+
+                    let fn = (workspace.fileName || 'lhie1') + '.conf'
+                    let fnReg = /^[\x21-\x2A\x2C-\x2E\x30-\x3B\x3D\x3F-\x5B\x5D\x5F\x61-\x7B\x7D-\x7E]+$/
+
+                    // $share.sheet([fn, $data({ "string": prototype })])                                
+
+                    if (isActionSheet || !fnReg.test(fn)) {
+                        $ui.alert("文件名不合法")
+                    } else {
+                        if (!$file.exists("confs")) {
+                            $file.mkdir("confs")
+                        }
+                        $file.write({
+                            data: $data({ "string": prototype }),
+                            path: `confs/${fn}`
+                        })
+                        $http.startServer({
+                            path: "confs/",
+                            handler: res => {
+                                let serverUrl = `http://127.0.0.1:${res.port}/`
+                                console.log(serverUrl)
+                                $http.get({
+                                    url: serverUrl + "list?path=",
+                                    handler: function (resp) {
+                                        if (resp.response.statusCode == 200) {
+                                            $delay(0.3, function () {
+                                                let surgeScheme = `surge3:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fn)}`
+                                                $app.openURL(surgeScheme)
+                                            })
+                                        } else {
+                                            $ui.alert("内置服务器启动失败，请重试")
+                                        }
+                                    }
+                                })
+                            }
+                        })
+                    }
+                })
+            } catch (e) {
+
+            }
+        },
+        exit: function() {
+            
+        }
+    })
+}
+
 module.exports = {
     renderUI: renderUI,
-    addListener: addListener
+    addListener: addListener,
+    autoGen: autoGen
 }

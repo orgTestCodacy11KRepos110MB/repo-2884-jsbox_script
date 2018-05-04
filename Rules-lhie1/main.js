@@ -5,6 +5,13 @@ $app.autoKeyboardEnabled = true
 $app.rotateDisabled = true
 $app.keyboardToolbarEnabled = true
 
+let query = $context.query
+
+if (query.auto == 1) {
+    app.autoGen()
+    return 
+}
+
 if ($app.env != $env.app) {
     $app.openURL("jsbox://run?name=" + encodeURI($addin.current.name))
     return
