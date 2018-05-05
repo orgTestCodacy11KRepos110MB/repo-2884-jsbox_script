@@ -1,4 +1,5 @@
 const proxyUtil = require('scripts/proxyUitl')
+const updateUtil = require('scripts/updateUtil')
 const su = require('scripts/sizeUtil')
 const cu = require('scripts/colorUtil')
 const FILE = 'data.js'
@@ -276,7 +277,7 @@ function renderUI() {
                 bgcolor: $color("#808080")
             },
             layout: (make, view) => {
-                make.width.equalTo(screenWidth * 0.314 - 15)
+                make.width.equalTo((screenWidth / 2 - 15) * 0.686 - 10)
                 // make.centerX.equalTo(view.super)
                 make.left.equalTo(10)
                 make.height.equalTo(40)
@@ -290,14 +291,32 @@ function renderUI() {
         }, {
             type: "button",
             props: {
-                id: "genBtn",
-                title: "拉取规则生成配置"
+                id: "aboutBtn",
+                title: "关于",
+                bgcolor: $color("#808080")
             },
             layout: (make, view) => {
-                make.width.equalTo(screenWidth * 0.686 - 15)
+                make.height.equalTo(40)
+                make.width.equalTo((screenWidth / 2 - 15) * 0.314 + 5)
+                make.left.equalTo($("advanceBtn").right).offset(5)
+                make.top.equalTo($("usualSettings").bottom).offset(5)
+            },
+            events:{
+                tapped: sender => {
+                    renderAboutUI()
+                }
+            }
+        }, {
+            type: "button",
+            props: {
+                id: "genBtn",
+                title: "生成配置"
+            },
+            layout: (make, view) => {
+                make.width.equalTo((screenWidth - 10) * 0.5 - 5)
                 // make.centerX.equalTo(view.super)
                 make.height.equalTo(40)
-                make.left.equalTo($("advanceBtn").right).offset(10)
+                make.right.equalTo(view.super).offset(-10)
                 make.top.equalTo($("usualSettings").bottom).offset(5)
             },
             events: {
@@ -468,6 +487,7 @@ function renderUI() {
                                         url: serverUrl + "list?path=",
                                         handler: function (resp) {
                                             if (resp.response.statusCode == 200) {
+                                                // $ui.alert(serverUrl)
                                                 let surgeScheme = `surge3:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fn)}`
                                                 $app.openURL(surgeScheme)
                                             } else {
@@ -524,6 +544,7 @@ function renderUI() {
             }]
         }]
     })
+    
 }
 
 function getPrototype() {
@@ -740,35 +761,156 @@ function renderAdvanceUI() {
                 make.height.equalTo(30)
                 make.centerX.equalTo(view.super)
             }
-        }, {
-            type: "button",
-            props: {
-                title: "赏杯咖啡以示鼓励",
-                bgcolor: $color("#e6b800")
-            },
-            layout: (make, view) => {
-                make.top.equalTo(view.prev.bottom).offset(20)
-                make.width.equalTo(view.super).offset(-20)
-                make.centerX.equalTo(view.super)
-                make.height.equalTo(40)
-            },
-            events: {
-                tapped: sender => {
+        }]
+    })
+}
 
-                    $ui.menu({
-                        items: ["支付宝", "微信"],
-                        handler: function (title, idx) {
-                            if (idx == 0) {
-                                $app.openURL($qrcode.decode($file.read("assets/thankyou2.jpg").image))
-                            } else {
-                                $quicklook.open({
-                                    image: $file.read("assets/thankyou.jpg").image
-                                })
-                            }
-                        }
-                    })
+function renderAboutUI() {
+    let previewMD = function(title, filePath) {
+        $ui.push({
+            props: {
+                title: title
+            },
+            views: [{
+                type: "markdown",
+                props: {
+                    id: "",
+                    content: $file.read(filePath).string
+                },
+                layout: $layout.fill
+            }]
+        })
+    }
+
+    $ui.push({
+        props: {
+            title: "关于"
+        },
+        views: [{
+            type: "view",
+            props: {
+                id: "mainAboutView"
+            },
+            layout: $layout.fill,
+            views: [{
+                type: "label",
+                props: {
+                    text: "文档说明",
+                    font: $font(13),
+                    textColor: $color("#505050")
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(view.super).offset(10)
+                    make.height.equalTo(30)
+                    make.left.equalTo(15)
                 }
-            }
+            },{
+                type: "list",
+                props: {
+                    data: ["🗂  脚本简介", "📃  更新日志", "🖥  论坛导航"]
+                },
+                layout: (make, view) => {
+                    make.width.equalTo(view.super)
+                    make.top.equalTo(view.prev.bottom).offset(0)
+                    make.height.equalTo(135)
+                },
+                events: {
+                    didSelect: (sender, indexPath, data) => {
+                        if (indexPath.row == 0) {
+                            previewMD(data, 'docs.md')
+                        } else if (indexPath.row == 1) {
+                            previewMD(data, 'updateLog.md')
+                        } else {
+                            $app.openURL("https://jsboxbbs.com/d/290-lhie1")
+                        }
+                    }
+                }
+            }, {
+                type: "label",
+                props: {
+                    text: "致谢捐献",
+                    font: $font(13),
+                    textColor: $color("#505050")
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(view.prev.bottom).offset(20)
+                    make.height.equalTo(30)
+                    make.left.equalTo(15)
+                }
+            },{
+                type: "list",
+                props: {
+                    data: ["🙏  捐献打赏名单", "👍  赏杯咖啡支持作者"]
+                },
+                layout: (make, view) => {
+                    make.width.equalTo(view.super)
+                    make.top.equalTo(view.prev.bottom).offset(0)
+                    make.height.equalTo(90)
+                },
+                events: {
+                    didSelect: (sender, indexPath, data) => {
+                        if (indexPath.row == 0) {
+                            previewMD(data, 'donate.md')
+                        } else {
+                            $ui.menu({
+                                items: ["支付宝", "微信"],
+                                handler: function (title, idx) {
+                                    if (idx == 0) {
+                                        $app.openURL($qrcode.decode($file.read("assets/thankyou2.jpg").image))
+                                    } else {
+                                        $quicklook.open({
+                                            image: $file.read("assets/thankyou.jpg").image
+                                        })
+                                    }
+                                }
+                            })
+                        }
+                    }
+                }
+            }, {
+                type: "label",
+                props: {
+                    text: "反馈联系",
+                    font: $font(13),
+                    textColor: $color("#505050")
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(view.prev.bottom).offset(20)
+                    make.height.equalTo(30)
+                    make.left.equalTo(15)
+                }
+            },{
+                type: "list",
+                props: {
+                    data: ["📠  Telegram", "💡  GitHub"]
+                },
+                layout: (make, view) => {
+                    make.width.equalTo(view.super)
+                    make.top.equalTo(view.prev.bottom).offset(0)
+                    make.height.equalTo(90)
+                },
+                events: {
+                    didSelect: (sender, indexPath, data) => {
+                        if (indexPath.row == 0) {
+                            $app.openURL("https://t.me/Fndroid")
+                        } else {
+                            $app.openURL("https://github.com/Fndroid/jsbox_script/tree/master/Rules-lhie1")
+                        }
+                    }
+                }
+            }, {
+                type: "label",
+                props: {
+                    text: "版本号：" + updateUtil.getCurVersion(),
+                    font: $font(13),
+                    textColor: $color("#505050")
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(view.prev.bottom).offset(20)
+                    make.height.equalTo(30)
+                    make.centerX.equalTo(view.super)
+                }
+            }]
         }]
     })
 }
