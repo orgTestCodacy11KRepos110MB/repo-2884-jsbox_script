@@ -1,6 +1,7 @@
 #### 2018.05.05
 1. 增加去自定义规则删除（优先级低于添加），写法：
     ![](https://github.com/Fndroid/jsbox_script/blob/master/imgs/Rules-lhie1_pre2.jpg?raw=true)
+2. 修复进阶设置Gallery切换按钮不联动的问题
     
  感谢**Mornwind、几位匿名赞赏者**的咖啡
 

@@ -688,6 +688,12 @@ function renderAdvanceUI() {
             layout: (make, view) => {
                 make.height.equalTo(view.super).dividedBy(2)
                 make.width.equalTo(view.super)
+            },
+            events: {
+                changed: sender => {
+                    let idx = sender.page
+                    $("settingsControl").data = genControlBnts(idx)
+                }
             }
         }, {
             type: "matrix",
