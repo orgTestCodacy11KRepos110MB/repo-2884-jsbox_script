@@ -1,4 +1,8 @@
-> 修复General遗漏问题，可以清空一次恢复默认。
+#### 2018.05.05
+1. 增加去自定义规则删除（优先级低于添加），写法：
+    ![](https://github.com/Fndroid/jsbox_script/blob/master/imgs/Rules-lhie1_pre2.jpg?raw=true)
+    
+ 感谢**Mornwind、几位匿名赞赏者**的咖啡
 
 #### 2018.05.04
 1. 检测文件名，不合法则采用Action Sheet分享

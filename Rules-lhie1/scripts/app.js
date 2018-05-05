@@ -408,7 +408,15 @@ function renderUI() {
                         console.log(prototype)
 
                         // prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1')
-                        prototype = prototype.replace('# Custom', advanceSettings.customSettings)
+                        let customRules = advanceSettings.customSettings
+
+                        let removeRules = customRules.split("\n").filter(i => i.startsWith('-')).map(i => i.replace('-', '').trim())
+                        console.log(removeRules)
+                        for (let i in removeRules) {
+                            rules = rules.replace(removeRules[i] + '\n', '')
+                        }
+
+                        prototype = prototype.replace('# Custom', customRules.split('\n').filter(i => !i.startsWith('-')).join('\n'))
                         prototype = prototype.replace('Proxys', proxies)
                         prototype = prototype.split('Proxy Header').join(proxyHeaders)
                         prototype = prototype.replace('ProxyHeader', autoGroup)
@@ -740,9 +748,18 @@ function renderAdvanceUI() {
             },
             events: {
                 tapped: sender => {
-                    $quicklook.open({
-                        type: "jpg",
-                        list: [$file.read("assets/thankyou2.jpg"), $file.read("assets/thankyou.jpg")]
+
+                    $ui.menu({
+                        items: ["支付宝", "微信"],
+                        handler: function (title, idx) {
+                            if (idx == 0) {
+                                $app.openURL($qrcode.decode($file.read("assets/thankyou2.jpg").image))
+                            } else {
+                                $quicklook.open({
+                                    image: $file.read("assets/thankyou.jpg").image
+                                })
+                            }
+                        }
                     })
                 }
             }
@@ -854,7 +871,7 @@ function autoGen() {
         }]
     })
     $app.listen({
-        ready: function() {
+        ready: function () {
             try {
                 let pu = {
                     apple: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Apple.conf',
@@ -954,8 +971,15 @@ function autoGen() {
                         prototype = prototype.replace(/\[General\][\s\S]+\[Proxy\]/, advanceSettings.generalSettings + '\n\n[Proxy]')
                     }
 
-                    // prototype = prototype.replace('dns-server = system', advanceSettings.dnsSettings || 'dns-server = system,1.2.4.8,80.80.80.80,80.80.81.81,1.1.1.1,1.0.0.1')
-                    prototype = prototype.replace('# Custom', advanceSettings.customSettings)
+                    let customRules = advanceSettings.customSettings
+
+                    let removeRules = customRules.split("\n").filter(i => i.startsWith('-')).map(i => i.replace('-', '').trim())
+                    console.log(removeRules)
+                    for (let i in removeRules) {
+                        rules = rules.replace(removeRules[i] + '\n', '')
+                    }
+
+                    prototype = prototype.replace('# Custom', customRules.split('\n').filter(i => !i.startsWith('-')).join('\n'))
                     prototype = prototype.replace('Proxys', proxies)
                     prototype = prototype.split('Proxy Header').join(proxyHeaders)
                     prototype = prototype.replace('ProxyHeader', autoGroup)
@@ -975,7 +999,7 @@ function autoGen() {
                     let fn = (workspace.fileName || 'lhie1') + '.conf'
                     let fnReg = /^[\x21-\x2A\x2C-\x2E\x30-\x3B\x3D\x3F-\x5B\x5D\x5F\x61-\x7B\x7D-\x7E]+$/
 
-                                                 
+
 
                     if (isActionSheet || !fnReg.test(fn)) {
                         $share.sheet([fn, $data({ "string": prototype })])
@@ -1013,8 +1037,8 @@ function autoGen() {
 
             }
         },
-        exit: function() {
-            
+        exit: function () {
+
         }
     })
 }
