@@ -4,7 +4,7 @@ const su = require('scripts/sizeUtil')
 const cu = require('scripts/colorUtil')
 const FILE = 'data.js'
 
-const settingKeys = ['generalSettings', 'proxyGroupSettings', 'customSettings', 'mitmSettings']
+const settingKeys = ['generalSettings', 'proxyGroupSettings', 'customSettings', 'hostSettings', 'urlrewriteSettings', 'headerrewriteSettings', 'ssidSettings', 'hostnameSettings', 'mitmSettings']
 
 if (!$file.exists(FILE)) {
     $file.write({
@@ -25,7 +25,7 @@ if (iPhoneX) {
 
 const selectedColor = $color("#d1e0e0")
 const defaultColor = $color("#ffffff")
-const tintColor = $color("#ff2d55")
+const tintColor = $color("#ff4d4d")
 const blackColor = $color("#000000")
 
 
@@ -244,7 +244,7 @@ function renderUI() {
                         props: {
                             id: "title",
                             align: $align.center,
-                            font: $font(14),
+                            font: $font(16),
                             radius: 5,
                             borderColor: tintColor,
                             borderWidth: 1,
@@ -530,7 +530,7 @@ function renderAdvanceUI() {
         })
     }
     let genControlBnts = function (idx) {
-        let titleTexts = ['General', 'Proxy Group', 'Custom Rule', 'MITM']
+        let titleTexts = ['常规', '代理分组', '代理规则', '本地DNS映射', 'URL重定向', 'Header修改', 'SSID', '主机名', '配置根证书']
         return titleTexts.map((item, i) => {
             return {
                 title: { text: item, bgcolor: i == idx ? $color("#ffcc66") : $color("#cc6666"), radius: 5, color: i == idx ? $color("#595959") : $color("#ffffff") }
@@ -562,26 +562,27 @@ function renderAdvanceUI() {
         }, {
             type: "matrix",
             props: {
-                columns: 2,
+                columns: 3,
                 id: "settingsControl",
                 itemHeight: 40,
                 bgcolor: $color("#ffffff"),
-                spacing: 5,
+                spacing: 3,
                 data: genControlBnts(0),
                 template: [{
                     type: "label",
                     props: {
                         id: "title",
-                        align: $align.center
+                        align: $align.center,
+                        font: $font(14)
                     },
                     layout: $layout.fill
                 }]
             },
             layout: (make, view) => {
-                make.height.equalTo(100)
+                make.height.equalTo(130)
                 make.centerX.equalTo(view.super)
-                make.width.equalTo(view.super).offset(-30)
-                make.top.equalTo(view.prev.bottom).offset(10)
+                make.width.equalTo(view.super).offset(0)
+                make.top.equalTo(view.prev.bottom).offset(5)
             },
             events: {
                 didSelect: (sender, indexPath, data) => {
@@ -593,16 +594,54 @@ function renderAdvanceUI() {
         }, {
             type: "label",
             props: {
-                text: "上述设置如果出错，清空保存一次即可恢复",
+                text: "上述设置点击完成生效，清空保存一次恢复默认",
                 font: $font(12),
                 textColor: $color("#595959"),
                 align: $align.center
             },
             layout: (make, view) => {
-                make.top.equalTo(view.prev.bottom).offset(00)
+                make.top.equalTo(view.prev.bottom).offset(0)
                 make.width.equalTo(view.super)
                 make.height.equalTo(30)
                 make.centerX.equalTo(view.super)
+            }
+        }, {
+            type: "button",
+            props: {
+                title: '还原全部进阶设置',
+                bgcolor: $color("#ff4d4d")
+            },
+            layout: (make, view) => {
+                make.width.equalTo(view.super).offset(-40)
+                make.centerX.equalTo(view.super)
+                make.top.equalTo(view.prev.bottom).offset(10)
+                make.height.equalTo(40)
+            },
+            events: {
+                tapped: sender => {
+                    $ui.alert({
+                        title: "提示",
+                        message: "是否还原配置，还原后无法恢复",
+                        actions: [{
+                            title: 'Cancel',
+                            handler: () => {}
+                        }, {
+                            title: 'OK',
+                            handler: () => {
+                                let previewData = JSON.parse($file.read(FILE).string)
+                                for (let idx in settingKeys) {
+                                    let defaultValue = $file.read(`defaultConf/${settingKeys[idx]}`).string
+                                    previewData[settingKeys[idx]] = defaultValue
+                                }
+                                $file.write({
+                                    data: $data({ "string": JSON.stringify(previewData) }),
+                                    path: FILE
+                                })
+                                $ui.pop()
+                            }
+                        }]
+                    })
+                }
             }
         }]
     })
@@ -904,8 +943,8 @@ function makeConf(params) {
         let workspace = advanceSettings.workspace
         let usualData = workspace.usualData
 
-        let usualValue = function(key) {
-            return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key) : false
+        let usualValue = function (key) {
+            return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key).title.bgcolor : false
         }
 
         let ads = usualValue('去广告')
@@ -974,31 +1013,65 @@ function makeConf(params) {
             return getAutoRules(pu.hostname)
         }).then(res => {
             'onProgress' in params && params.onProgress(1)
-            hostName = 'hostname = ' + res.split('\n').join(', ')
+            // hostName = 'hostname = ' + res.split('\n').join(', ')
+            hostName = res.split('\n')
+            console.log(hostName)
 
+            let seperateLines = function (content) {
+                return {
+                    add: content.split('\n').filter(i => !i.startsWith('-')).map(i => i.trim()),
+                    delete: content.split("\n").filter(i => i.startsWith('-')).map(i => i.replace('-', '').trim())
+                }
+            }
+
+            let prettyInsert = function (lines) {
+                return '\n\n' + lines.join('\n') + '\n\n'
+            }
+
+            // 配置代理分组
             if (advanceSettings.proxyGroupSettings) {
                 prototype = prototype.replace(/\[Proxy Group\][\s\S]+\[Rule\]/, advanceSettings.proxyGroupSettings + '\n\n[Rule]')
             }
-
+            // 配置常规设置
             if (advanceSettings.generalSettings) {
                 prototype = prototype.replace(/\[General\][\s\S]+\[Proxy\]/, advanceSettings.generalSettings + '\n\n[Proxy]')
             }
-            let customRules = advanceSettings.customSettings
-            let removeRules = customRules.split("\n").filter(i => i.startsWith('-')).map(i => i.replace('-', '').trim())
-            for (let i in removeRules) {
-                rules = rules.replace(removeRules[i] + '\n', '')
-            }
+            // 配置自定义规则
+            let customRules = seperateLines(advanceSettings.customSettings)
+            customRules.delete.forEach(i => rules = rules.replace(i, ''))
+            // 配置本地DNS映射
+            let userHost = seperateLines(advanceSettings.hostSettings)
+            userHost.delete.forEach(i => host = host.replace(i, ''))
+            // 配置URL重定向
+            let userUrl = seperateLines(advanceSettings.urlrewriteSettings)
+            userUrl.delete.forEach(i => {
+                urlRewrite = urlRewrite.replace(i, '')
+                urlReject = urlReject.replace(i, '')
+            })
+            // 配置Header修改
+            let userHeader = seperateLines(advanceSettings.headerrewriteSettings)
+            userHeader.delete.forEach(i => headerRewrite = headerRewrite.replace(i, ''))
+            // 配置SSID
+            let userSSID = advanceSettings.ssidSettings
+            // 配置MITM的Hostname
+            let userHostname = seperateLines(advanceSettings.hostnameSettings)
+            userHostname.delete.forEach(i => {
+                if (hostName.indexOf(i) >= 0) {
+                    hostName.splice(hostName.indexOf(i), 1)
+                }
+            })
 
-            prototype = prototype.replace('# Custom', customRules.split('\n').filter(i => !i.startsWith('-')).join('\n'))
+            prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
             prototype = prototype.replace('Proxys', proxies)
             prototype = prototype.split('Proxy Header').join(proxyHeaders)
             prototype = prototype.replace('ProxyHeader', autoGroup)
             prototype = prototype.replace('# All Rules', rules)
-            prototype = prototype.replace('# Host', host)
-            prototype = prototype.replace('# URL Rewrite', urlRewrite)
+            prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
+            prototype = prototype.replace('# URL Rewrite', urlRewrite + prettyInsert(userUrl.add))
             prototype = prototype.replace('# URL REJECT', urlReject)
-            prototype = prototype.replace('# Header Rewrite', headerRewrite)
-            prototype = prototype.replace('// Hostname', hostName)
+            prototype = prototype.replace('# SSID', userSSID)
+            prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
+            prototype = prototype.replace('// Hostname', 'hostname = ' + hostName.concat(userHostname.add.filter(i => i != '')).join(', '))
 
             if (isMitm) {
                 prototype = prototype.replace('# MITM', advanceSettings.mitmSettings)
