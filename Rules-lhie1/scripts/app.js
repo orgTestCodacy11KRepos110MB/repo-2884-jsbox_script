@@ -2,6 +2,7 @@ const proxyUtil = require('scripts/proxyUitl')
 const updateUtil = require('scripts/updateUtil')
 const su = require('scripts/sizeUtil')
 const cu = require('scripts/colorUtil')
+const videoReg = require('scripts/videoReg')
 const FILE = 'data.js'
 
 const settingKeys = ['generalSettings', 'proxyGroupSettings', 'customSettings', 'hostSettings', 'urlrewriteSettings', 'headerrewriteSettings', 'ssidSettings', 'hostnameSettings', 'mitmSettings']
@@ -27,7 +28,6 @@ const selectedColor = $color("#d1e0e0")
 const defaultColor = $color("#ffffff")
 const tintColor = $color("#ff4d4d")
 const blackColor = $color("#000000")
-
 
 function renderUI() {
     $ui.render({
@@ -147,6 +147,7 @@ function renderUI() {
                             $("serverEditor").data = data
                         } else if (indexPath.item == 2) {
                             $("serverEditor").data = []
+                            $("serverEditor").info = {}
                         }
                         saveWorkspace()
                     }
@@ -178,6 +179,20 @@ function renderUI() {
                                     od[indexPath.row].proxyLink = `${text} =${proxyURLNoName.join("=")}`
                                     console.log(od[indexPath.row])
                                     $("serverEditor").data = od
+                                    saveWorkspace()
+                                }
+                            })
+                        }
+                    }, {
+                        title: "特殊代理",
+                        handler: (sender, indexPath) => {
+                            let proxyName = sender.object(indexPath).proxyName.text
+                            $ui.menu({
+                                items: Object.keys(videoReg),
+                                handler: function(title, idx) {
+                                    let videoProxy = sender.info
+                                    videoProxy[title] = proxyName
+                                    sender.info = videoProxy
                                     saveWorkspace()
                                 }
                             })
@@ -803,8 +818,8 @@ function setUpWorkspace() {
             let file = JSON.parse($file.read(FILE).string)
             if (file && file.workspace) {
                 let workspace = file.workspace
+                console.log(workspace)
                 $("fileName").text = workspace.fileName
-                console.log(workspace.serverData)
                 $("serverEditor").data = workspace.serverData.map(i => {
                     i.proxyName.bgcolor = i.proxyName.bgcolor ? selectedColor : defaultColor
                     return i
@@ -819,6 +834,8 @@ function setUpWorkspace() {
                     return item
                 })
                 $("usualSettings").data = nd
+                // videoProxy = workspace.videoProxy
+                $("serverEditor").info = workspace.videoProxy || {}
             }
         }
     })
@@ -836,7 +853,8 @@ function saveWorkspace() {
             i.title.bgcolor = cu.isEqual(tintColor, i.title.bgcolor)
             i.title.textColor = cu.isEqual(defaultColor, i.title.textColor)
             return i
-        })
+        }),
+        videoProxy: $("serverEditor").info
     }
     let file = JSON.parse($file.read(FILE).string)
     file.workspace = workspace
@@ -1060,6 +1078,15 @@ function makeConf(params) {
                     hostName.splice(hostName.indexOf(i), 1)
                 }
             })
+
+            // 视频代理处理
+            let videoProxy = workspace.videoProxy
+            for (let videoType in videoProxy) {
+                let proxyName = videoProxy[videoType]
+                rules.match(videoReg[videoType]).forEach(i => {
+                    rules = rules.replace(i, i.replace('🍃 Proxy', proxyName))
+                })
+            }
 
             prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
             prototype = prototype.replace('Proxys', proxies)
