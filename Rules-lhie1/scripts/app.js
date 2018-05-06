@@ -758,7 +758,7 @@ function renderAboutUI() {
     })
 }
 
-function addListener() {
+function setUpWorkspace() {
     $app.listen({
         ready: function () {
             let file = JSON.parse($file.read(FILE).string)
@@ -1057,6 +1057,6 @@ function exportConf(fileName, fileData, actionSheet) {
 
 module.exports = {
     renderUI: renderUI,
-    addListener: addListener,
+    setUpWorkspace: setUpWorkspace,
     autoGen: autoGen
 }

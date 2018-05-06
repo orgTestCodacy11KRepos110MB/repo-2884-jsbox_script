@@ -20,7 +20,7 @@ if ($app.env != $env.app) {
     return
 }
 
-app.addListener()
+app.setUpWorkspace()
 
 app.renderUI()
 
