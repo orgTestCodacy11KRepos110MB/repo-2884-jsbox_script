@@ -237,7 +237,7 @@ function renderUI() {
                     }, {
                         title: { text: 'UDP', bgcolor: defaultColor, textColor: blackColor }
                     }, {
-                        title: { text: '分享配置', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: '导出配置', bgcolor: defaultColor, textColor: blackColor }
                     }],
                     template: [{
                         type: "label",
@@ -885,11 +885,7 @@ function autoGen() {
 }
 
 function makeConf(params) {
-
-    if ('onStart' in params) {
-        params.onStart()
-    }
-
+    'onStart' in params && params.onStart()
     try {
         let pu = {
             apple: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Apple.conf',
@@ -907,10 +903,16 @@ function makeConf(params) {
         let advanceSettings = JSON.parse($file.read(FILE).string)
         let workspace = advanceSettings.workspace
         let usualData = workspace.usualData
-        let ads = usualData.find(i => i.title.text == '去广告').title.bgcolor
-        let isMitm = usualData.find(i => i.title.text == '开启MITM').title.bgcolor
-        let isTF = usualData.find(i => i.title.text == 'UDP').title.bgcolor
-        let isActionSheet = usualData.find(i => i.title.text == '分享配置').title.bgcolor
+
+        let usualValue = function(key) {
+            return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key) : false
+        }
+
+        let ads = usualValue('去广告')
+        let isMitm = usualValue('开启MITM')
+        let isTF = usualValue('UDP')
+        let isActionSheet = usualValue('导出配置')
+
         let serverEditorData = workspace.serverData
         let autoGroup = serverEditorData.filter(i => i.proxyName.bgcolor).map(i => i.proxyName.text).join(',') || 'DIRECT'
         let proxies = serverEditorData.map(i => {
@@ -1015,9 +1017,7 @@ function makeConf(params) {
             }
         })
     } catch (e) {
-        if ('onError' in params) {
-            params.onError(e)
-        }
+        'onError' in params && params.onError(e)
     }
 }
 
