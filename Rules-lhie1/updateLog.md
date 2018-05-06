@@ -1,3 +1,8 @@
+#### 2018.05.06
+1. .conf的所有配置项现在都可以在进阶配置中定义，大部分设置可以使用``-(减号)``对lhie1配置剔除
+2. 内部代码调整，异常请反馈
+3. 部分UI调整
+
 #### 2018.05.05
 1. 增加去自定义规则删除（优先级低于添加），写法：
     ![](https://github.com/Fndroid/jsbox_script/blob/master/imgs/Rules-lhie1_pre2.jpg?raw=true)
