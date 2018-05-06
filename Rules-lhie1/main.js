@@ -7,6 +7,9 @@ $app.keyboardToolbarEnabled = true
 
 let query = $context.query
 
+// app.autoGen()
+
+
 if (query.auto == 1) {
     app.autoGen()
     return 
