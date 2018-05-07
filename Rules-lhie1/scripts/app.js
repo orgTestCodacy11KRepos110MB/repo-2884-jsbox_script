@@ -3,6 +3,8 @@ const updateUtil = require('scripts/updateUtil')
 const su = require('scripts/sizeUtil')
 const cu = require('scripts/colorUtil')
 const videoReg = require('scripts/videoReg')
+const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
+
 const FILE = 'data.js'
 
 const settingKeys = ['generalSettings', 'proxyGroupSettings', 'customSettings', 'hostSettings', 'urlrewriteSettings', 'headerrewriteSettings', 'ssidSettings', 'hostnameSettings', 'mitmSettings']
@@ -32,7 +34,7 @@ const blackColor = $color("#000000")
 function renderUI() {
     $ui.render({
         props: {
-            title: "Surge规则"
+            title: "Surge3规则生成"
         },
         views: [{
             type: "scroll",
@@ -360,7 +362,7 @@ function renderUI() {
                                     $("progressView").hidden = true
                                 }
                             })
-                            exportConf(res.fileName, res.fileData, res.actionSheet)
+                            exportConf(res.fileName, res.fileData, res.actionSheet)                            
                         },
                         onError: res => {
                             $("progressView").value = 0
@@ -818,7 +820,7 @@ function setUpWorkspace() {
             let file = JSON.parse($file.read(FILE).string)
             if (file && file.workspace) {
                 let workspace = file.workspace
-                console.log(workspace)
+                console.log(file)
                 $("fileName").text = workspace.fileName
                 $("serverEditor").data = workspace.serverData.map(i => {
                     i.proxyName.bgcolor = i.proxyName.bgcolor ? selectedColor : defaultColor
@@ -1109,6 +1111,15 @@ function makeConf(params) {
             let fn = (workspace.fileName || 'lhie1') + '.conf'
 
             if ('onDone' in params) {
+                ruleUpdateUtil.getGitHubFilesSha({
+                    handler: sha => {
+                        if (sha) {
+                            ruleUpdateUtil.setFilesSha(sha)
+                        } else {
+                            console.log('sha 获取失败')
+                        }
+                    }
+                })
                 params.onDone({
                     actionSheet: isActionSheet,
                     fileName: fn,

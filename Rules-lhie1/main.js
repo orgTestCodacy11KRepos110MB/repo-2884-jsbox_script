@@ -1,4 +1,5 @@
 const app = require('scripts/app')
+const today = require('scripts/today')
 const updateUtil = require('scripts/updateUtil')
 
 $app.autoKeyboardEnabled = true
@@ -16,7 +17,8 @@ if (query.auto == 1) {
 }
 
 if ($app.env != $env.app) {
-    $app.openURL("jsbox://run?name=" + encodeURI($addin.current.name))
+    // $app.openURL("jsbox://run?name=" + encodeURI($addin.current.name))
+    today.renderTodayUI()
     return
 }
 
