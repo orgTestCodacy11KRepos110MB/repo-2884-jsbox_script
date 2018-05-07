@@ -110,22 +110,25 @@ function renderUI() {
                 type: "matrix",
                 props: {
                     id: "serverControl",
-                    columns: 3,
+                    columns: 4,
                     // radius: 5,
                     itemHeight: 40,
                     bgcolor: $color("#f0f5f5"),
                     data: [{
-                        title: { text: '倒序' }
+                        title: { text: '节点倒序' }
                     }, {
                         title: { text: '全部Auto' }
                     }, {
-                        title: { text: '清空' }
+                        title: { text: '特殊代理' }
+                    }, {
+                        title: { text: '清空节点' }
                     }],
                     template: [{
                         type: "label",
                         props: {
                             id: "title",
-                            align: $align.center
+                            align: $align.center,
+                            font: $font(14)
                         },
                         layout: $layout.fill
                     }]
@@ -141,17 +144,46 @@ function renderUI() {
                         if (indexPath.item == 0) {
                             let rd = $("serverEditor").data.reverse()
                             $("serverEditor").data = rd
+                            saveWorkspace()
                         } else if (indexPath.item == 1) {
                             let data = $("serverEditor").data.map(i => {
                                 i.proxyName.bgcolor = selectedColor
                                 return i
                             })
                             $("serverEditor").data = data
-                        } else if (indexPath.item == 2) {
+                            saveWorkspace()
+                        } else if (indexPath.item == 3) {
                             $("serverEditor").data = []
-                            $("serverEditor").info = {}
+                            saveWorkspace()
+                        } else {
+                            $ui.menu({
+                                items: ['🚀 Direct', '查看设置', '清除设置'],
+                                handler: function (title, idx) {
+                                    if (idx === 0) {
+                                        $ui.menu({
+                                            items: Object.keys(videoReg),
+                                            handler: function (title, idx) {
+                                                let proxyName = '🚀 Direct'
+                                                let videoProxy = $("serverEditor").info
+                                                videoProxy[title] = proxyName
+                                                $("serverEditor").info = videoProxy
+                                                saveWorkspace()
+                                            }
+                                        })
+                                    } else if (idx === 2) {
+                                        $("serverEditor").info = {}
+                                        saveWorkspace()
+                                    } else {
+                                        let videoProxy = $("serverEditor").info
+                                        let output = []
+                                        for (let k in videoProxy) {
+                                            output.push(`${k} - ${videoProxy[k]}`)
+                                        }
+                                        $ui.alert(output.length > 0 ? output.join('\n') : "无设置特殊代理")
+                                    }
+                                }
+                            })
                         }
-                        saveWorkspace()
                     }
                 }
             }, {
@@ -191,7 +223,7 @@ function renderUI() {
                             let proxyName = sender.object(indexPath).proxyName.text
                             $ui.menu({
                                 items: Object.keys(videoReg),
-                                handler: function(title, idx) {
+                                handler: function (title, idx) {
                                     let videoProxy = sender.info
                                     videoProxy[title] = proxyName
                                     sender.info = videoProxy
@@ -362,12 +394,12 @@ function renderUI() {
                                     $("progressView").hidden = true
                                 }
                             })
-                            exportConf(res.fileName, res.fileData, res.actionSheet)  
+                            exportConf(res.fileName, res.fileData, res.actionSheet)
                             $app.listen({
-                                resume: function() {
+                                resume: function () {
                                     $http.stopServer()
                                 }
-                            })                          
+                            })
                         },
                         onError: res => {
                             $("progressView").value = 0
@@ -646,7 +678,7 @@ function renderAdvanceUI() {
                         message: "是否还原配置，还原后无法恢复",
                         actions: [{
                             title: 'Cancel',
-                            handler: () => {}
+                            handler: () => { }
                         }, {
                             title: 'OK',
                             handler: () => {
@@ -937,7 +969,7 @@ function autoGen() {
                 onDone: res => {
                     exportConf(res.fileName, res.fileData, res.actionSheet)
                     $app.listen({
-                        resume: function() {
+                        resume: function () {
                             $http.stopServer()
                             $app.close()
                         }

@@ -1,10 +1,12 @@
 const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
 
+const sw = $device.info.screen.width
+
 function renderTodayUI() {
     ruleUpdateUtil.getGitHubFilesSha({
         handler: sha => {
             let canUpdate = ruleUpdateUtil.checkUpdate(ruleUpdateUtil.getFilesSha(), sha)
-            $("updateStatus").text = canUpdate ? "规则有可用更新" : "规则暂无更新"
+            $("updateStatus").text = canUpdate ? "规则有可用更新" : ""
         }
     })
     $ui.render({
@@ -73,7 +75,7 @@ function renderTodayUI() {
                 layout: (make,view) => {
                     make.width.height.equalTo(50)
                     make.centerY.equalTo(view.super).offset(0)
-                    make.right.equalTo(view.prev.left).offset(-40)
+                    make.right.equalTo(view.prev.left).offset(- (sw / 9))
                 },
                 events: {
                     tapped: sender => {
@@ -89,7 +91,7 @@ function renderTodayUI() {
                 layout: (make,view) => {
                     make.width.height.equalTo(50)
                     make.centerY.equalTo(view.super).offset(0)
-                    make.left.equalTo(view.prev.prev.right).offset(40)
+                    make.left.equalTo(view.prev.prev.right).offset((sw / 9))
                 },
                 events: {
                     tapped: sender => {
