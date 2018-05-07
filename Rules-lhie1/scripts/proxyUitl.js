@@ -33,7 +33,7 @@ function getServersFromConfFile(params) {
 }
 
 function decodeScheme(params) {
-    let urls = params.ssURL.split('\n').map(i => i.trim()).filter(i => /ss:\/\//.test(i))
+    let urls = params.ssURL.split(/[\n\r]+/g).map(i => i.trim()).filter(i => /ss:\/\//.test(i))
     let result = []
     let tag
 
