@@ -362,7 +362,12 @@ function renderUI() {
                                     $("progressView").hidden = true
                                 }
                             })
-                            exportConf(res.fileName, res.fileData, res.actionSheet)                            
+                            exportConf(res.fileName, res.fileData, res.actionSheet)  
+                            $app.listen({
+                                resume: function() {
+                                    $http.stopServer()
+                                }
+                            })                          
                         },
                         onError: res => {
                             $("progressView").value = 0
@@ -931,6 +936,12 @@ function autoGen() {
                 },
                 onDone: res => {
                     exportConf(res.fileName, res.fileData, res.actionSheet)
+                    $app.listen({
+                        resume: function() {
+                            $http.stopServer()
+                            $app.close()
+                        }
+                    })
                 },
                 onError: res => {
                     $ui.alert("无法生成配置文件，可能是规则仓库发生变化或网络出现问题")
