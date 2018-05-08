@@ -93,12 +93,16 @@ function renderUI() {
                                 let listData = $("serverEditor").data || []
                                 for (let idx in res) {
                                     if (res[idx].split("=")[1].trim() == 'direct') {
+                                        // 过滤直连
                                         continue
                                     }
-                                    listData.push({
-                                        proxyName: { text: res[idx].split('=')[0].trim(), bgcolor: defaultColor },
-                                        proxyLink: res[idx]
-                                    })
+                                    let containServer = listData.find(i => i.proxyLink === res[idx])
+                                    if (!containServer) {
+                                        listData.push({
+                                            proxyName: { text: res[idx].split('=')[0].trim(), bgcolor: defaultColor },
+                                            proxyLink: res[idx]
+                                        })
+                                    }
                                 }
                                 $("serverEditor").data = listData
                                 saveWorkspace()
@@ -146,10 +150,19 @@ function renderUI() {
                             $("serverEditor").data = rd
                             saveWorkspace()
                         } else if (indexPath.item == 1) {
-                            let data = $("serverEditor").data.map(i => {
-                                i.proxyName.bgcolor = selectedColor
-                                return i
-                            })
+                            let serverData = $("serverEditor").data
+                            let data = null
+                            if (serverData.every(i => cu.isEqual(i.proxyName.bgcolor, selectedColor))) {
+                                data = $("serverEditor").data.map(i => {
+                                    i.proxyName.bgcolor = defaultColor
+                                    return i
+                                })
+                            } else {
+                                data = $("serverEditor").data.map(i => {
+                                    i.proxyName.bgcolor = selectedColor
+                                    return i
+                                })
+                            }
                             $("serverEditor").data = data
                             saveWorkspace()
                         } else if (indexPath.item == 3) {
