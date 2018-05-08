@@ -205,24 +205,23 @@ let renderExtensionUI = function () {
             }]
         }]
     })
-    $delay(0, function () {
-        let styles = genStyleDefaultData(host)
-        let styleListHeight = styles.length * 60
-        $("styleList").data = styles
-        $("styleList").updateLayout(make => {
-            make.height.equalTo(styleListHeight)
-        })
-        let savedData = JSON.parse($file.read(FILE).string)
-        let proxyGroup = savedData.proxyGroupSettings.split('\n').filter(i => /^[\s\S]+=/.test(i)).map(i => i.split(/[\s]*=/)[0])
-        let proxies = ['🚀 Direct'].concat(proxyGroup, ['REJECT', 'REJECT-TINYGIF'], savedData.workspace.serverData.map(i => i.proxyName.text))
-        let proxiesData = genProxyDefaultData(proxies)
-        let proxiesListHeight = proxiesData.length * 40
-        $("proxyList").data = proxiesData
-        $("proxyList").updateLayout(make => {
-            make.height.equalTo(proxiesListHeight)
-        })
-        resizeScrollView(styleListHeight + proxiesListHeight)
+    let styles = genStyleDefaultData(host)
+    let styleListHeight = styles.length * 60
+    $("styleList").data = styles
+    $("styleList").updateLayout(make => {
+        make.height.equalTo(styleListHeight)
     })
+    let savedData = JSON.parse($file.read(FILE).string)
+    let proxyGroup = savedData.proxyGroupSettings.split('\n').filter(i => /^[\s\S]+=/.test(i)).map(i => i.split(/[\s]*=/)[0])
+    let proxies = ['🚀 Direct'].concat(proxyGroup, ['REJECT', 'REJECT-TINYGIF'], savedData.workspace.serverData.map(i => i.proxyName.text))
+    let proxiesData = genProxyDefaultData(proxies)
+    let proxiesListHeight = proxiesData.length * 40
+    $("proxyList").data = proxiesData
+    $("proxyList").updateLayout(make => {
+        make.height.equalTo(proxiesListHeight)
+    })
+    resizeScrollView(styleListHeight + proxiesListHeight)
+
 }
 
 let resizeScrollView = function (listHeight) {
@@ -244,7 +243,7 @@ let genStyleDefaultData = function (domain) {
     }))
 }
 
-let saveRule = function(rule) {
+let saveRule = function (rule) {
     let data = JSON.parse($file.read(FILE).string)
     data.customSettings += `\n${rule}\n`
     $file.write({
