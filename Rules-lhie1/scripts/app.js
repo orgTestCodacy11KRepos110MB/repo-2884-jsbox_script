@@ -407,7 +407,9 @@ function renderUI() {
                                     $("progressView").hidden = true
                                 }
                             })
-                            exportConf(res.fileName, res.fileData, res.actionSheet)
+                            exportConf(res.fileName, res.fileData, res.actionSheet, () => {
+                                $http.stopServer()
+                            })
                             $app.listen({
                                 resume: function () {
                                     $http.stopServer()
@@ -980,7 +982,10 @@ function autoGen() {
                     $("progressBar").value = p
                 },
                 onDone: res => {
-                    exportConf(res.fileName, res.fileData, res.actionSheet)
+                    exportConf(res.fileName, res.fileData, res.actionSheet, () => {
+                        $http.stopServer()
+                        $app.close()
+                    })
                     $app.listen({
                         resume: function () {
                             $http.stopServer()
@@ -1188,10 +1193,17 @@ function makeConf(params) {
     }
 }
 
-function exportConf(fileName, fileData, actionSheet) {
+function exportConf(fileName, fileData, actionSheet, actionSheetCancel) {
     let fnReg = /^[\x21-\x2A\x2C-\x2E\x30-\x3B\x3D\x3F-\x5B\x5D\x5F\x61-\x7B\x7D-\x7E]+$/
     if (actionSheet || !fnReg.test(fileName)) {
-        $share.sheet([fileName, $data({ "string": fileData })])
+        $share.sheet({
+            items: [fileName, $data({ "string": fileData })],
+            handler: success => {
+                if (!success && actionSheetCancel) {
+                    actionSheetCancel()
+                }
+            }
+        })
     } else {
         if (!$file.exists("confs")) {
             $file.mkdir("confs")
