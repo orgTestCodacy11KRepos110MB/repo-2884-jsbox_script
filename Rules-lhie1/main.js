@@ -1,5 +1,6 @@
 const app = require('scripts/app')
 const today = require('scripts/today')
+const extension = require('scripts/extension')
 const updateUtil = require('scripts/updateUtil')
 
 $app.autoKeyboardEnabled = true
@@ -8,17 +9,17 @@ $app.keyboardToolbarEnabled = true
 
 let query = $context.query
 
-// app.autoGen()
-
 
 if (query.auto == 1) {
     app.autoGen()
     return 
 }
 
-if ($app.env != $env.app) {
-    // $app.openURL("jsbox://run?name=" + encodeURI($addin.current.name))
+if ($app.env == $env.today) {
     today.renderTodayUI()
+    return
+} else if ($app.env == $env.safari) {
+    extension.renderExtensionUI()
     return
 }
 

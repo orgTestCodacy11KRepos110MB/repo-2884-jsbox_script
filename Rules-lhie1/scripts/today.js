@@ -6,12 +6,13 @@ function renderTodayUI() {
     ruleUpdateUtil.getGitHubFilesSha({
         handler: sha => {
             let canUpdate = ruleUpdateUtil.checkUpdate(ruleUpdateUtil.getFilesSha(), sha)
-            $("updateStatus").text = canUpdate ? "规则有可用更新" : ""
+            $("updateStatus").text = canUpdate ? "检测到规则仓库有更新！" : ""
         }
     })
     $ui.render({
         props: {
-            title: "Surge3规则生成"
+            title: "Surge3规则生成",
+            frame: $rect(0, 0, sw, 110)
         },
         views: [{
             type: "view",
@@ -38,11 +39,11 @@ function renderTodayUI() {
                     make.top.equalTo(view.super.top).offset(5)
                     make.centerX.equalTo(view.super)
                 }
-            },{
+            }, {
                 type: "label",
                 props: {
                     id: "updateStatus",
-                    text: "查询规则更新...",
+                    text: "检查规则更新...",
                     font: $font(12),
                     textColor: $rgba(50, 50, 50, 1)
                 },
@@ -56,7 +57,7 @@ function renderTodayUI() {
                     data: $file.read("assets/today_pull.png"),
                     radius: 25
                 },
-                layout: (make,view) => {
+                layout: (make, view) => {
                     make.width.height.equalTo(50)
                     make.centerY.equalTo(view.super).offset(0)
                     make.centerX.equalTo(view.super)
@@ -72,7 +73,7 @@ function renderTodayUI() {
                     data: $file.read("assets/today_surge.png"),
                     radius: 25
                 },
-                layout: (make,view) => {
+                layout: (make, view) => {
                     make.width.height.equalTo(50)
                     make.centerY.equalTo(view.super).offset(0)
                     make.right.equalTo(view.prev.left).offset(- (sw / 9))
@@ -88,7 +89,7 @@ function renderTodayUI() {
                     data: $file.read("assets/today_jsbox.png"),
                     radius: 25
                 },
-                layout: (make,view) => {
+                layout: (make, view) => {
                     make.width.height.equalTo(50)
                     make.centerY.equalTo(view.super).offset(0)
                     make.left.equalTo(view.prev.prev.right).offset((sw / 9))
