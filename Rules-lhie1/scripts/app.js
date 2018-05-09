@@ -194,21 +194,41 @@ function renderUI() {
                     }, {
                         title: "重命名",
                         handler: (sender, indexPath) => {
-                            let titleText = sender.object(indexPath).proxyName.text
-                            $input.text({
-                                type: $kbType.default,
-                                placeholder: "请输入节点名",
-                                text: titleText == '无节点名称' ? "" : titleText,
-                                handler: function (text) {
-                                    let obj = sender.object(indexPath)
-                                    obj.proxyName.text = text
-                                    let proxyURLNoName = obj.proxyLink.split("=")
-                                    proxyURLNoName.shift()
-                                    obj.proxyLink = `${text} =${proxyURLNoName.join("=")}`
-                                    listReplace(sender, indexPath, obj)
-                                    saveWorkspace()
+                            $ui.menu({
+                                items: ["节点重命名", "组别重命名"],
+                                handler: function(title, idx) {
+                                    if (idx === 0) {
+                                        let titleText = sender.object(indexPath).proxyName.text
+                                        $input.text({
+                                            type: $kbType.default,
+                                            placeholder: "请输入节点名",
+                                            text: titleText == '无节点名称' ? "" : titleText,
+                                            handler: function (text) {
+                                                let obj = sender.object(indexPath)
+                                                obj.proxyName.text = text
+                                                let proxyURLNoName = obj.proxyLink.split("=")
+                                                proxyURLNoName.shift()
+                                                obj.proxyLink = `${text} =${proxyURLNoName.join("=")}`
+                                                listReplace(sender, indexPath, obj)
+                                                saveWorkspace()
+                                            }
+                                        })
+                                    } else {
+                                        let od = sender.data
+                                        $input.text({
+                                            type: $kbType.default,
+                                            placeholder: "请输入组别名称",
+                                            text: od[indexPath.section].title,
+                                            handler: function (text) {
+                                                od[indexPath.section].title = text
+                                                sender.data = od
+                                                saveWorkspace()
+                                            }
+                                        })
+                                    }
                                 }
                             })
+                            
                         }
                     }, {
                         title: "特殊代理",
@@ -980,7 +1000,7 @@ function saveWorkspace() {
             i.title.textColor = cu.isEqual(defaultColor, i.title.textColor)
             return i
         }),
-        videoProxy: $("serverEditor").info
+        videoProxy: $("serverEditor").info || {}
     }
     let file = JSON.parse($file.read(FILE).string)
     file.workspace = workspace
