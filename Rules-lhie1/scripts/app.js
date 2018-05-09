@@ -43,12 +43,12 @@ function renderUI() {
             },
             layout: $layout.fill,
             events: {
-                willEndDragging: (sender, velocity) => {
-                    let vy = velocity.runtimeValue().invoke("CGPointValue").y
-                    $("serverEditor").updateLayout((make, view) => {
-                        make.height.equalTo(screenHeight - (vy >= 0 ? 380 : 330))
-                    })
-                }
+                // willEndDragging: (sender, velocity) => {
+                //     let vy = velocity.runtimeValue().invoke("CGPointValue").y
+                //     $("serverEditor").updateLayout((make, view) => {
+                //         make.height.equalTo(screenHeight - (vy >= 0 ? 380 : 330))
+                //     })
+                // }
             },
             views: [{
                 type: "input",
