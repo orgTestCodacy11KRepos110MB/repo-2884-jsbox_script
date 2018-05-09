@@ -26,9 +26,9 @@ if (iPhoneX) {
     screenHeight -= 48
 }
 
-const selectedColor = $color("#d1e0e0")
+const selectedColor = $color("#c1dcf0")
 const defaultColor = $color("#ffffff")
-const tintColor = $color("#ff4d4d")
+const tintColor = $color("#ff6666")
 const blackColor = $color("#000000")
 
 function renderUI() {
@@ -204,6 +204,7 @@ function renderUI() {
                 props: {
                     id: "serverEditor",
                     data: [],
+                    separatorHidden: true,
                     reorder: true,
                     actions: [{
                         title: "delete",
@@ -309,7 +310,7 @@ function renderUI() {
                             font: $font(16),
                             radius: 5,
                             borderColor: tintColor,
-                            borderWidth: 1,
+                            borderWidth: 0.3,
                         },
                         layout: $layout.fill
                     }]
@@ -600,9 +601,13 @@ function renderAdvanceUI() {
     }
     let genControlBnts = function (idx) {
         let titleTexts = ['常规', '代理分组', '代理规则', '本地DNS映射', 'URL重定向', 'Header修改', 'SSID', '主机名', '配置根证书']
+        const sbgc = $color("#ffda40")
+        const stc = $color("#034769")
+        const dbgc = $color("#63add0")
+        const dtc = $color("#ffffff")
         return titleTexts.map((item, i) => {
             return {
-                title: { text: item, bgcolor: i == idx ? $color("#ffcc66") : $color("#cc6666"), radius: 5, color: i == idx ? $color("#595959") : $color("#ffffff") }
+                title: { text: item, bgcolor: i === idx ? sbgc : dbgc, radius: 5, color: i == idx ? stc : dtc }
             }
         })
     }
@@ -678,7 +683,7 @@ function renderAdvanceUI() {
             type: "button",
             props: {
                 title: '还原全部进阶设置',
-                bgcolor: $color("#ff4d4d")
+                bgcolor: $color("#ff6840")
             },
             layout: (make, view) => {
                 make.width.equalTo(view.super).offset(-40)
