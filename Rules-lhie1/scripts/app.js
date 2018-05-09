@@ -77,33 +77,30 @@ function renderUI() {
                 },
                 layout: (make, view) => {
                     make.width.equalTo(screenWidth / 2 - 15)
-                    // make.centerX.equalTo(view.super)
                     make.height.equalTo(40)
-                    // make.top.equalTo($("fileName").bottom).offset(10)
                     make.left.equalTo($("fileName").right).offset(10)
                     make.top.right.equalTo(10)
                 },
                 events: {
                     tapped: sender => {
                         importMenu({
-                            handler: res => {
+                            handler: (res, name) => {
                                 if (!res) {
                                     $ui.alert("没有检测到节点信息")
                                 }
                                 let listData = $("serverEditor").data || []
+                                let section = { title: name, rows: [] }
                                 for (let idx in res) {
                                     if (res[idx].split("=")[1].trim() == 'direct') {
                                         // 过滤直连
                                         continue
                                     }
-                                    let containServer = listData.find(i => i.proxyLink === res[idx])
-                                    if (!containServer) {
-                                        listData.push({
-                                            proxyName: { text: res[idx].split('=')[0].trim(), bgcolor: defaultColor },
-                                            proxyLink: res[idx]
-                                        })
-                                    }
+                                    section.rows.push({
+                                        proxyName: { text: res[idx].split('=')[0].trim(), bgcolor: defaultColor },
+                                        proxyLink: res[idx]
+                                    })
                                 }
+                                listData.push(section)
                                 $("serverEditor").data = listData
                                 saveWorkspace()
                             }
@@ -121,11 +118,11 @@ function renderUI() {
                     data: [{
                         title: { text: '节点倒序' }
                     }, {
-                        title: { text: '全部Auto' }
+                        title: { text: '批量Auto' }
                     }, {
                         title: { text: '特殊代理' }
                     }, {
-                        title: { text: '清空节点' }
+                        title: { text: '删除节点' }
                     }],
                     template: [{
                         type: "label",
@@ -146,28 +143,11 @@ function renderUI() {
                 events: {
                     didSelect: (sender, indexPath, data) => {
                         if (indexPath.item == 0) {
-                            let rd = $("serverEditor").data.reverse()
-                            $("serverEditor").data = rd
-                            saveWorkspace()
+                            reverseServerGroup()
                         } else if (indexPath.item == 1) {
-                            let serverData = $("serverEditor").data
-                            let data = null
-                            if (serverData.every(i => cu.isEqual(i.proxyName.bgcolor, selectedColor))) {
-                                data = $("serverEditor").data.map(i => {
-                                    i.proxyName.bgcolor = defaultColor
-                                    return i
-                                })
-                            } else {
-                                data = $("serverEditor").data.map(i => {
-                                    i.proxyName.bgcolor = selectedColor
-                                    return i
-                                })
-                            }
-                            $("serverEditor").data = data
-                            saveWorkspace()
+                            autoServerGroup()
                         } else if (indexPath.item == 3) {
-                            $("serverEditor").data = []
-                            saveWorkspace()
+                            deleteServerGroup()
                         } else {
                             $ui.menu({
                                 items: ['🚀 Direct', '查看设置', '清除设置'],
@@ -220,13 +200,12 @@ function renderUI() {
                                 placeholder: "请输入节点名",
                                 text: titleText == '无节点名称' ? "" : titleText,
                                 handler: function (text) {
-                                    let od = $("serverEditor").data
-                                    od[indexPath.row].proxyName.text = text
-                                    let proxyURLNoName = od[indexPath.row].proxyLink.split("=")
+                                    let obj = sender.object(indexPath)
+                                    obj.proxyName.text = text
+                                    let proxyURLNoName = obj.proxyLink.split("=")
                                     proxyURLNoName.shift()
-                                    od[indexPath.row].proxyLink = `${text} =${proxyURLNoName.join("=")}`
-                                    console.log(od[indexPath.row])
-                                    $("serverEditor").data = od
+                                    obj.proxyLink = `${text} =${proxyURLNoName.join("=")}`
+                                    listReplace(sender, indexPath, obj)
                                     saveWorkspace()
                                 }
                             })
@@ -271,9 +250,9 @@ function renderUI() {
                     didSelect: (sender, indexPath, data) => {
                         let proxyName = data.proxyName.text
                         data.proxyName.bgcolor = cu.isEqual(data.proxyName.bgcolor, selectedColor) ? defaultColor : selectedColor
-                        let uiData = $("serverEditor").data
-                        uiData[indexPath.row] = data
-                        $("serverEditor").data = uiData
+                        let uiData = sender.data
+                        uiData[indexPath.section].rows[indexPath.row] = data
+                        sender.data = uiData
                         saveWorkspace()
                     },
                     reorderFinished: data => {
@@ -460,6 +439,16 @@ function renderUI() {
 
 }
 
+function listReplace(sender, indexPath, obj) {
+    let oldData = sender.data
+    if (indexPath.section != null) {
+        oldData[indexPath.section].rows[indexPath.row] = obj
+    } else {
+        oldData[indexPath.row] = obj
+    }
+    sender.data = oldData
+}
+
 function getPrototype() {
     return new Promise((resolve, reject) => {
         $http.get({
@@ -516,7 +505,7 @@ function linkHandler(url, params) {
         proxyUtil.proxyFromURL({
             ssURL: url.trim(),
             handler: res => {
-                params.handler(res.servers)
+                params.handler(res.servers, res.sstag)
                 saveURL(url, res.sstag)
             }
         })
@@ -526,7 +515,7 @@ function linkHandler(url, params) {
         proxyUtil.proxyFromConf({
             confURL: url.trim(),
             handler: res => {
-                params.handler(res.servers)
+                params.handler(res.servers, res.filename)
                 $ui.loading(false)
                 saveURL(url, res.filename)
             }
@@ -537,10 +526,10 @@ function linkHandler(url, params) {
         for (let idx in urls) {
             result[idx] = urls[idx]
         }
-        params.handler(result)
+        params.handler(result, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
         saveURL(url, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
     } else {
-        params.handler(null)
+        params.handler(null, null)
     }
 }
 
@@ -871,6 +860,78 @@ function renderAboutUI() {
     })
 }
 
+function deleteServerGroup() {
+    let serverData = $("serverEditor").data
+    let sections = serverData.map(i => i.title)
+    $ui.menu({
+        items: sections.concat(['全部删除']),
+        handler: function (title, idx) {
+            if (idx === sections.length) {
+                $("serverEditor").data = []
+            } else {
+                serverData.splice(idx, 1)
+                $("serverEditor").data = serverData
+            }
+            saveWorkspace()
+        }
+    })
+}
+
+function reverseServerGroup() {
+    let serverData = $("serverEditor").data
+    let sections = serverData.map(i => i.title)
+    $ui.menu({
+        items: sections.concat(['组别倒序']),
+        handler: function (title, idx) {
+            if (idx === sections.length) {
+                $("serverEditor").data = serverData.reverse()
+            } else {
+                serverData[idx].rows.reverse()
+                $("serverEditor").data = serverData
+            }
+            saveWorkspace()
+        }
+    })
+}
+
+function autoServerGroup() {
+    let serverData = $("serverEditor").data
+    let sections = serverData.map(i => i.title)
+    $ui.menu({
+        items: sections.concat(['全部Auto']),
+        handler: function (title, idx) {
+            if (idx === sections.length) {
+                let flatData = serverData.reduce((all, cur) => {
+                    return { rows: all.rows.concat(cur.rows) }
+                }).rows
+                let needColor = defaultColor
+                if (!flatData.every(i => cu.isEqual(i.proxyName.bgcolor, selectedColor))) {
+                    needColor = selectedColor
+                }
+                serverData.map(sec => {
+                    sec.rows.map(item => {
+                        item.proxyName.bgcolor = needColor
+                        return item
+                    })
+                    return sec
+                })
+            } else {
+                let sectionData = serverData[idx]
+                let needColor = defaultColor
+                if (!sectionData.rows.every(i => cu.isEqual(i.proxyName.bgcolor, selectedColor))) {
+                    needColor = selectedColor
+                }
+                sectionData.rows.map(item => {
+                    item.proxyName.bgcolor = needColor
+                    return item
+                })
+            }
+            $("serverEditor").data = serverData
+            saveWorkspace()
+        }
+    })
+}
+
 function setUpWorkspace() {
     $app.listen({
         ready: function () {
@@ -879,9 +940,12 @@ function setUpWorkspace() {
                 let workspace = file.workspace
                 console.log(file)
                 $("fileName").text = workspace.fileName
-                $("serverEditor").data = workspace.serverData.map(i => {
-                    i.proxyName.bgcolor = i.proxyName.bgcolor ? selectedColor : defaultColor
-                    return i
+                $("serverEditor").data = workspace.serverData.map(section => {
+                    section.rows.map(item => {
+                        item.proxyName.bgcolor = item.proxyName.bgcolor ? selectedColor : defaultColor
+                        return item
+                    })
+                    return section
                 })
                 let usualSettingsData = workspace.usualData
                 let nd = $("usualSettings").data.map(item => {
@@ -903,10 +967,13 @@ function setUpWorkspace() {
 function saveWorkspace() {
     let workspace = {
         fileName: $("fileName").text,
-        serverData: $("serverEditor").data.map(i => {
+        serverData: $("serverEditor").data.map(section => {
             // 如果节点选上，则color为true
-            i.proxyName.bgcolor = cu.isEqual(selectedColor, i.proxyName.bgcolor)
-            return i
+            section.rows.map(item => {
+                item.proxyName.bgcolor = cu.isEqual(selectedColor, item.proxyName.bgcolor)
+                return item
+            })
+            return section
         }),
         usualData: $("usualSettings").data.map(i => {
             i.title.bgcolor = cu.isEqual(tintColor, i.title.bgcolor)
@@ -1039,11 +1106,16 @@ function makeConf(params) {
         let isActionSheet = usualValue('导出配置')
 
         let serverEditorData = workspace.serverData
-        let autoGroup = serverEditorData.filter(i => i.proxyName.bgcolor).map(i => i.proxyName.text).join(',') || 'DIRECT'
-        let proxies = serverEditorData.map(i => {
+        let flatServerData = serverEditorData.reduce((all, cur) => {
+            return {
+                rows: all.rows.concat(cur.rows)
+            }
+        }).rows
+        let autoGroup = flatServerData.filter(i => i.proxyName.bgcolor).map(i => i.proxyName.text).join(',') || 'DIRECT'
+        let proxies = flatServerData.map(i => {
             return i.proxyLink + (isTF ? ',udp-relay=true' : '')
         }).join('\n')
-        let proxyHeaders = serverEditorData.map(i => i.proxyName.text).join(', ')
+        let proxyHeaders = flatServerData.map(i => i.proxyName.text).join(', ')
         let rules = ''
         let prototype = ''
         let testFlight = ''
