@@ -885,6 +885,11 @@ function renderAboutUI() {
 function deleteServerGroup() {
     let serverData = $("serverEditor").data
     let sections = serverData.map(i => i.title)
+    if (sections.length === 1) {
+        $("serverEditor").data = []
+        saveWorkspace()
+        return
+    } 
     $ui.menu({
         items: sections.concat(['全部删除']),
         handler: function (title, idx) {
@@ -902,6 +907,12 @@ function deleteServerGroup() {
 function reverseServerGroup() {
     let serverData = $("serverEditor").data
     let sections = serverData.map(i => i.title)
+    if (sections.length === 1) {
+        serverData[0].rows.reverse()
+        $("serverEditor").data = serverData
+        saveWorkspace() 
+        return        
+    }
     $ui.menu({
         items: sections.concat(['组别倒序']),
         handler: function (title, idx) {
@@ -919,6 +930,16 @@ function reverseServerGroup() {
 function autoServerGroup() {
     let serverData = $("serverEditor").data
     let sections = serverData.map(i => i.title)
+    if (sections.length === 1) {
+        let allSelected = serverData[0].rows.every(item => cu.isEqual(item.proxyName.bgcolor, selectedColor))
+        serverData[0].rows.map(item => {
+            item.proxyName.bgcolor = allSelected? defaultColor: selectedColor
+            return item
+        })
+        $("serverEditor").data = serverData
+        saveWorkspace()
+        return
+    }
     $ui.menu({
         items: sections.concat(['全部Auto']),
         handler: function (title, idx) {
