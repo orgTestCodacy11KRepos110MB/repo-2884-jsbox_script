@@ -122,7 +122,7 @@ function renderUI() {
                     }, {
                         title: { text: '特殊代理' }
                     }, {
-                        title: { text: '删除节点' }
+                        title: { text: '删除分组' }
                     }],
                     template: [{
                         type: "label",
