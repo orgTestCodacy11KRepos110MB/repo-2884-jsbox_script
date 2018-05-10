@@ -469,22 +469,24 @@ function listReplace(sender, indexPath, obj) {
     sender.data = oldData
 }
 
-function getPrototype() {
+function getPrototype(done) {
     return new Promise((resolve, reject) => {
         $http.get({
             url: "https://raw.githubusercontent.com/lhie1/Rules/master/Surge/Prototype.conf",
             handler: function (resp) {
+                if (done) done()
                 resolve(resp.data)
             }
         })
     })
 }
 
-function getAutoRules(url) {
+function getAutoRules(url, done) {
     return new Promise((resolve, reject) => {
         $http.get({
             url: url,
             handler: function (resp) {
+                if (done) done()
                 resolve(resp.data)
             }
         })
@@ -1145,55 +1147,46 @@ function makeConf(params) {
         let headerRewrite = ''
         let hostName = ''
         let mitm = ''
-        getPrototype().then(res => {
-            'onProgress' in params && params.onProgress(0.1)
-            prototype = res
-            return getAutoRules(pu.apple)
-        }).then(res => {
-            'onProgress' in params && params.onProgress(0.2)
-            rules += '\n' + res
-            if (ads) {
-                return getAutoRules(pu.reject)
-            } else {
-                return Promise.resolve('')
-            }
-        }).then(res => {
-            'onProgress' in params && params.onProgress(0.3)
-            rules += '\n' + res.split("REJECT").join("REJECT-TINYGIF")
-            return getAutoRules(pu.proxy)
-        }).then(res => {
-            'onProgress' in params && params.onProgress(0.4)
-            rules += '\n' + res
-            return getAutoRules(pu.direct)
-        }).then(res => {
-            'onProgress' in params && params.onProgress(0.5)
-            rules += '\n' + res
-            return getAutoRules(pu.host)
-        }).then(res => {
-            'onProgress' in params && params.onProgress(0.6)
-            host = res
-            return getAutoRules(pu.urlrewrite)
-        }).then(res => {
-            'onProgress' in params && params.onProgress(0.7)
-            urlRewrite += res
-            if (ads) {
-                return getAutoRules(pu.urlreject)
-            } else {
-                return Promise.resolve('')
-            }
-        }).then(res => {
-            'onProgress' in params && params.onProgress(0.8)
-            urlReject += res
-            return getAutoRules(pu.headerrewrite)
-        }).then(res => {
-            'onProgress' in params && params.onProgress(0.9)
-            headerRewrite = res
-            return getAutoRules(pu.hostname)
-        }).then(res => {
-            'onProgress' in params && params.onProgress(1)
-            // hostName = 'hostname = ' + res.split('\n').join(', ')
-            hostName = res.split('\n')
-            console.log(hostName)
+
+        let pgs = 0
+
+        let onPgs = function() {
+            pgs += 0.1
+            'onProgress' in params && params.onProgress(pgs)
+        }
+
+        let emptyPromise = function(done) {
+            if (done) done()
+            return Promise.resolve('')
+        }
+
+        let promiseArray = [
+            getPrototype(onPgs), // 0
+            getAutoRules(pu.apple, onPgs), // 1
+            getAutoRules(pu.reject, onPgs),  // 2
+            getAutoRules(pu.proxy, onPgs), // 3
+            getAutoRules(pu.direct, onPgs), // 4
+            getAutoRules(pu.host, onPgs), // 5
+            getAutoRules(pu.urlrewrite, onPgs), // 6
+            getAutoRules(pu.urlreject, onPgs), // 7
+            getAutoRules(pu.headerrewrite, onPgs), // 8
+            getAutoRules(pu.hostname, onPgs) // 9
+        ]
+
+        if (!ads) {
+            promiseArray[2] = emptyPromise(onPgs)
+            promiseArray[7] = emptyPromise(onPgs)
+        }
+
+        Promise.all(promiseArray).then(v => {
+            console.log(v)
+            prototype = v[0]
+            rules += `\n${v[1]}\n${v[2].split("REJECT").join("REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
+            host = v[5]
+            urlRewrite += v[6]
+            urlReject += v[7]
+            headerRewrite = v[8]
+            hostName = v[9].split('\n')
 
             let seperateLines = function (content) {
                 return {
@@ -1284,6 +1277,8 @@ function makeConf(params) {
                     fileData: prototype
                 })
             }
+        }).catch(e => {
+            console.error(e)
         })
     } catch (e) {
         'onError' in params && params.onError(e)
