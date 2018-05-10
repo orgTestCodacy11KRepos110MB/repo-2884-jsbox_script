@@ -1,3 +1,5 @@
+const app = require('scripts/app')
+
 const FILE = 'data.js'
 
 let screenHeight = $device.info.screen.height
@@ -213,7 +215,12 @@ let renderExtensionUI = function () {
     })
     let savedData = JSON.parse($file.read(FILE).string)
     let proxyGroup = savedData.proxyGroupSettings.split('\n').filter(i => /^[\s\S]+=/.test(i)).map(i => i.split(/[\s]*=/)[0])
-    let proxies = ['🚀 Direct'].concat(proxyGroup, ['REJECT', 'REJECT-TINYGIF'], savedData.workspace.serverData.map(i => i.proxyName.text))
+    let flatServerData = savedData.workspace.serverData.reduce((all, cur) => {
+        return {
+            rows: all.rows.concat(cur.rows)
+        }
+    }).rows
+    let proxies = ['🚀 Direct'].concat(proxyGroup, ['REJECT', 'REJECT-TINYGIF'], flatServerData.map(i => i.proxyName.text))
     let proxiesData = genProxyDefaultData(proxies)
     let proxiesListHeight = proxiesData.length * 40
     $("proxyList").data = proxiesData
