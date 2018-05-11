@@ -523,7 +523,7 @@ function importMenu(params) {
 }
 
 function linkHandler(url, params) {
-    if (url.startsWith('ss')) {
+    if (/^ss:\/\//.test(url)) {
         proxyUtil.proxyFromURL({
             ssURL: url.trim(),
             handler: res => {
@@ -532,7 +532,7 @@ function linkHandler(url, params) {
             }
         })
 
-    } else if (url.startsWith('http')) {
+    } else if (/^https?:\/\//.test(url)) {
         $ui.loading(true)
         proxyUtil.proxyFromConf({
             confURL: url.trim(),
@@ -542,8 +542,8 @@ function linkHandler(url, params) {
                 saveURL(url, res.filename)
             }
         })
-    } else if (/[\S\s]+=[\s]*custom,/.test(url)) {
-        let urls = url.split(/[\r\n]+/g).map(i => i.trim()).filter(i => /[\S\s]+=[\s]*custom,/.test(i)).map(i => i.replace(/,[\s]*udp-relay=true/, ''))
+    } else if (/[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls),/.test(url)) {
+        let urls = url.split(/[\r\n]+/g).map(i => i.trim()).filter(i => /[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls),/.test(i)).map(i => i.replace(/,[\s]*udp-relay=true/, ''))
         let result = []
         for (let idx in urls) {
             result[idx] = urls[idx]
