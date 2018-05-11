@@ -1,17 +1,17 @@
 const filenameUtil = require('scripts/filenameUtil')
 
-function getServersFromConfFile(params) {
-    new Promise((resolve, reject) => {
+function promiseConf(url) {
+    return new Promise((resolve, reject) => {
         $http.get({
-            url: params.confURL,
+            url: url,
             handler: function (resp) {
                 let data = resp.data
-                let filename = params.confURL
+                let filename = url
                 try {
                     let matcher = resp.response.runtimeValue().invoke('allHeaderFields').rawValue()["Content-Disposition"].match(/filename=(.*?).conf/)
                     filename = matcher[1]
                 } catch (e) {
-                    filename = filenameUtil.getConfName(params.confURL)
+                    filename = filenameUtil.getConfName(url)
                 }
                 let servers = data.match(/\[Proxy\]([\s\S]*?)\[Proxy Group\]/)
                 if (servers != null) {
@@ -24,16 +24,23 @@ function getServersFromConfFile(params) {
                 }
             }
         })
-    }).then(res => {
-        let servers = res.servers.split(/[\n\r]+/).filter(item => item != '')
-        params.handler({ servers: servers, filename: res.filename })
+    })
+}
+
+function getServersFromConfFile(params) {
+    let promiseArray = params.urls.map(i => promiseConf(i))
+    Promise.all(promiseArray).then(confs => {
+        confs.forEach((res, idx) => {
+            let servers = res.servers.split(/[\n\r]+/).filter(item => item != '')
+            params.handler({ servers: servers, filename: res.filename, url: params.urls[idx] })
+        })
     }).catch(reason => {
         params.handler(null)
     })
 }
 
 function decodeScheme(params) {
-    let urls = params.ssURL.split(/[\n\r]+/g).map(i => i.trim()).filter(i => /ss:\/\//.test(i))
+    let urls = params.ssURL
     let result = []
     let tag
 

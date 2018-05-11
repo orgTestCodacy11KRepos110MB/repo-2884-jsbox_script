@@ -196,7 +196,7 @@ function renderUI() {
                         handler: (sender, indexPath) => {
                             $ui.menu({
                                 items: ["节点重命名", "组别重命名"],
-                                handler: function(title, idx) {
+                                handler: function (title, idx) {
                                     if (idx === 0) {
                                         let titleText = sender.object(indexPath).proxyName.text
                                         $input.text({
@@ -228,7 +228,7 @@ function renderUI() {
                                     }
                                 }
                             })
-                            
+
                         }
                     }, {
                         title: "特殊代理",
@@ -516,6 +516,7 @@ function importMenu(params) {
             } else {
                 let lm = savedURLS.length - 1
                 let url = savedURLS[lm - idx].url || savedURLS[lm - idx]
+                console.log([url, idx])
                 linkHandler(url, params)
             }
         }
@@ -523,35 +524,59 @@ function importMenu(params) {
 }
 
 function linkHandler(url, params) {
-    if (/^ss:\/\//.test(url)) {
-        proxyUtil.proxyFromURL({
-            ssURL: url.trim(),
-            handler: res => {
-                params.handler(res.servers, res.sstag)
-                saveURL(url, res.sstag)
-            }
-        })
+    let servers = {
+        shadowsocks: [],
+        surge: [],
+        online: [],
+        ignore: []
+    }
 
-    } else if (/^https?:\/\//.test(url)) {
-        $ui.loading(true)
-        proxyUtil.proxyFromConf({
-            confURL: url.trim(),
-            handler: res => {
-                params.handler(res.servers, res.filename)
-                $ui.loading(false)
-                saveURL(url, res.filename)
-            }
-        })
-    } else if (/[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls),/.test(url)) {
-        let urls = url.split(/[\r\n]+/g).map(i => i.trim()).filter(i => /[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls),/.test(i)).map(i => i.replace(/,[\s]*udp-relay=true/, ''))
-        let result = []
-        for (let idx in urls) {
-            result[idx] = urls[idx]
+    let urls = url.split(/[\r\n]+/g).map(i => i.trim()).filter(i => i !== '')
+    urls.forEach(item => {
+        if (/^ss:\/\//.test(item)) {
+            servers.shadowsocks.push(item)
+        } else if (/^https?:\/\//.test(item)) {
+            servers.online.push(item)
+        } else if (/[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls),/.test(item)) {
+            servers.surge.push(item)
+        } else {
+            servers.ignore.push(item)
         }
-        params.handler(result, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
-        saveURL(url, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
-    } else {
-        params.handler(null, null)
+    })
+
+    for (let k in servers) {
+        if (servers[k].length === 0) {
+            continue
+        }
+        if (k === 'shadowsocks') {
+            proxyUtil.proxyFromURL({
+                ssURL: servers[k],
+                handler: res => {
+                    params.handler(res.servers, res.sstag)
+                    saveURL(servers[k].join('\n'), res.sstag)
+                }
+            })
+        } else if (k === 'surge') {
+            let urls = servers[k].map(i => i.replace(/,[\s]*udp-relay=true/, ''))
+            let result = []
+            for (let idx in urls) {
+                result[idx] = urls[idx]
+            }
+            params.handler(result, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
+            saveURL(urls.join('\n'), urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
+        } else if (k === 'online') {
+            $ui.loading(true)
+            proxyUtil.proxyFromConf({
+                urls: servers[k],
+                handler: res => {
+                    params.handler(res.servers, res.filename)
+                    $ui.loading(false)
+                    saveURL(res.url, res.filename)
+                }
+            })
+        } else {
+            $ui.alert('剪贴板存在无法识别的行：\n\n' + servers.ignore.join('\n') + '\n\n以上行将被丢弃！')
+        }
     }
 }
 
@@ -889,7 +914,7 @@ function deleteServerGroup() {
         $("serverEditor").data = []
         saveWorkspace()
         return
-    } 
+    }
     $ui.menu({
         items: sections.concat(['全部删除']),
         handler: function (title, idx) {
@@ -910,8 +935,8 @@ function reverseServerGroup() {
     if (sections.length === 1) {
         serverData[0].rows.reverse()
         $("serverEditor").data = serverData
-        saveWorkspace() 
-        return        
+        saveWorkspace()
+        return
     }
     $ui.menu({
         items: sections.concat(['组别倒序']),
@@ -933,7 +958,7 @@ function autoServerGroup() {
     if (sections.length === 1) {
         let allSelected = serverData[0].rows.every(item => cu.isEqual(item.proxyName.bgcolor, selectedColor))
         serverData[0].rows.map(item => {
-            item.proxyName.bgcolor = allSelected? defaultColor: selectedColor
+            item.proxyName.bgcolor = allSelected ? defaultColor : selectedColor
             return item
         })
         $("serverEditor").data = serverData
@@ -1171,12 +1196,12 @@ function makeConf(params) {
 
         let pgs = 0
 
-        let onPgs = function() {
+        let onPgs = function () {
             pgs += 0.1
             'onProgress' in params && params.onProgress(pgs)
         }
 
-        let emptyPromise = function(done) {
+        let emptyPromise = function (done) {
             if (done) done()
             return Promise.resolve('')
         }
