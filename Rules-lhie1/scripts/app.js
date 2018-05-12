@@ -1289,8 +1289,8 @@ function makeConf(params) {
 
             prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
             prototype = prototype.replace('Proxys', proxies)
-            prototype = prototype.split('Proxy Header').join(proxyHeaders)
-            prototype = prototype.replace('ProxyHeader', autoGroup)
+            prototype = prototype.replace(/Proxy Header/g, proxyHeaders)
+            prototype = prototype.replace(/ProxyHeader/g, autoGroup)
             prototype = prototype.replace('# All Rules', rules)
             prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
             prototype = prototype.replace('# URL Rewrite', urlRewrite + prettyInsert(userUrl.add))
