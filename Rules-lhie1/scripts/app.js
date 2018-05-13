@@ -537,7 +537,7 @@ function linkHandler(url, params) {
             servers.shadowsocks.push(item)
         } else if (/^https?:\/\//.test(item)) {
             servers.online.push(item)
-        } else if (/[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls),/.test(item)) {
+        } else if (/[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls)/.test(item)) {
             servers.surge.push(item)
         } else {
             servers.ignore.push(item)
