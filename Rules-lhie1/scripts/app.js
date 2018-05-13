@@ -84,23 +84,35 @@ function renderUI() {
                 events: {
                     tapped: sender => {
                         importMenu({
-                            handler: (res, name) => {
+                            handler: (res, name, url) => {
+                                // 如果是托管，url不为undefined
+                                console.log([res, name, url])
                                 if (!res) {
                                     $ui.alert("没有检测到节点信息")
                                 }
                                 let listData = $("serverEditor").data || []
-                                let section = { title: name, rows: [] }
+                                let existsSec = listData.find(item => item.url === url)
+                                let section = existsSec || { title: name, rows: [], url: url }
+                                let selectedRows = []
+                                if (existsSec) {
+                                    selectedRows = section.rows.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyLink)
+                                }
+                                console.error(selectedRows)
+                                section.rows = []                                
                                 for (let idx in res) {
                                     if (res[idx].split("=")[1].trim() == 'direct') {
                                         // 过滤直连
                                         continue
                                     }
+                                    let selected = selectedRows.indexOf(res[idx]) >= 0
                                     section.rows.push({
-                                        proxyName: { text: res[idx].split('=')[0].trim(), bgcolor: defaultColor },
+                                        proxyName: { text: res[idx].split('=')[0].trim(), bgcolor: selected ? selectedColor : defaultColor },
                                         proxyLink: res[idx]
                                     })
                                 }
-                                listData.push(section)
+                                if (!existsSec) {
+                                    listData.push(section)
+                                }
                                 $("serverEditor").data = listData
                                 saveWorkspace()
                             }
@@ -494,7 +506,7 @@ function getAutoRules(url, done) {
 }
 
 function importMenu(params) {
-    let staticItems = ['剪贴板', '二维码']
+    let staticItems = ['剪贴板', '二维码', '更新列表节点']
     let savedURLS = JSON.parse($file.read(FILE).string).urls
     console.log(savedURLS)
     for (let i = 0; i < savedURLS.length && i < 3; i++) {
@@ -513,6 +525,9 @@ function importMenu(params) {
                         linkHandler(string, params)
                     }
                 })
+            } else if (staticIdx == 2) {
+                let listSections = $("serverEditor").data
+                linkHandler(listSections.map(i => i.url).join('\n'), params)
             } else {
                 let lm = savedURLS.length - 1
                 let url = savedURLS[lm - idx].url || savedURLS[lm - idx]
@@ -544,6 +559,8 @@ function linkHandler(url, params) {
         }
     })
 
+    console.log(servers)
+
     for (let k in servers) {
         if (servers[k].length === 0) {
             continue
@@ -552,7 +569,7 @@ function linkHandler(url, params) {
             proxyUtil.proxyFromURL({
                 ssURL: servers[k],
                 handler: res => {
-                    params.handler(res.servers, res.sstag)
+                    params.handler(res.servers, res.sstag, servers[k].join('\n'))
                     saveURL(servers[k].join('\n'), res.sstag)
                 }
             })
@@ -562,15 +579,17 @@ function linkHandler(url, params) {
             for (let idx in urls) {
                 result[idx] = urls[idx]
             }
-            params.handler(result, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
-            saveURL(urls.join('\n'), urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
+            $delay(0.3, function() {
+                params.handler(result, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim(), urls.join('\n'))
+                saveURL(urls.join('\n'), urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
+            })
         } else if (k === 'online') {
             $ui.loading(true)
             proxyUtil.proxyFromConf({
                 urls: servers[k],
                 handler: res => {
-                    params.handler(res.servers, res.filename)
-                    $ui.loading(false)
+                    $ui.loading(false)                    
+                    params.handler(res.servers, res.filename, res.url)
                     saveURL(res.url, res.filename)
                 }
             })
