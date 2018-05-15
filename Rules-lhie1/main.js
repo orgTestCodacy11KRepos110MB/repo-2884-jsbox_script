@@ -15,11 +15,14 @@ if (query.auto == 1) {
     return 
 }
 
-if ($app.env == $env.today) {
+if ($app.env === $env.today) {
     today.renderTodayUI()
     return
-} else if ($app.env == $env.safari) {
+} else if ($app.env === $env.safari) {
     extension.renderExtensionUI()
+    return
+} else if ($app.env === $env.action) {
+    extension.collectRules()
     return
 }
 

@@ -267,7 +267,19 @@ let genProxyDefaultData = function (proxies) {
     })
 }
 
+function collectRules() {
+    let confFile = $context.data.string
+    let reg = /\[Rule\]\n([\s\S]+)\n# Custom/
+    let matcher = confFile.match(reg)
+    if (matcher.length === 2) {
+        let rules = matcher[1]
+        saveRule(rules)
+    }
+    $context.close()    
+}
+
 
 module.exports = {
-    renderExtensionUI: renderExtensionUI
+    renderExtensionUI: renderExtensionUI,
+    collectRules: collectRules
 }
