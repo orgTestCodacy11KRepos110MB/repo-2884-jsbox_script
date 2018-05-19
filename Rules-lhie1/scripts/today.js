@@ -6,7 +6,8 @@ function renderTodayUI() {
     ruleUpdateUtil.getGitHubFilesSha({
         handler: sha => {
             let canUpdate = ruleUpdateUtil.checkUpdate(ruleUpdateUtil.getFilesSha(), sha)
-            $("updateStatus").text = canUpdate ? "检测到规则仓库有更新！" : ""
+            $("updateStatus").text = ""
+            $("newTag").hidden = !canUpdate
         }
     })
     $ui.render({
@@ -48,7 +49,7 @@ function renderTodayUI() {
                     id: "updateStatus",
                     text: "检查规则更新...",
                     font: $font(12),
-                    textColor: $rgba(50, 50, 50, 1)
+                    textColor: $rgba(50, 50, 50, .3)
                 },
                 layout: (make, view) => {
                     make.bottom.equalTo(view.super.bottom).offset(-5)
@@ -149,6 +150,19 @@ function renderTodayUI() {
                     make.top.equalTo($("pullBtn").bottom)
                     make.width.equalTo($("pullBtn").width)
                     make.centerX.equalTo($("jsboxBtn"))
+                }
+            }, {
+                type: "image",
+                props: {
+                    id: "newTag",
+                    data: $file.read("assets/new_rules_tag.png"),
+                    bgcolor: $rgba(255, 255, 255, 0),
+                    hidden: true
+                },
+                layout: (make, view) => {
+                    make.width.height.equalTo(15)
+                    make.centerY.equalTo(view.super).offset(-20)
+                    make.left.equalTo($("pullBtn").right).offset(-15)
                 }
             }]
         }]
