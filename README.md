@@ -20,7 +20,11 @@
 
 #### 10. [lhie1规则生成](https://jsboxbbs.com/d/290-lhie1)
 
+### 许可
 
-*欢迎打赏,感谢老板!*
+请遵守开源协议并注明出处。
+
+
+### 打赏
 
 ![感谢支持](https://raw.githubusercontent.com/Fndroid/jsbox_script/master/imgs/thankyou.jpg)
