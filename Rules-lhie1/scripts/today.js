@@ -16,6 +16,7 @@ function renderTodayUI() {
             title: "Surge3规则生成",
             frame: $rect(0, 0, sw, 110),
             hideNavbar: true,
+            navBarHidden: true
             // bgcolor: $rgba(255, 255, 255, 0)
         },
         views: [{
