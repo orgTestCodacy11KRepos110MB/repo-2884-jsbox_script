@@ -1197,7 +1197,8 @@ function makeConf(params) {
             return {
                 rows: all.rows.concat(cur.rows)
             }
-        }).rows
+        }, {rows: []}).rows
+        
         let autoGroup = flatServerData.filter(i => i.proxyName.bgcolor).map(i => i.proxyName.text).join(',') || 'DIRECT'
         let proxies = flatServerData.map(i => {
             return i.proxyLink + (isTF ? ',udp-relay=true' : '')
