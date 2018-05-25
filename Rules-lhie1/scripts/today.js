@@ -16,10 +16,27 @@ function renderTodayUI() {
             title: "Surge3规则生成",
             frame: $rect(0, 0, sw, 110),
             hideNavbar: true,
-            navBarHidden: true
-            // bgcolor: $rgba(255, 255, 255, 0)
+            navBarHidden: true,
+            bgcolor: $color("clear"),
+            radius: 0
         },
         views: [{
+            type: "blur",
+            props: {
+                id: "close",
+                style: 1,
+                radius: 0
+            },
+            layout: (make, view) => {
+                make.width.height.equalTo(view.super).offset(10)
+                make.top.equalTo(view.super.top).offset(-10)
+            },
+            events: {
+                tapped: sender => {
+                    $app.close(0.3)
+                }
+            }
+        }, {
             type: "view",
             props: {
                 id: "",
