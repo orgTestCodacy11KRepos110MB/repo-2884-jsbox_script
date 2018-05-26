@@ -19,7 +19,7 @@ function updateScript(version) {
         url: url,
         progress: (writed, total) => {
             if (writed == total) {
-                $delay(2, function() {
+                $delay(1, function() {
                     $ui.alert({
                         message: "更新成功，是否重启？",
                         actions: [{
