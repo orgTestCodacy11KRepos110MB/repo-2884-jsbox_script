@@ -2,7 +2,8 @@ const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
 
 const sw = $device.info.screen.width
 
-function renderTodayUI() {
+function renderTodayUI(bid) {
+    let isLauncher = bid === 'app.cyan.jsbox.ghost'
     ruleUpdateUtil.getGitHubFilesSha({
         handler: sha => {
             let canUpdate = ruleUpdateUtil.checkUpdate(ruleUpdateUtil.getFilesSha(), sha)
@@ -18,14 +19,14 @@ function renderTodayUI() {
             hideNavbar: true,
             navBarHidden: true,
             bgcolor: $color("clear"),
-            radius: 0
         },
         views: [{
             type: "blur",
             props: {
                 id: "close",
                 style: 1,
-                radius: 0
+                radius: 0,
+                hidden: !isLauncher
             },
             layout: (make, view) => {
                 make.width.height.equalTo(view.super).offset(10)
@@ -181,6 +182,25 @@ function renderTodayUI() {
                     make.width.height.equalTo(15)
                     make.centerY.equalTo(view.super).offset(-20)
                     make.left.equalTo($("pullBtn").right).offset(-15)
+                }
+            }, {
+                type: "image",
+                props: {
+                    id: "closeBtn",
+                    data: $file.read("assets/close_icon.png"),
+                    bgcolor: $rgba(255, 255, 255, 0),
+                    hidden: !isLauncher,
+                    alpha: 0.7
+                },
+                layout: (make, view) => {
+                    make.width.height.equalTo(20)
+                    make.top.equalTo(view.super.top).offset(10)
+                    make.right.equalTo(view.super.right).offset(-10)
+                },
+                events: {
+                    tapped: sender => {
+                        $app.close(.2)
+                    }
                 }
             }]
         }]

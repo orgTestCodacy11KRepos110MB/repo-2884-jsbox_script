@@ -9,6 +9,7 @@ $app.rotateDisabled = true
 
 let query = $context.query
 
+let bid = $objc("NSBundle").invoke("mainBundle.bundleIdentifier").rawValue()
 
 if (query.auto == 1) {
     app.autoGen()
@@ -16,7 +17,7 @@ if (query.auto == 1) {
 }
 
 if ($app.env === $env.today) {
-    today.renderTodayUI()
+    today.renderTodayUI(bid)
     return
 } else if ($app.env === $env.safari) {
     extension.renderExtensionUI()
