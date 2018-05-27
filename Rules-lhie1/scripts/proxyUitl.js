@@ -76,7 +76,7 @@ function decodeScheme(params) {
             port = htpr.split(':')[1]
             let ps = $text.URLDecode(url.match(/\?(.*?)#/)[1])
             let obfs = ps.match(/obfs=(.*?);/)[1]
-            let obfsHost = ps.match(/obfs-host=(.*?)[;$]{1}/)[1]
+            let obfsHost = ps.match(/obfs-host=(.*?)(;|$)/)[1]
             plugin = `obfs=${obfs}, obfs-host=${obfsHost}`
         } else {
             let mdps = url.match(/ss:\/\/(.*?)#/)[1]

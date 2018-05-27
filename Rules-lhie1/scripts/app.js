@@ -566,6 +566,7 @@ function linkHandler(url, params) {
             continue
         }
         if (k === 'shadowsocks') {
+            console.log(servers[k])
             proxyUtil.proxyFromURL({
                 ssURL: servers[k],
                 handler: res => {
