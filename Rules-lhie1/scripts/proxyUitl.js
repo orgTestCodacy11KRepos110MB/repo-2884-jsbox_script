@@ -75,9 +75,13 @@ function decodeScheme(params) {
             hostname = htpr.split(':')[0]
             port = htpr.split(':')[1]
             let ps = $text.URLDecode(url.match(/\?(.*?)#/)[1])
-            let obfs = ps.match(/obfs=(.*?);/)[1]
-            let obfsHost = ps.match(/obfs-host=(.*?)(;|$)/)[1]
-            plugin = `obfs=${obfs}, obfs-host=${obfsHost}`
+            let obfsMatcher = ps.match(/obfs=(.*?)(;|$)/)
+            let obfsHostMatcher = ps.match(/obfs-host=(.*?)(;|$)/)
+            if (obfsMatcher) {
+                let obfs = obfsMatcher[1]
+                let obfsHost = obfsHostMatcher? obfsHostMatcher[1] : 'cloudfront.net'
+                plugin = `obfs=${obfs}, obfs-host=${obfsHost}`
+            }
         } else {
             let mdps = url.match(/ss:\/\/(.*?)#/)[1]
             let padding = 4 - mdps.length % 4
