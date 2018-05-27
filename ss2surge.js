@@ -18,13 +18,20 @@ function decodeScheme(url) {
             let userinfo = $text.base64Decode(mdps)
             method = userinfo.split(':')[0]
             password = userinfo.split(':')[1]
+            console.log([method, password])
             let htpr = url.match(/@(.*?)\?/)[1].replace('\/', '')
             hostname = htpr.split(':')[0]
             port = htpr.split(':')[1]
+            console.log([hostname, port])
             let ps = $text.URLDecode(url.match(/\?(.*?)#/)[1])
-            let obfs = ps.match(/obfs=(.*?);/)[1]
-            let obfsHost = ps.match(/obfs-host=(.*?)[;$]{1}/)[1]
-            plugin = `obfs=${obfs}, obfs-host=${obfsHost}`
+            console.log(ps)
+            let obfsMatcher = ps.match(/obfs=(.*?)(;|$)/)
+            let obfsHostMatcher = ps.match(/obfs-host=(.*?)(;|$)/)
+            if (obfsMatcher) {
+                let obfs = obfsMatcher[1]
+                let obfsHost = obfsHostMatcher? obfsHostMatcher[1] : 'cloudfront.net'
+                plugin = `obfs=${obfs}, obfs-host=${obfsHost}`
+            }
         } else {
             let mdps = url.match(/ss:\/\/(.*?)#/)[1]
             let padding = 4 - mdps.length % 4
