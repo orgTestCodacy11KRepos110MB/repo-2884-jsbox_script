@@ -46,9 +46,17 @@ function updateScript(version) {
     })
 }
 
+function needUpdate(nv, ov) {
+    let getVersionWeight = i => {
+        return i.split('.').map(i => i * 1).reduce((s, i) => s * 100 + i)
+    }
+    return getVersionWeight(nv) > getVersionWeight(ov)
+}
+
 
 module.exports = {
     getCurVersion: getCurVersion,
     getLatestVersion: getLatestVersion,
-    updateScript: updateScript
+    updateScript: updateScript,
+    needUpdate: needUpdate
 }

@@ -1,15 +1,27 @@
 const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
+const updateUtil = require('scripts/updateUtil')
 
 const sw = $device.info.screen.width
 
+let pm = function(method) {
+    return new Promise((resolve, reject) => {
+        method({
+            handler: res => {
+                resolve(res)
+            }
+        })
+    })
+}
+
 function renderTodayUI(bid) {
     let isLauncher = bid === 'app.cyan.jsbox.ghost'
-    ruleUpdateUtil.getGitHubFilesSha({
-        handler: sha => {
-            let canUpdate = ruleUpdateUtil.checkUpdate(ruleUpdateUtil.getFilesSha(), sha)
-            $("updateStatus").text = ""
-            $("newTag").hidden = !canUpdate
-        }
+    let checks = [pm(ruleUpdateUtil.getGitHubFilesSha), pm(updateUtil.getLatestVersion)]
+    Promise.all(checks).then(res => {
+        $("updateStatus").text = ""
+        let canUpdate = ruleUpdateUtil.checkUpdate(ruleUpdateUtil.getFilesSha(), res[0])
+        let newVersion = updateUtil.needUpdate(res[1], updateUtil.getCurVersion())
+        $("newTag").hidden = !canUpdate
+        $("newVersionTag").hidden = !newVersion
     })
     $ui.render({
         props: {
@@ -41,9 +53,6 @@ function renderTodayUI(bid) {
             type: "view",
             props: {
                 id: "",
-                // borderColor: $rgba(50, 50, 50, 0.1),
-                // borderWidth: 2,
-                // radius: 10
             },
             layout: (make, view) => {
                 make.height.equalTo(110)
@@ -66,7 +75,7 @@ function renderTodayUI(bid) {
                 type: "label",
                 props: {
                     id: "updateStatus",
-                    text: "检查规则更新...",
+                    text: "检查规则/脚本更新...",
                     font: $font(12),
                     textColor: $rgba(50, 50, 50, .3)
                 },
@@ -181,7 +190,20 @@ function renderTodayUI(bid) {
                 layout: (make, view) => {
                     make.width.height.equalTo(15)
                     make.centerY.equalTo(view.super).offset(-20)
-                    make.left.equalTo($("pullBtn").right).offset(-15)
+                    make.left.equalTo($("pullBtn").right).offset(-10)
+                }
+            }, {
+                type: "image",
+                props: {
+                    id: "newVersionTag",
+                    data: $file.read("assets/new_version_tag.png"),
+                    bgcolor: $rgba(255, 255, 255, 0),
+                    hidden: true
+                },
+                layout: (make, view) => {
+                    make.width.height.equalTo(15)
+                    make.centerY.equalTo(view.super).offset(-20)
+                    make.left.equalTo($("jsboxBtn").right).offset(-10)
                 }
             }, {
                 type: "image",

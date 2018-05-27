@@ -34,7 +34,7 @@ app.renderUI()
 updateUtil.getLatestVersion({
     handler: version => {
         console.log([version, updateUtil.getCurVersion()])        
-        if (needUpdate(version, updateUtil.getCurVersion())) {
+        if (updateUtil.needUpdate(version, updateUtil.getCurVersion())) {
             $http.get({
                 url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/updateLog.md' + '?t=' + new Date().getTime(),
                 handler: resp=> {
@@ -77,10 +77,3 @@ updateUtil.getLatestVersion({
         }
     }
 })
-
-function needUpdate(nv, ov) {
-    let getVersionWeight = i => {
-        return i.split('.').map(i => i * 1).reduce((s, i) => s * 100 + i)
-    }
-    return getVersionWeight(nv) > getVersionWeight(ov)
-}
