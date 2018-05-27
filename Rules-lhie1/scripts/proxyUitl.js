@@ -1,5 +1,13 @@
 const filenameUtil = require('scripts/filenameUtil')
 
+String.prototype.strictTrim = function() {
+    let trimed = this.trim()
+    if ((matcher = trimed.match(/([\s\S]+),$/)) !== null) {
+        return matcher[1]
+    }
+    return trimed
+}
+
 function promiseConf(url) {
     return new Promise((resolve, reject) => {
         $http.get({
@@ -31,7 +39,8 @@ function getServersFromConfFile(params) {
     let promiseArray = params.urls.map(i => promiseConf(i))
     Promise.all(promiseArray).then(confs => {
         confs.forEach((res, idx) => {
-            let servers = res.servers.split(/[\n\r]+/).filter(item => item != '')
+            console.log(res.servers)
+            let servers = res.servers.split(/[\n\r]+/).filter(item => item !== '').map(i => i.strictTrim())
             params.handler({ servers: servers, filename: res.filename, url: params.urls[idx] })
         })
     }).catch(reason => {
