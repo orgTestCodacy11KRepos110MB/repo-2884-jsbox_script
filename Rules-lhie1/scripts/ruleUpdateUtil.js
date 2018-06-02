@@ -1,4 +1,6 @@
 const repo = 'https://api.github.com/repos/lhie1/Rules/contents/Auto'
+const commits = 'https://api.github.com/repos/lhie1/Rules/commits?path=Auto&sha=master'
+
 const FILE = 'data.js'
 
 function checkUpdate(oldSha, newSha) {
@@ -23,7 +25,7 @@ function getGitHubFilesSha(params) {
     $http.get({
         url: repo,
         handler: function (resp) {
-            if (resp.response.statusCode == 200) {
+            if (resp.response.statusCode === 200) {
                 let res = {}
                 resp.data.forEach(i => {
                     res[i.name] = i.sha
@@ -36,9 +38,23 @@ function getGitHubFilesSha(params) {
     })
 }
 
+function getLatestCommitMessage(params) {
+    $http.get({
+        url: commits,
+        handler: function(resp) {
+            if (resp.response.statusCode === 200 && resp.data.length > 0) {
+                params.handler(resp.data[0])
+            } else {
+                params.handler(null)
+            }
+        }
+    })
+}
+
 module.exports = {
     checkUpdate: checkUpdate,
     getGitHubFilesSha: getGitHubFilesSha,
     setFilesSha: setFilesSha,
-    getFilesSha: getFilesSha
+    getFilesSha: getFilesSha,
+    getLatestCommitMessage: getLatestCommitMessage
 }

@@ -1,9 +1,11 @@
 const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
 const updateUtil = require('scripts/updateUtil')
 
+const loadingHint = "检查规则/脚本更新..."
+
 const sw = $device.info.screen.width
 
-let pm = function(method) {
+let pm = function (method) {
     return new Promise((resolve, reject) => {
         method({
             handler: res => {
@@ -17,11 +19,13 @@ function renderTodayUI(bid) {
     let isLauncher = bid === 'app.cyan.jsbox.ghost'
     let checks = [pm(ruleUpdateUtil.getGitHubFilesSha), pm(updateUtil.getLatestVersion)]
     Promise.all(checks).then(res => {
-        $("updateStatus").text = ""
         let canUpdate = ruleUpdateUtil.checkUpdate(ruleUpdateUtil.getFilesSha(), res[0])
         let newVersion = updateUtil.needUpdate(res[1], updateUtil.getCurVersion())
         $("newTag").hidden = !canUpdate
         $("newVersionTag").hidden = !newVersion
+        return canUpdate ? pm(ruleUpdateUtil.getLatestCommitMessage) : Promise.resolve()
+    }).then(res => {
+        $("updateStatus").text = res? res.commit.message : ""
     })
     $ui.render({
         props: {
@@ -75,9 +79,9 @@ function renderTodayUI(bid) {
                 type: "label",
                 props: {
                     id: "updateStatus",
-                    text: "检查规则/脚本更新...",
+                    text: loadingHint,
                     font: $font(12),
-                    textColor: $rgba(50, 50, 50, .3)
+                    textColor: $rgba(50, 50, 50, .5)
                 },
                 layout: (make, view) => {
                     make.bottom.equalTo(view.super.bottom).offset(-5)
