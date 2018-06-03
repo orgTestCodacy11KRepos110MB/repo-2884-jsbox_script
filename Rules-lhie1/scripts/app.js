@@ -936,10 +936,25 @@ function deleteServerGroup() {
         return
     }
     $ui.menu({
-        items: sections.concat(['全部删除']),
+        items: sections.concat(['全部删除', '关键字删除']),
         handler: function (title, idx) {
-            if (idx === sections.length) {
+            if (title === '全部删除') {
                 $("serverEditor").data = []
+            } else if (title === '关键字删除') {
+                $input.text({
+                    type: $kbType.default,
+                    placeholder: "关键字，空格隔开",
+                    handler: function(text) {
+                        let keywords = text.split(/\s+/g)
+                        let editorData = $("serverEditor").data
+                        editorData.map(section => {
+                            section.rows = section.rows.filter(item => keywords.every(k => item.proxyName.text.indexOf(k) === -1))
+                            return section
+                        })
+                        $("serverEditor").data = editorData
+                        saveWorkspace()
+                    }
+                })
             } else {
                 serverData.splice(idx, 1)
                 $("serverEditor").data = serverData
@@ -1248,7 +1263,7 @@ function makeConf(params) {
         Promise.all(promiseArray).then(v => {
             console.log(v)
             prototype = v[0]
-            rules += `\n${v[1]}\n${v[2].split("REJECT").join("REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
+            rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
             host = v[5]
             urlRewrite += v[6]
             urlReject += v[7]
