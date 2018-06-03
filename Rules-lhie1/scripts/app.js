@@ -930,11 +930,6 @@ function renderAboutUI() {
 function deleteServerGroup() {
     let serverData = $("serverEditor").data
     let sections = serverData.map(i => i.title)
-    if (sections.length === 1) {
-        $("serverEditor").data = []
-        saveWorkspace()
-        return
-    }
     $ui.menu({
         items: sections.concat(['全部删除', '关键字删除']),
         handler: function (title, idx) {
@@ -944,14 +939,16 @@ function deleteServerGroup() {
                 $input.text({
                     type: $kbType.default,
                     placeholder: "关键字，空格隔开",
+                    text: JSON.parse($file.read(FILE).string).workspace.deleteKeywords || '',
                     handler: function(text) {
-                        let keywords = text.split(/\s+/g)
+                        let keywords = text.split(/\s+/g).filter(i => i !== '')
                         let editorData = $("serverEditor").data
                         editorData.map(section => {
                             section.rows = section.rows.filter(item => keywords.every(k => item.proxyName.text.indexOf(k) === -1))
                             return section
                         })
                         $("serverEditor").data = editorData
+                        $("serverControl").info = text
                         saveWorkspace()
                     }
                 })
@@ -1062,6 +1059,7 @@ function setUpWorkspace() {
                 $("usualSettings").data = nd
                 // videoProxy = workspace.videoProxy
                 $("serverEditor").info = workspace.videoProxy || {}
+                $("serverControl").info = workspace.deleteKeywords || ''
             }
         }
     })
@@ -1083,7 +1081,8 @@ function saveWorkspace() {
             i.title.textColor = cu.isEqual(defaultColor, i.title.textColor)
             return i
         }),
-        videoProxy: $("serverEditor").info || {}
+        videoProxy: $("serverEditor").info || {},
+        deleteKeywords: $("serverControl").info || ''
     }
     let file = JSON.parse($file.read(FILE).string)
     file.workspace = workspace
