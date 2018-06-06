@@ -3,6 +3,8 @@ const updateUtil = require('scripts/updateUtil')
 
 const loadingHint = "检查规则/脚本更新..."
 
+const scriptName = $addin.current.name
+
 const sw = $device.info.screen.width
 
 let pm = function (method) {
@@ -102,7 +104,7 @@ function renderTodayUI(bid) {
                 },
                 events: {
                     tapped: sender => {
-                        $app.openURL("jsbox://run?name=Rules-lhie1&auto=1")
+                        $app.openURL(`jsbox://run?name=${encodeURIComponent(scriptName)}&auto=1`)
                     }
                 },
             }, {
@@ -138,7 +140,7 @@ function renderTodayUI(bid) {
                 },
                 events: {
                     tapped: sender => {
-                        $app.openURL("jsbox://run?name=Rules-lhie1")
+                        $app.openURL(`jsbox://run?name=${encodeURIComponent(scriptName)}`)
                     }
                 }
             }, {

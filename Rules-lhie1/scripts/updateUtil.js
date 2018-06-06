@@ -14,6 +14,8 @@ function getLatestVersion(params) {
 
 function updateScript(version) {
     let url = 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/.output/Rules-lhie1.box' + '?t=' + new Date().getTime()
+    const scriptName = $addin.current.name
+    console.log('升级脚本' + scriptName)
     $ui.loading(true)
     $http.download({
         url: url,
@@ -28,7 +30,7 @@ function updateScript(version) {
                         }, {
                             title: "OK",
                             handler: function () {
-                                $addin.run("Rules-lhie1")
+                                $addin.run(scriptName)
                             }
                         }]
                     })
@@ -39,7 +41,7 @@ function updateScript(version) {
             $ui.loading(false)
             let box = resp.data
             $addin.save({
-                name: "Rules-lhie1",
+                name: scriptName,
                 data: box
             })
         }
