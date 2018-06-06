@@ -73,7 +73,7 @@ function renderUI() {
                 type: "button",
                 props: {
                     id: "serverURL",
-                    title: "导入节点"
+                    title: "节点操作"
                 },
                 layout: (make, view) => {
                     make.width.equalTo(screenWidth / 2 - 15)
@@ -506,33 +506,22 @@ function getAutoRules(url, done) {
 }
 
 function importMenu(params) {
-    let staticItems = ['剪贴板', '二维码', '更新列表节点']
-    let savedURLS = JSON.parse($file.read(FILE).string).urls
-    console.log(savedURLS)
-    for (let i = 0; i < savedURLS.length && i < 3; i++) {
-        staticItems.unshift(savedURLS[i].name || savedURLS[i])
-    }
+    let staticItems = ['剪贴板导入', '二维码导入', '更新列表节点']
     $ui.menu({
         items: staticItems,
         handler: function (title, idx) {
-            let staticIdx = idx - savedURLS.length
-            if (staticIdx == 0) {
+            if (title === staticItems[0]) {
                 let clipText = $clipboard.text
                 linkHandler(clipText, params)
-            } else if (staticIdx == 1) {
+            } else if (title === staticItems[1]) {
                 $qrcode.scan({
                     handler(string) {
                         linkHandler(string, params)
                     }
                 })
-            } else if (staticIdx == 2) {
+            } else if (title === staticItems[2]) {
                 let listSections = $("serverEditor").data
                 linkHandler(listSections.map(i => i.url).join('\n'), params)
-            } else {
-                let lm = savedURLS.length - 1
-                let url = savedURLS[lm - idx].url || savedURLS[lm - idx]
-                console.log([url, idx])
-                linkHandler(url, params)
             }
         }
     })
@@ -571,7 +560,6 @@ function linkHandler(url, params) {
                 ssURL: servers[k],
                 handler: res => {
                     params.handler(res.servers, res.sstag, servers[k].join('\n'))
-                    saveURL(servers[k].join('\n'), res.sstag)
                 }
             })
         } else if (k === 'surge') {
@@ -582,7 +570,6 @@ function linkHandler(url, params) {
             }
             $delay(0.3, function() {
                 params.handler(result, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim(), urls.join('\n'))
-                saveURL(urls.join('\n'), urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim())
             })
         } else if (k === 'online') {
             $ui.loading(true)
@@ -591,35 +578,12 @@ function linkHandler(url, params) {
                 handler: res => {
                     $ui.loading(false)                    
                     params.handler(res.servers, res.filename, res.url)
-                    saveURL(res.url, res.filename)
                 }
             })
         } else {
             $ui.alert('剪贴板存在无法识别的行：\n\n' + servers.ignore.join('\n') + '\n\n以上行将被丢弃！')
         }
     }
-}
-
-function saveURL(url, name) {
-    let settings = JSON.parse($file.read(FILE).string)
-    let urls = settings.urls
-    let idx = -1
-    urls.forEach((item, i) => {
-        if (item == url || item.url == url) {
-            idx = i
-        }
-    })
-    if (idx > -1) {
-        urls.splice(idx, 1)
-    }
-    urls.push({ url: url, name: name })
-    if (urls.length > 3) {
-        urls.shift()
-    }
-    $file.write({
-        data: $data({ "string": JSON.stringify(settings) }),
-        path: FILE
-    })
 }
 
 function write2file(key, value) {
