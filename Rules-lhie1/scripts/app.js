@@ -1180,7 +1180,7 @@ function makeConf(params) {
         
         let autoGroup = flatServerData.filter(i => i.proxyName.bgcolor).map(i => i.proxyName.text).join(',') || 'DIRECT'
         let proxies = flatServerData.map(i => {
-            return i.proxyLink + (isTF ? ',udp-relay=true' : '')
+            return i.proxyLink + (isTF ? ',udp-relay=true' : '') + ',tfo=true'
         }).join('\n')
         let proxyHeaders = flatServerData.map(i => i.proxyName.text).join(', ')
         let rules = ''
