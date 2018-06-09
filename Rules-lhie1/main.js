@@ -11,6 +11,8 @@ let query = $context.query
 
 let bid = $objc("NSBundle").invoke("mainBundle.bundleIdentifier").rawValue()
 
+$objc('notification').invoke('objectForKey')
+
 if (query.auto == 1) {
     app.autoGen()
     return 

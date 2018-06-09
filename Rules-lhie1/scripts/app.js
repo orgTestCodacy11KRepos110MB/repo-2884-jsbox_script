@@ -4,6 +4,7 @@ const su = require('scripts/sizeUtil')
 const cu = require('scripts/colorUtil')
 const videoReg = require('scripts/videoReg')
 const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
+const customViews = require('scripts/customViews')
 
 const FILE = 'data.js'
 
@@ -98,7 +99,7 @@ function renderUI() {
                                     selectedRows = section.rows.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyLink)
                                 }
                                 console.error(selectedRows)
-                                section.rows = []                                
+                                section.rows = []
                                 for (let idx in res) {
                                     if (res[idx].split("=")[1].trim() == 'direct') {
                                         // 过滤直连
@@ -568,7 +569,7 @@ function linkHandler(url, params) {
             for (let idx in urls) {
                 result[idx] = urls[idx]
             }
-            $delay(0.3, function() {
+            $delay(0.3, function () {
                 params.handler(result, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim(), urls.join('\n'))
             })
         } else if (k === 'online') {
@@ -576,7 +577,7 @@ function linkHandler(url, params) {
             proxyUtil.proxyFromConf({
                 urls: servers[k],
                 handler: res => {
-                    $ui.loading(false)                    
+                    $ui.loading(false)
                     params.handler(res.servers, res.filename, res.url)
                 }
             })
@@ -797,7 +798,9 @@ function renderAboutUI() {
                         } else if (indexPath.row == 1) {
                             previewMD(data, 'updateLog.md')
                         } else {
-                            $app.openURL("https://jsboxbbs.com/d/290-lhie1")
+                            $safari.open({
+                                url: "https://jsboxbbs.com/d/290-lhie1"
+                            })
                         }
                     }
                 }
@@ -868,9 +871,13 @@ function renderAboutUI() {
                 events: {
                     didSelect: (sender, indexPath, data) => {
                         if (indexPath.row == 0) {
-                            $app.openURL("https://t.me/Fndroid")
+                            $safari.open({
+                                url: "https://t.me/Fndroid",
+                            })
                         } else {
-                            $app.openURL("https://github.com/Fndroid/jsbox_script/tree/master/Rules-lhie1")
+                            $safari.open({
+                                url: "https://github.com/Fndroid/jsbox_script/tree/master/Rules-lhie1/README.md",
+                            })
                         }
                     }
                 }
@@ -904,7 +911,7 @@ function deleteServerGroup() {
                     type: $kbType.default,
                     placeholder: "关键字，空格隔开",
                     text: JSON.parse($file.read(FILE).string).workspace.deleteKeywords || '',
-                    handler: function(text) {
+                    handler: function (text) {
                         let keywords = text.split(/\s+/g).filter(i => i !== '')
                         let editorData = $("serverEditor").data
                         editorData.map(section => {
@@ -1176,8 +1183,8 @@ function makeConf(params) {
             return {
                 rows: all.rows.concat(cur.rows)
             }
-        }, {rows: []}).rows
-        
+        }, { rows: [] }).rows
+
         let autoGroup = flatServerData.filter(i => i.proxyName.bgcolor).map(i => i.proxyName.text).join(',') || 'DIRECT'
         let proxies = flatServerData.map(i => {
             return i.proxyLink + (isTF ? ',udp-relay=true' : '') + ',tfo=true'
