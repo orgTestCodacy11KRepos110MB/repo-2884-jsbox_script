@@ -1382,7 +1382,7 @@ function makeConf(params) {
             })
 
             let proxyNameLegal = function(name) {
-                return flatServerData.map(i => i.proxyName.text).concat(getProxyGroups()).find(i => i === name) !== undefined
+                return flatServerData.map(i => i.proxyName.text).concat(getProxyGroups()).concat(['🚀 Direct']).find(i => i === name) !== undefined
             }
 
             // 视频代理处理
