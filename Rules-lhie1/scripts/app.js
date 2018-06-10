@@ -1104,9 +1104,10 @@ function setUpWorkspace() {
                 $("fileName").text = workspace.fileName
                 let customProxyGroup = (workspace.customProxyGroup || { ProxyHeader: [] })
                 let defaultGroupName = 'ProxyHeader'
+                let defaultGroup = customProxyGroup[defaultGroupName] || []
                 $("serverEditor").data = workspace.serverData.map(section => {
                     section.rows.map(item => {
-                        item.proxyName.bgcolor = customProxyGroup[defaultGroupName].indexOf(item.proxyName.text) > -1 ? selectedColor : defaultColor
+                        item.proxyName.bgcolor = defaultGroup.indexOf(item.proxyName.text) > -1 ? selectedColor : defaultColor
                         return item
                     })
                     return section
