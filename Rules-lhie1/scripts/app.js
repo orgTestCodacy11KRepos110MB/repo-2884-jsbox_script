@@ -154,30 +154,32 @@ function renderUI() {
                         } else if (indexPath.item == 3) {
                             deleteServerGroup()
                         } else {
+                            let groups = getProxyGroups();
+                            const menuItems = groups.concat(['🚀 Direct', '查看设置', '清除设置'])
                             $ui.menu({
-                                items: ['🚀 Direct', '查看设置', '清除设置'],
-                                handler: function (title, idx) {
-                                    if (idx === 0) {
-                                        $ui.menu({
-                                            items: Object.keys(videoReg),
-                                            handler: function (title, idx) {
-                                                let proxyName = '🚀 Direct'
-                                                let videoProxy = $("serverEditor").info
-                                                videoProxy[title] = proxyName
-                                                $("serverEditor").info = videoProxy
-                                                saveWorkspace()
-                                            }
-                                        })
-                                    } else if (idx === 2) {
+                                items: menuItems,
+                                handler: function (mTitle, idx) {
+                                    if (idx === menuItems.length - 1) {
                                         $("serverEditor").info = {}
                                         saveWorkspace()
-                                    } else {
+                                    } else if (idx === menuItems.length - 2) {
                                         let videoProxy = $("serverEditor").info
                                         let output = []
                                         for (let k in videoProxy) {
                                             output.push(`${k} - ${videoProxy[k]}`)
                                         }
                                         $ui.alert(output.length > 0 ? output.join('\n') : "无设置特殊代理")
+                                    } else {
+                                        $ui.menu({
+                                            items: Object.keys(videoReg),
+                                            handler: function (title, idx) {
+                                                let proxyName = mTitle
+                                                let videoProxy = $("serverEditor").info
+                                                videoProxy[title] = proxyName
+                                                $("serverEditor").info = videoProxy
+                                                saveWorkspace()
+                                            }
+                                        })
                                     }
                                 }
                             })
@@ -475,6 +477,13 @@ function renderUI() {
     })
 }
 
+function getProxyGroups() {
+    let fileData = JSON.parse($file.read(FILE).string)
+    let proxyGroupSettings = fileData.proxyGroupSettings
+    let groups = proxyGroupSettings.split(/[\n\r]/).filter(i => /^[\s\S]+=[\s\S]+/.test(i)).map(i => i.split('=')[0].trim())
+    return groups
+}
+
 function groupShortcut() {
     let controlInfo = $("serverControl").info
     let customProxyGroup = controlInfo.customProxyGroup || {}
@@ -494,6 +503,8 @@ function groupShortcut() {
                         customProxyGroup[text] = []
                         $("serverControl").info = controlInfo
                         saveWorkspace()
+                        $ui.toast(`切换到占位符：${text}`)
+                        switchToGroup(text)
                     }
                 })
             } else {
@@ -504,20 +515,13 @@ function groupShortcut() {
                         title: '编辑',
                         handler: () => {
                             $ui.toast(`切换到占位符：${title}`)
-                            let group = customProxyGroup[title]
-                            // 保存当前编辑策略组
-                            controlInfo.currentProxyGroup = title
-                            $("serverControl").info = controlInfo
-                            // 恢复选中的策略组UI
-                            let listData = $("serverEditor").data || []
-                            listData = listData.map(section => {
-                                section.rows = section.rows.map(item => {
-                                    item.proxyName.bgcolor = group.indexOf(item.proxyName.text) > -1 ? selectedColor : defaultColor
-                                    return item
-                                })
-                                return section
-                            })
-                            $("serverEditor").data = listData
+                            switchToGroup(title)
+                        }
+                    }, {
+                        title: '复制',
+                        handler: () => {
+                            $clipboard.text = title
+                            $ui.toast("已复制到剪贴板")
                         }
                     }, {
                         title: '删除',
@@ -528,6 +532,8 @@ function groupShortcut() {
                             }
                             delete customProxyGroup[title]
                             $("serverControl").info = controlInfo
+                            saveWorkspace()
+                            $ui.toast(`已删除占位符：${title}`)
                         }
                     }, {
                         title: '取消'
@@ -536,6 +542,23 @@ function groupShortcut() {
             }
         }
     })
+
+    function switchToGroup(title) {
+        let group = customProxyGroup[title];
+        // 保存当前编辑策略组
+        controlInfo.currentProxyGroup = title;
+        $("serverControl").info = controlInfo;
+        // 恢复选中的策略组UI
+        let listData = $("serverEditor").data || [];
+        listData = listData.map(section => {
+            section.rows = section.rows.map(item => {
+                item.proxyName.bgcolor = group.indexOf(item.proxyName.text) > -1 ? selectedColor : defaultColor;
+                return item;
+            });
+            return section;
+        });
+        $("serverEditor").data = listData;
+    }
 }
 
 function listReplace(sender, indexPath, obj) {
@@ -1358,7 +1381,7 @@ function makeConf(params) {
             })
 
             let proxyNameLegal = function(name) {
-                return flatServerData.find(i => i.proxyName.text === name) !== undefined
+                return flatServerData.map(i => i.proxyName.text).concat(getProxyGroups()).find(i => i === name) !== undefined
             }
 
             // 视频代理处理
