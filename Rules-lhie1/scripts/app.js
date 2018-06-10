@@ -43,14 +43,6 @@ function renderUI() {
                 id: "mainView"
             },
             layout: $layout.fill,
-            events: {
-                // willEndDragging: (sender, velocity) => {
-                //     let vy = velocity.runtimeValue().invoke("CGPointValue").y
-                //     $("serverEditor").updateLayout((make, view) => {
-                //         make.height.equalTo(screenHeight - (vy >= 0 ? 380 : 330))
-                //     })
-                // }
-            },
             views: [{
                 type: "input",
                 props: {
@@ -60,7 +52,6 @@ function renderUI() {
                 },
                 layout: (make, view) => {
                     make.width.equalTo(screenWidth / 2 - 15)
-                    // make.centerX.equalTo(view.super)
                     make.height.equalTo(40)
                     make.left.top.equalTo(10)
                 },
@@ -96,7 +87,7 @@ function renderUI() {
                                 let section = existsSec || { title: name, rows: [], url: url }
                                 let selectedRows = []
                                 if (existsSec) {
-                                    selectedRows = section.rows.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyLink)
+                                    selectedRows = section.rows.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyName.text)
                                 }
                                 console.error(selectedRows)
                                 section.rows = []
@@ -105,7 +96,7 @@ function renderUI() {
                                         // 过滤直连
                                         continue
                                     }
-                                    let selected = selectedRows.indexOf(res[idx]) >= 0
+                                    let selected = selectedRows.indexOf(res[idx].split('=')[0].trim()) > -1
                                     section.rows.push({
                                         proxyName: { text: res[idx].split('=')[0].trim(), bgcolor: selected ? selectedColor : defaultColor },
                                         proxyLink: res[idx]
@@ -131,7 +122,7 @@ function renderUI() {
                     data: [{
                         title: { text: '节点倒序' }
                     }, {
-                        title: { text: '批量Auto' }
+                        title: { text: '策略组别' }
                     }, {
                         title: { text: '特殊代理' }
                     }, {
@@ -145,7 +136,8 @@ function renderUI() {
                             font: $font(14)
                         },
                         layout: $layout.fill
-                    }]
+                    }],
+                    info: {}
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
@@ -158,7 +150,7 @@ function renderUI() {
                         if (indexPath.item == 0) {
                             reverseServerGroup()
                         } else if (indexPath.item == 1) {
-                            autoServerGroup()
+                            groupShortcut()
                         } else if (indexPath.item == 3) {
                             deleteServerGroup()
                         } else {
@@ -282,10 +274,22 @@ function renderUI() {
                 events: {
                     didSelect: (sender, indexPath, data) => {
                         let proxyName = data.proxyName.text
-                        data.proxyName.bgcolor = cu.isEqual(data.proxyName.bgcolor, selectedColor) ? defaultColor : selectedColor
+                        let isSelected = cu.isEqual(data.proxyName.bgcolor, selectedColor)
+                        let controlInfo = $("serverControl").info
+                        let currentGroup = controlInfo.currentProxyGroup
+                        console.log(currentGroup)
+                        let customProxyGroup = controlInfo.customProxyGroup || {}
+                        if (isSelected) {
+                            data.proxyName.bgcolor = defaultColor
+                            customProxyGroup[currentGroup] = customProxyGroup[currentGroup].filter(i => i !== proxyName)
+                        } else {
+                            data.proxyName.bgcolor = selectedColor
+                            customProxyGroup[currentGroup].push(proxyName)
+                        }
                         let uiData = sender.data
                         uiData[indexPath.section].rows[indexPath.row] = data
                         sender.data = uiData
+                        $("serverControl").info = controlInfo
                         saveWorkspace()
                     },
                     reorderFinished: data => {
@@ -469,7 +473,69 @@ function renderUI() {
             }]
         }]
     })
+}
 
+function groupShortcut() {
+    let controlInfo = $("serverControl").info
+    let customProxyGroup = controlInfo.customProxyGroup || {}
+    let menuItems = Object.keys(customProxyGroup).concat(['新增'])
+    $ui.menu({
+        items: menuItems,
+        handler: function (title, idx) {
+            if (idx === menuItems.length - 1) {
+                $input.text({
+                    type: $kbType.default,
+                    placeholder: "占位符，在进阶设置中使用",
+                    handler: function (text) {
+                        if (['ProxyHeader', 'Proxy Header'].indexOf(text) > -1) {
+                            $ui.error("占位符名称冲突")
+                            return
+                        }
+                        customProxyGroup[text] = []
+                        $("serverControl").info = controlInfo
+                        saveWorkspace()
+                    }
+                })
+            } else {
+                $ui.alert({
+                    title: "请选择",
+                    message: "编辑或删除占位符",
+                    actions: [{
+                        title: '编辑',
+                        handler: () => {
+                            $ui.toast(`切换到占位符：${title}`)
+                            let group = customProxyGroup[title]
+                            // 保存当前编辑策略组
+                            controlInfo.currentProxyGroup = title
+                            $("serverControl").info = controlInfo
+                            // 恢复选中的策略组UI
+                            let listData = $("serverEditor").data || []
+                            listData = listData.map(section => {
+                                section.rows = section.rows.map(item => {
+                                    item.proxyName.bgcolor = group.indexOf(item.proxyName.text) > -1 ? selectedColor : defaultColor
+                                    return item
+                                })
+                                return section
+                            })
+                            $("serverEditor").data = listData
+                        }
+                    }, {
+                        title: '删除',
+                        handler: () => {
+                            if (['ProxyHeader', 'Proxy Header'].indexOf(title) > -1) {
+                                $ui.error("此占位符无法删除")
+                                return
+                            }
+                            delete customProxyGroup[title]
+                            $("serverControl").info = controlInfo
+                        }
+                    }, {
+                        title: '取消'
+                    }]
+                })
+            }
+        }
+    })
 }
 
 function listReplace(sender, indexPath, obj) {
@@ -910,7 +976,7 @@ function deleteServerGroup() {
                 $input.text({
                     type: $kbType.default,
                     placeholder: "关键字，空格隔开",
-                    text: JSON.parse($file.read(FILE).string).workspace.deleteKeywords || '',
+                    text: $("serverControl").info.deleteKeywords || '',
                     handler: function (text) {
                         let keywords = text.split(/\s+/g).filter(i => i !== '')
                         let editorData = $("serverEditor").data
@@ -919,7 +985,9 @@ function deleteServerGroup() {
                             return section
                         })
                         $("serverEditor").data = editorData
-                        $("serverControl").info = text
+                        let controlInfo = $("serverControl").info
+                        controlInfo.deleteKeywords = text
+                        $("serverControl").info = controlInfo
                         saveWorkspace()
                     }
                 })
@@ -1011,9 +1079,11 @@ function setUpWorkspace() {
                 let workspace = file.workspace
                 console.log(file)
                 $("fileName").text = workspace.fileName
+                let customProxyGroup = (workspace.customProxyGroup || { ProxyHeader: [] })
+                let defaultGroupName = 'ProxyHeader'
                 $("serverEditor").data = workspace.serverData.map(section => {
                     section.rows.map(item => {
-                        item.proxyName.bgcolor = item.proxyName.bgcolor ? selectedColor : defaultColor
+                        item.proxyName.bgcolor = customProxyGroup[defaultGroupName].indexOf(item.proxyName.text) > -1 ? selectedColor : defaultColor
                         return item
                     })
                     return section
@@ -1028,9 +1098,12 @@ function setUpWorkspace() {
                     return item
                 })
                 $("usualSettings").data = nd
-                // videoProxy = workspace.videoProxy
                 $("serverEditor").info = workspace.videoProxy || {}
-                $("serverControl").info = workspace.deleteKeywords || ''
+                $("serverControl").info = {
+                    deleteKeywords: workspace.deleteKeywords || '',
+                    customProxyGroup: customProxyGroup,
+                    currentProxyGroup: defaultGroupName
+                }
             }
         }
     })
@@ -1053,7 +1126,8 @@ function saveWorkspace() {
             return i
         }),
         videoProxy: $("serverEditor").info || {},
-        deleteKeywords: $("serverControl").info || ''
+        deleteKeywords: $("serverControl").info.deleteKeywords || '',
+        customProxyGroup: $("serverControl").info.customProxyGroup || {}
     }
     let file = JSON.parse($file.read(FILE).string)
     file.workspace = workspace
@@ -1168,6 +1242,7 @@ function makeConf(params) {
         let advanceSettings = JSON.parse($file.read(FILE).string)
         let workspace = advanceSettings.workspace
         let usualData = workspace.usualData
+        let customProxyGroup = workspace.customProxyGroup
 
         let usualValue = function (key) {
             return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key).title.bgcolor : false
@@ -1184,8 +1259,6 @@ function makeConf(params) {
                 rows: all.rows.concat(cur.rows)
             }
         }, { rows: [] }).rows
-
-        let autoGroup = flatServerData.filter(i => i.proxyName.bgcolor).map(i => i.proxyName.text).join(',') || 'DIRECT'
         let proxies = flatServerData.map(i => {
             return i.proxyLink + (isTF ? ',udp-relay=true' : '') + ',tfo=true'
         }).join('\n')
@@ -1284,10 +1357,15 @@ function makeConf(params) {
                 }
             })
 
+            let proxyNameLegal = function(name) {
+                return flatServerData.find(i => i.proxyName.text === name) !== undefined
+            }
+
             // 视频代理处理
             let videoProxy = workspace.videoProxy
             for (let videoType in videoProxy) {
                 let proxyName = videoProxy[videoType]
+                if (!proxyNameLegal(proxyName)) continue
                 rules.match(videoReg[videoType]).forEach(i => {
                     rules = rules.replace(i, i.replace('🍃 Proxy', proxyName))
                 })
@@ -1296,7 +1374,12 @@ function makeConf(params) {
             prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
             prototype = prototype.replace('Proxys', proxies)
             prototype = prototype.replace(/Proxy Header/g, proxyHeaders)
-            prototype = prototype.replace(/ProxyHeader/g, autoGroup)
+            for (let name in customProxyGroup) {
+                let nameReg = new RegExp(name, 'g')
+                let serverNames = customProxyGroup[name]
+                serverNames = serverNames.filter(i => proxyNameLegal(i))
+                prototype = prototype.replace(nameReg, serverNames.join(',') || 'DIRECT')
+            }
             prototype = prototype.replace('# All Rules', rules)
             prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
             prototype = prototype.replace('# URL Rewrite', urlRewrite + prettyInsert(userUrl.add))
