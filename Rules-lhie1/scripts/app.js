@@ -478,7 +478,7 @@ function renderUI() {
 function groupShortcut() {
     let controlInfo = $("serverControl").info
     let customProxyGroup = controlInfo.customProxyGroup || {}
-    let menuItems = Object.keys(customProxyGroup).concat(['新增'])
+    let menuItems = Object.keys(customProxyGroup).concat(['新增占位符'])
     $ui.menu({
         items: menuItems,
         handler: function (title, idx) {
@@ -499,7 +499,7 @@ function groupShortcut() {
             } else {
                 $ui.alert({
                     title: "请选择",
-                    message: "编辑或删除占位符",
+                    message: "占位符代表一组节点名称，配合进阶设置可以进行自定义策略组",
                     actions: [{
                         title: '编辑',
                         handler: () => {
