@@ -1115,8 +1115,8 @@ function setUpWorkspace() {
             if (file && file.workspace) {
                 let workspace = file.workspace
                 console.log(file)
-                $("fileName").text = workspace.fileName
-                $("serverSuffixEditor").text = workspace.serverSuffix
+                $("fileName").text = workspace.fileName || ''
+                $("serverSuffixEditor").text = workspace.serverSuffix || ''
                 let customProxyGroup = (workspace.customProxyGroup || { ProxyHeader: [] })
                 let defaultGroupName = 'ProxyHeader'
                 let defaultGroup = customProxyGroup[defaultGroupName] || []
