@@ -38,7 +38,7 @@ function renderUI() {
             title: "Surge3规则生成"
         },
         views: [{
-            type: "scroll",
+            type: "view",
             props: {
                 id: "mainView"
             },
@@ -64,14 +64,15 @@ function renderUI() {
             }, {
                 type: "button",
                 props: {
+                    type: $btnType.contactAdd,
                     id: "serverURL",
-                    title: "节点操作"
+                    title: " 添加、更新节点"
                 },
                 layout: (make, view) => {
                     make.width.equalTo(screenWidth / 2 - 15)
                     make.height.equalTo(40)
-                    make.left.equalTo($("fileName").right).offset(10)
-                    make.top.right.equalTo(10)
+                    make.right.equalTo(-10)
+                    make.top.equalTo(10)
                 },
                 events: {
                     tapped: sender => {
@@ -116,7 +117,7 @@ function renderUI() {
                 props: {
                     id: "serverControl",
                     columns: 4,
-                    // radius: 5,
+                    scrollEnabled: false,
                     itemHeight: 40,
                     bgcolor: $color("#f0f5f5"),
                     data: [{
@@ -300,23 +301,38 @@ function renderUI() {
                     }
                 }
             }, {
+                type: "input",
+                props: {
+                    id: "serverSuffixEditor",
+                    placeholder: ',udp-relay=true,tfo=true（节点后缀）',
+                    text: '',
+                    font: $font(18),
+                    type: $kbType.ascii
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(view.prev.bottom).offset(10)
+                    make.width.equalTo(view.prev)
+                    make.height.equalTo(45),
+                    make.centerX.equalTo(view.super)
+                },
+                events: {
+                    returned: sender => {
+                        $("serverSuffixEditor").blur()
+                        saveWorkspace()
+                    }
+                }
+            }, {
                 type: "matrix",
                 props: {
                     id: "usualSettings",
-                    columns: 2,
-                    // radius: 5,
+                    columns: 3,
                     itemHeight: 40,
-                    // bgcolor: $color("#f0f5f5"),
-                    // borderWidth: 1,
-                    // borderColor: $color("#f0f5f5"),
                     spacing: 5,
-                    selectable: true,
+                    scrollEnabled: false,
                     data: [{
                         title: { text: '去广告', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: '开启MITM', bgcolor: defaultColor, textColor: blackColor }
-                    }, {
-                        title: { text: 'UDP', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: '导出配置', bgcolor: defaultColor, textColor: blackColor }
                     }],
@@ -325,7 +341,7 @@ function renderUI() {
                         props: {
                             id: "title",
                             align: $align.center,
-                            font: $font(16),
+                            font: $font(14),
                             radius: 5,
                             borderColor: tintColor,
                             borderWidth: 0.3,
@@ -336,8 +352,8 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-10)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(100)
-                    make.top.equalTo($("serverEditor").bottom).offset(10)
+                    make.height.equalTo(50)
+                    make.top.equalTo($("serverSuffixEditor").bottom).offset(5)
                 },
                 events: {
                     didSelect: (sender, indexPath, data) => {
@@ -349,7 +365,7 @@ function renderUI() {
                         saveWorkspace()
                     }
                 }
-            },]
+            }]
         }, {
             type: "button",
             props: {
@@ -359,7 +375,6 @@ function renderUI() {
             },
             layout: (make, view) => {
                 make.width.equalTo((screenWidth / 2 - 15) * 0.686 - 10)
-                // make.centerX.equalTo(view.super)
                 make.left.equalTo(10)
                 make.height.equalTo(40)
                 make.top.equalTo($("usualSettings").bottom).offset(5)
@@ -395,7 +410,6 @@ function renderUI() {
             },
             layout: (make, view) => {
                 make.width.equalTo((screenWidth - 10) * 0.5 - 5)
-                // make.centerX.equalTo(view.super)
                 make.height.equalTo(40)
                 make.right.equalTo(view.super).offset(-10)
                 make.top.equalTo($("usualSettings").bottom).offset(5)
@@ -1102,6 +1116,7 @@ function setUpWorkspace() {
                 let workspace = file.workspace
                 console.log(file)
                 $("fileName").text = workspace.fileName
+                $("serverSuffixEditor").text = workspace.serverSuffix
                 let customProxyGroup = (workspace.customProxyGroup || { ProxyHeader: [] })
                 let defaultGroupName = 'ProxyHeader'
                 let defaultGroup = customProxyGroup[defaultGroupName] || []
@@ -1149,6 +1164,7 @@ function saveWorkspace() {
             i.title.textColor = cu.isEqual(defaultColor, i.title.textColor)
             return i
         }),
+        serverSuffix: $("serverSuffixEditor").text,
         videoProxy: $("serverEditor").info || {},
         deleteKeywords: $("serverControl").info.deleteKeywords || '',
         customProxyGroup: $("serverControl").info.customProxyGroup || {}
@@ -1274,7 +1290,7 @@ function makeConf(params) {
 
         let ads = usualValue('去广告')
         let isMitm = usualValue('开启MITM')
-        let isTF = usualValue('UDP')
+        // let isTF = usualValue('UDP')
         let isActionSheet = usualValue('导出配置')
 
         let serverEditorData = workspace.serverData
@@ -1284,7 +1300,7 @@ function makeConf(params) {
             }
         }, { rows: [] }).rows
         let proxies = flatServerData.map(i => {
-            return i.proxyLink + (isTF ? ',udp-relay=true' : '') + ',tfo=true'
+            return i.proxyLink + (workspace.serverSuffix || '')
         }).join('\n')
         let proxyHeaders = flatServerData.map(i => i.proxyName.text).join(', ')
         let rules = ''
