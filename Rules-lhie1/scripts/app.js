@@ -7,7 +7,6 @@ const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
 const customViews = require('scripts/customViews')
 
 const FILE = 'data.js'
-const DEFAULT_PROXY_PLACEHOLDER = 'ProxyHeader';
 
 const settingKeys = ['generalSettings', 'proxyGroupSettings', 'customSettings', 'hostSettings', 'urlrewriteSettings', 'headerrewriteSettings', 'ssidSettings', 'hostnameSettings', 'mitmSettings']
 
@@ -121,14 +120,21 @@ function renderUI() {
                     scrollEnabled: false,
                     itemHeight: 40,
                     bgcolor: $color("#f0f5f5"),
-                    data: makeControlItems(),
+                    data: [{
+                        title: { text: '节点倒序' }
+                    }, {
+                        title: { text: '策略组别' }
+                    }, {
+                        title: { text: '特殊代理' }
+                    }, {
+                        title: { text: '删除分组' }
+                    }],
                     template: [{
                         type: "label",
                         props: {
                             id: "title",
                             align: $align.center,
-                            font: $font(13),
-                            autoFontSize: true
+                            font: $font(14)
                         },
                         layout: $layout.fill
                     }],
@@ -485,18 +491,6 @@ function renderUI() {
     })
 }
 
-function makeControlItems() {
-    return [{
-        title: { text: '节点倒序' }
-    }, {
-        title: { text: $("serverControl").info.currentProxyGroup || DEFAULT_PROXY_PLACEHOLDER }
-    }, {
-        title: { text: '特殊代理' }
-    }, {
-        title: { text: '删除分组' }
-    }]
-}
-
 function getProxyGroups() {
     let fileData = JSON.parse($file.read(FILE).string)
     let proxyGroupSettings = fileData.proxyGroupSettings
@@ -506,9 +500,8 @@ function getProxyGroups() {
 
 function groupShortcut() {
     let controlInfo = $("serverControl").info
-    let currentProxyGroup = controlInfo.currentProxyGroup || DEFAULT_PROXY_PLACEHOLDER
     let customProxyGroup = controlInfo.customProxyGroup || {}
-    let menuItems = Object.keys(customProxyGroup).concat(['新增占位符']).filter(i => i !== currentProxyGroup)
+    let menuItems = Object.keys(customProxyGroup).concat(['新增占位符'])
     $ui.menu({
         items: menuItems,
         handler: function (title, idx) {
@@ -517,7 +510,7 @@ function groupShortcut() {
                     type: $kbType.default,
                     placeholder: "占位符，在进阶设置中使用",
                     handler: function (text) {
-                        if ([DEFAULT_PROXY_PLACEHOLDER, 'Proxy Header'].indexOf(text) > -1) {
+                        if (['ProxyHeader', 'Proxy Header'].indexOf(text) > -1) {
                             $ui.error("占位符名称冲突")
                             return
                         }
@@ -535,6 +528,7 @@ function groupShortcut() {
                     actions: [{
                         title: '编辑',
                         handler: () => {
+                            $ui.toast(`切换到占位符：${title}`)
                             switchToGroup(title)
                         }
                     }, {
@@ -546,7 +540,7 @@ function groupShortcut() {
                     }, {
                         title: '删除',
                         handler: () => {
-                            if ([DEFAULT_PROXY_PLACEHOLDER, 'Proxy Header'].indexOf(title) > -1) {
+                            if (['ProxyHeader', 'Proxy Header'].indexOf(title) > -1) {
                                 $ui.error("此占位符无法删除")
                                 return
                             }
@@ -577,7 +571,6 @@ function groupShortcut() {
             });
             return section;
         });
-        $("serverControl").data = makeControlItems()
         $("serverEditor").data = listData;
     }
 }
@@ -1124,7 +1117,7 @@ function setUpWorkspace() {
                 $("fileName").text = workspace.fileName || ''
                 $("serverSuffixEditor").text = workspace.serverSuffix || ''
                 let customProxyGroup = workspace.customProxyGroup || {}
-                let defaultGroupName = DEFAULT_PROXY_PLACEHOLDER
+                let defaultGroupName = 'ProxyHeader'
                 if (!(defaultGroupName in customProxyGroup)) {
                     customProxyGroup[defaultGroupName] = []
                 }
@@ -1154,7 +1147,7 @@ function setUpWorkspace() {
                 }
             } else if (file && !file.workspace) {
                 let customProxyGroup = {}
-                let defaultGroupName = DEFAULT_PROXY_PLACEHOLDER
+                let defaultGroupName = 'ProxyHeader'
                 customProxyGroup[defaultGroupName] = []
                 let defaultGroup = customProxyGroup[defaultGroupName]
                 $("serverControl").info = {
@@ -1406,7 +1399,7 @@ function makeConf(params) {
                 prototype = prototype.replace(/\[Proxy Group\][\s\S]+\[Rule\]/, pgs + '\n\n[Rule]')
             } else {
                 prototype = prototype.replace(/Proxy Header/g, proxyHeaders)
-                prototype = prototype.replace(/ProxyHeader/g, customProxyGroup[DEFAULT_PROXY_PLACEHOLDER].filter(i => proxyNameLegal(i)).join(',') || 'DIRECT')
+                prototype = prototype.replace(/ProxyHeader/g, customProxyGroup['ProxyHeader'].filter(i => proxyNameLegal(i)).join(',') || 'DIRECT')
             }
             // 配置常规设置
             if (advanceSettings.generalSettings) {
