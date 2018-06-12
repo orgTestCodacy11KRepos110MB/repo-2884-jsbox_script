@@ -1114,7 +1114,6 @@ function setUpWorkspace() {
             let file = JSON.parse($file.read(FILE).string)
             if (file && file.workspace) {
                 let workspace = file.workspace
-                console.log(file)
                 $("fileName").text = workspace.fileName || ''
                 $("serverSuffixEditor").text = workspace.serverSuffix || ''
                 let customProxyGroup = workspace.customProxyGroup || {}
@@ -1143,6 +1142,16 @@ function setUpWorkspace() {
                 $("serverEditor").info = workspace.videoProxy || {}
                 $("serverControl").info = {
                     deleteKeywords: workspace.deleteKeywords || '',
+                    customProxyGroup: customProxyGroup,
+                    currentProxyGroup: defaultGroupName
+                }
+            } else if (file && !file.workspace) {
+                let customProxyGroup = {}
+                let defaultGroupName = 'ProxyHeader'
+                customProxyGroup[defaultGroupName] = []
+                let defaultGroup = customProxyGroup[defaultGroupName]
+                $("serverControl").info = {
+                    deleteKeywords: '',
                     customProxyGroup: customProxyGroup,
                     currentProxyGroup: defaultGroupName
                 }
