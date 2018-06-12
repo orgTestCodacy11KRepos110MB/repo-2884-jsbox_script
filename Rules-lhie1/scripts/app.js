@@ -1117,9 +1117,12 @@ function setUpWorkspace() {
                 console.log(file)
                 $("fileName").text = workspace.fileName || ''
                 $("serverSuffixEditor").text = workspace.serverSuffix || ''
-                let customProxyGroup = (workspace.customProxyGroup || { ProxyHeader: [] })
+                let customProxyGroup = workspace.customProxyGroup || {}
                 let defaultGroupName = 'ProxyHeader'
-                let defaultGroup = customProxyGroup[defaultGroupName] || []
+                if (!(defaultGroupName in customProxyGroup)) {
+                    customProxyGroup[defaultGroupName] = []
+                }
+                let defaultGroup = customProxyGroup[defaultGroupName]
                 $("serverEditor").data = workspace.serverData.map(section => {
                     section.rows.map(item => {
                         item.proxyName.bgcolor = defaultGroup.indexOf(item.proxyName.text) > -1 ? selectedColor : defaultColor
@@ -1290,7 +1293,6 @@ function makeConf(params) {
 
         let ads = usualValue('去广告')
         let isMitm = usualValue('开启MITM')
-        // let isTF = usualValue('UDP')
         let isActionSheet = usualValue('导出配置')
 
         let serverEditorData = workspace.serverData
@@ -1299,8 +1301,14 @@ function makeConf(params) {
                 rows: all.rows.concat(cur.rows)
             }
         }, { rows: [] }).rows
+        let proxySuffix = workspace.serverSuffix.split(/\s*,\s*/g).map(i => i.replace(/\s/g, ''))
         let proxies = flatServerData.map(i => {
-            return i.proxyLink + (workspace.serverSuffix || '')
+            let notExistSuffix = proxySuffix.filter((ps, idx) => {
+                if (idx === 0 && ps === '') return true
+                return i.proxyLink.indexOf(ps) < 0
+            })
+            console.log(notExistSuffix)
+            return i.proxyLink + notExistSuffix.join(',')
         }).join('\n')
         let proxyHeaders = flatServerData.map(i => i.proxyName.text).join(', ')
         let rules = ''
