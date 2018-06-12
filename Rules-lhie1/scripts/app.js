@@ -312,7 +312,7 @@ function renderUI() {
                 layout: (make, view) => {
                     make.top.equalTo(view.prev.bottom).offset(10)
                     make.width.equalTo(view.prev)
-                    make.height.equalTo(45),
+                    make.height.equalTo(45)
                     make.centerX.equalTo(view.super)
                 },
                 events: {
@@ -1301,6 +1301,11 @@ function makeConf(params) {
                 rows: all.rows.concat(cur.rows)
             }
         }, { rows: [] }).rows
+
+        let proxyNameLegal = function (name) {
+            return flatServerData.map(i => i.proxyName.text).concat(getProxyGroups()).concat(['🚀 Direct']).find(i => i === name) !== undefined
+        }
+
         let proxySuffix = workspace.serverSuffix.split(/\s*,\s*/g).map(i => i.replace(/\s/g, ''))
         let proxies = flatServerData.map(i => {
             let notExistSuffix = proxySuffix.filter((ps, idx) => {
@@ -1374,7 +1379,18 @@ function makeConf(params) {
 
             // 配置代理分组
             if (advanceSettings.proxyGroupSettings) {
-                prototype = prototype.replace(/\[Proxy Group\][\s\S]+\[Rule\]/, advanceSettings.proxyGroupSettings + '\n\n[Rule]')
+                let pgs = advanceSettings.proxyGroupSettings
+                pgs = pgs.replace(/Proxy Header/g, proxyHeaders)
+                for (let name in customProxyGroup) {
+                    let nameReg = new RegExp(name, 'g')
+                    let serverNames = customProxyGroup[name]
+                    serverNames = serverNames.filter(i => proxyNameLegal(i))
+                    pgs = pgs.replace(nameReg, serverNames.join(',') || 'DIRECT')
+                }
+                prototype = prototype.replace(/\[Proxy Group\][\s\S]+\[Rule\]/, pgs + '\n\n[Rule]')
+            } else {
+                prototype = prototype.replace(/Proxy Header/g, proxyHeaders)
+                prototype = prototype.replace(/ProxyHeader/g, customProxyGroup['ProxyHeader'].filter(i => proxyNameLegal(i)).join(',') || 'DIRECT')
             }
             // 配置常规设置
             if (advanceSettings.generalSettings) {
@@ -1405,10 +1421,6 @@ function makeConf(params) {
                 }
             })
 
-            let proxyNameLegal = function(name) {
-                return flatServerData.map(i => i.proxyName.text).concat(getProxyGroups()).concat(['🚀 Direct']).find(i => i === name) !== undefined
-            }
-
             // 视频代理处理
             let videoProxy = workspace.videoProxy
             for (let videoType in videoProxy) {
@@ -1421,13 +1433,6 @@ function makeConf(params) {
 
             prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
             prototype = prototype.replace('Proxys', proxies)
-            prototype = prototype.replace(/Proxy Header/g, proxyHeaders)
-            for (let name in customProxyGroup) {
-                let nameReg = new RegExp(name, 'g')
-                let serverNames = customProxyGroup[name]
-                serverNames = serverNames.filter(i => proxyNameLegal(i))
-                prototype = prototype.replace(nameReg, serverNames.join(',') || 'DIRECT')
-            }
             prototype = prototype.replace('# All Rules', rules)
             prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
             prototype = prototype.replace('# URL Rewrite', urlRewrite + prettyInsert(userUrl.add))
