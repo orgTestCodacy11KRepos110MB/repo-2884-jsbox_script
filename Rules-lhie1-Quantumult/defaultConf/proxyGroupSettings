@@ -1,0 +1,20 @@
+[POLICY]
+🍃 Proxy : static, 🏃 Auto
+🏃 Auto
+🚀 Direct
+Proxy Header
+
+🍂 Domestic : static, 🚀 Direct
+🚀 Direct
+🍃 Proxy
+
+🍎 Only : static, 🚀 Direct
+🚀 Direct
+Proxy Header
+
+☁️ Others : static, 🚀 Direct
+🚀 Direct
+🍃 Proxy
+
+🏃 Auto : auto
+ProxyHeader
