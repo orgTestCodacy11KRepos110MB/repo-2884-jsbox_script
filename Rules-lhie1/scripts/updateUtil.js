@@ -24,7 +24,9 @@ function updateScript(version) {
                 data: box,
                 handler: (success) => {
                     if (success) {
-                        $ui.toast('静默更新完成')
+                        let donateList = $file.read("donate.md").string
+                        let names = donateList.split(/[\r\n]+/).filter(i => i!== '')
+                        $ui.toast(`静默更新完成，感谢${names.length - 3}位老板`)
                     }
                 }
             })
