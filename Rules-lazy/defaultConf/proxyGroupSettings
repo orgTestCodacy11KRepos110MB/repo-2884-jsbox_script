@@ -1,0 +1,2 @@
+[Proxy Group]
+Proxy = select, DIRECT, ProxyHTTP, ProxyHTTPS, ProxySOCKS5, ProxySOCKS5TLS, Custom
