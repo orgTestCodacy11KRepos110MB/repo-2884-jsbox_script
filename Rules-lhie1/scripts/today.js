@@ -5,6 +5,8 @@ const loadingHint = "检查规则/脚本更新..."
 
 const scriptName = $addin.current.name
 
+const FILE = 'data.js'
+
 const sw = $device.info.screen.width
 
 let pm = function (method) {
@@ -27,7 +29,7 @@ function renderTodayUI(bid) {
         $("newVersionTag").hidden = !newVersion
         return canUpdate ? pm(ruleUpdateUtil.getLatestCommitMessage) : Promise.resolve()
     }).then(res => {
-        $("updateStatus").text = res? res.commit.message : ""
+        $("updateStatus").text = res ? res.commit.message : ""
     })
     $ui.render({
         props: {
@@ -122,7 +124,10 @@ function renderTodayUI(bid) {
                 },
                 events: {
                     tapped: sender => {
-                        $app.openURL("surge3:///toggle?autoclose=true")
+                        let workspace = JSON.parse($file.read(FILE).string).workspace
+                        let usualData = workspace.usualData
+                        let surge2 = usualData.find(i => i.title.text == 'Surge2') ? usualData.find(i => i.title.text == 'Surge2').title.bgcolor : false
+                        $app.openURL(`surge${surge2 ? "" : "3"}:///toggle?autoclose=true`)
                     }
                 }
             }, {

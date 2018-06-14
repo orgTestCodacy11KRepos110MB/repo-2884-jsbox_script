@@ -1497,6 +1497,9 @@ function makeConf(params) {
 }
 
 function exportConf(fileName, fileData, actionSheet, actionSheetCancel) {
+    let workspace = JSON.parse($file.read(FILE).string).workspace
+    let usualData = workspace.usualData
+    let surge2 = usualData.find(i => i.title.text == 'Surge2') ? usualData.find(i => i.title.text == 'Surge2').title.bgcolor : false
     let fnReg = /^[\x21-\x2A\x2C-\x2E\x30-\x3B\x3D\x3F-\x5B\x5D\x5F\x61-\x7B\x7D-\x7E]+$/
     if (actionSheet || !fnReg.test(fileName)) {
         $share.sheet({
@@ -1525,7 +1528,7 @@ function exportConf(fileName, fileData, actionSheet, actionSheetCancel) {
                     url: serverUrl + "list?path=",
                     handler: function (resp) {
                         if (resp.response.statusCode == 200) {
-                            let surgeScheme = `surge3:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fileName)}`
+                            let surgeScheme = `surge${surge2 ? "": "3"}:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fileName)}`
                             $app.openURL(surgeScheme)
                         } else {
                             $ui.alert("内置服务器启动失败，请重试")
