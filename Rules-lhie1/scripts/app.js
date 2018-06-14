@@ -36,7 +36,7 @@ const blackColor = $color("#000000")
 function renderUI() {
     $ui.render({
         props: {
-            title: "Surge3规则生成"
+            title: "Surge规则生成"
         },
         views: [{
             type: "view",
@@ -319,7 +319,7 @@ function renderUI() {
                 type: "matrix",
                 props: {
                     id: "usualSettings",
-                    columns: 3,
+                    columns: 4,
                     itemHeight: 40,
                     spacing: 5,
                     scrollEnabled: false,
@@ -328,6 +328,8 @@ function renderUI() {
                     }, {
                         title: { text: '开启MITM', bgcolor: defaultColor, textColor: blackColor }
                     }, {
+                        title: { text: 'Surge2', bgcolor: defaultColor, textColor: blackColor }
+                    },{
                         title: { text: '导出配置', bgcolor: defaultColor, textColor: blackColor }
                     }],
                     template: [{
@@ -335,7 +337,7 @@ function renderUI() {
                         props: {
                             id: "title",
                             align: $align.center,
-                            font: $font(14),
+                            font: $font(12),
                             radius: 5,
                             borderColor: tintColor,
                             borderWidth: 0.3,
@@ -1314,6 +1316,7 @@ function makeConf(params) {
         let ads = usualValue('去广告')
         let isMitm = usualValue('开启MITM')
         let isActionSheet = usualValue('导出配置')
+        let surge2 = usualValue('Surge2')
 
         let serverEditorData = workspace.serverData
         let flatServerData = serverEditorData.reduce((all, cur) => {
@@ -1379,7 +1382,7 @@ function makeConf(params) {
         Promise.all(promiseArray).then(v => {
             console.log(v)
             prototype = v[0]
-            rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
+            rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
             host = v[5]
             urlRewrite += v[6]
             urlReject += v[7]
@@ -1455,7 +1458,7 @@ function makeConf(params) {
             prototype = prototype.replace('Proxys', proxies)
             prototype = prototype.replace('# All Rules', rules)
             prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
-            prototype = prototype.replace('# URL Rewrite', urlRewrite + prettyInsert(userUrl.add))
+            prototype = prototype.replace('# URL Rewrite', urlRewrite.replace(/307/g, surge2 ? '302': '307') + prettyInsert(userUrl.add))
             prototype = prototype.replace('# URL REJECT', urlReject)
             prototype = prototype.replace('# SSID', userSSID)
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
