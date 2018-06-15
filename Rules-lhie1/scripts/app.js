@@ -329,7 +329,7 @@ function renderUI() {
                         title: { text: '开启MITM', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: 'Surge2', bgcolor: defaultColor, textColor: blackColor }
-                    },{
+                    }, {
                         title: { text: '导出配置', bgcolor: defaultColor, textColor: blackColor }
                     }],
                     template: [{
@@ -491,7 +491,7 @@ function genControlItems() {
     let currentProxyGroup = PROXY_HEADER
     try {
         currentProxyGroup = $("serverControl").info.currentProxyGroup
-    } catch(e) {}
+    } catch (e) { }
     return [{
         title: { text: '节点倒序' }
     }, {
@@ -1346,6 +1346,15 @@ function makeConf(params) {
         let headerRewrite = ''
         let hostName = ''
         let rename = null
+        let rulesReplacement = null
+
+        if (advanceSettings.customSettings) {
+            let cs = advanceSettings.customSettings
+            let pat = cs.match(/\/\/\s*replacement\s*:\s*(.*?)[\n\r]/)
+            if (pat && pat[1]) {
+                rulesReplacement = pat[1]
+            }
+        }
 
         let pgs = 0
 
@@ -1377,9 +1386,22 @@ function makeConf(params) {
             promiseArray[7] = emptyPromise(onPgs)
         }
 
+        if (rulesReplacement) {
+            promiseArray[1] = getAutoRules(rulesReplacement)
+            promiseArray[2] = emptyPromise(onPgs)
+            promiseArray[3] = emptyPromise(onPgs)
+            promiseArray[4] = emptyPromise(onPgs)
+        }
+
         Promise.all(promiseArray).then(v => {
             console.log(v)
             prototype = v[0]
+            if (rulesReplacement) {
+                let repRules = v[1].match(/\[Rule\]([\S\s]*?)(?:\[|$)/)
+                if (repRules && repRules[1]) {
+                    v[1] = repRules[1]
+                }
+            }
             rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
             host = v[5]
             urlRewrite += v[6]
@@ -1455,9 +1477,13 @@ function makeConf(params) {
 
             prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
             prototype = prototype.replace('Proxys', proxies)
-            prototype = prototype.replace('# All Rules', rules)
+            if (rulesReplacement) {
+                prototype = prototype.replace(/\[Rule\][\s\S]*?(?:\[|$)/, `[Rule]\n${prettyInsert(customRules.add)}\n${rules}\n[`)
+            } else {
+                prototype = prototype.replace('# All Rules', rules)
+            }
             prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
-            prototype = prototype.replace('# URL Rewrite', urlRewrite.replace(/307/g, surge2 ? '302': '307') + prettyInsert(userUrl.add))
+            prototype = prototype.replace('# URL Rewrite', urlRewrite.replace(/307/g, surge2 ? '302' : '307') + prettyInsert(userUrl.add))
             prototype = prototype.replace('# URL REJECT', urlReject)
             prototype = prototype.replace('# SSID', userSSID)
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
@@ -1537,7 +1563,7 @@ function exportConf(fileName, fileData, actionSheet, actionSheetCancel) {
                     url: serverUrl + "list?path=",
                     handler: function (resp) {
                         if (resp.response.statusCode == 200) {
-                            let surgeScheme = `surge${surge2 ? "": "3"}:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fileName)}`
+                            let surgeScheme = `surge${surge2 ? "" : "3"}:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fileName)}`
                             $app.openURL(surgeScheme)
                         } else {
                             $ui.alert("内置服务器启动失败，请重试")
