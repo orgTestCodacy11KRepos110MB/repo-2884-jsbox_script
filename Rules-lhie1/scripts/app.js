@@ -506,7 +506,7 @@ function genControlItems() {
 function getProxyGroups() {
     let fileData = JSON.parse($file.read(FILE).string)
     let proxyGroupSettings = fileData.proxyGroupSettings
-    let groups = proxyGroupSettings.split(/[\n\r]/).filter(i => /^[\s\S]+=[\s\S]+/.test(i)).map(i => i.split('=')[0].trim())
+    let groups = proxyGroupSettings.split(/[\n\r]/).filter(i => /^(?!\/\/)[\s\S]+=[\s\S]+/.test(i)).map(i => i.split('=')[0].trim())
     return groups
 }
 
@@ -1335,19 +1335,17 @@ function makeConf(params) {
                 if (idx === 0 && ps === '') return true
                 return i.proxyLink.indexOf(ps) < 0
             })
-            console.log(notExistSuffix)
             return i.proxyLink + notExistSuffix.join(',')
         }).join('\n')
         let proxyHeaders = flatServerData.map(i => i.proxyName.text).join(', ')
         let rules = ''
         let prototype = ''
-        let testFlight = ''
         let host = ''
         let urlRewrite = ''
         let urlReject = ''
         let headerRewrite = ''
         let hostName = ''
-        let mitm = ''
+        let rename = null
 
         let pgs = 0
 
@@ -1403,6 +1401,7 @@ function makeConf(params) {
             // 配置代理分组
             if (advanceSettings.proxyGroupSettings) {
                 let pgs = advanceSettings.proxyGroupSettings
+                rename = pgs.match(/\/\/\s*rename\s*:\s*(.*?)[\n\r]/)
                 pgs = pgs.replace(/Proxy Header/g, proxyHeaders)
                 for (let name in customProxyGroup) {
                     let nameReg = new RegExp(name, 'g')
@@ -1463,6 +1462,16 @@ function makeConf(params) {
             prototype = prototype.replace('# SSID', userSSID)
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
             prototype = prototype.replace('// Hostname', 'hostname = ' + hostName.concat(userHostname.add.filter(i => i != '')).join(', '))
+
+            if (rename && rename[1]) {
+                let renamePat = rename[1].split(/\s*,\s*/g).filter(i => i.indexOf('=') > -1).map(i => i.split(/\s*=\s*/))
+                renamePat.forEach(i => {
+                    let oldName = i[0]
+                    let newName = i[1]
+                    let oldNameReg = new RegExp(oldName, 'g')
+                    prototype = prototype.replace(oldNameReg, newName)
+                })
+            }
 
             if (isMitm) {
                 prototype = prototype.replace('# MITM', advanceSettings.mitmSettings)
