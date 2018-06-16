@@ -5,7 +5,7 @@ const updateUtil = require('scripts/updateUtil')
 
 $app.autoKeyboardEnabled = true
 $app.rotateDisabled = true
-// $app.keyboardToolbarEnabled = true
+$app.keyboardToolbarEnabled = true
 
 let query = $context.query
 

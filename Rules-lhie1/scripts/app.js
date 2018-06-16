@@ -1,10 +1,8 @@
 const proxyUtil = require('scripts/proxyUitl')
 const updateUtil = require('scripts/updateUtil')
-const su = require('scripts/sizeUtil')
 const cu = require('scripts/colorUtil')
 const videoReg = require('scripts/videoReg')
 const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
-const customViews = require('scripts/customViews')
 
 const FILE = 'data.js'
 const PROXY_HEADER = 'ProxyHeader'
@@ -57,9 +55,11 @@ function renderUI() {
                     make.left.top.equalTo(10)
                 },
                 events: {
-                    returned: sender => {
-                        $("fileName").blur()
+                    changed: sender => {
                         saveWorkspace()
+                    },
+                    returned: sender => {
+                        sender.blur()
                     }
                 }
             }, {
@@ -142,42 +142,15 @@ function renderUI() {
                 },
                 events: {
                     didSelect: (sender, indexPath, data) => {
-                        if (indexPath.item == 0) {
+                        let btnTitle = data.title.text
+                        if (btnTitle === '节点倒序') {
                             reverseServerGroup()
-                        } else if (indexPath.item == 1) {
-                            groupShortcut()
-                        } else if (indexPath.item == 3) {
+                        } else if (btnTitle === '删除分组') {
                             deleteServerGroup()
+                        } else if (btnTitle === '特殊代理') {
+                            specialProxyGroup();
                         } else {
-                            let groups = getProxyGroups();
-                            const menuItems = groups.concat(['🚀 Direct', '查看设置', '清除设置'])
-                            $ui.menu({
-                                items: menuItems,
-                                handler: function (mTitle, idx) {
-                                    if (idx === menuItems.length - 1) {
-                                        $("serverEditor").info = {}
-                                        saveWorkspace()
-                                    } else if (idx === menuItems.length - 2) {
-                                        let videoProxy = $("serverEditor").info
-                                        let output = []
-                                        for (let k in videoProxy) {
-                                            output.push(`${k} - ${videoProxy[k]}`)
-                                        }
-                                        $ui.alert(output.length > 0 ? output.join('\n') : "无设置特殊代理")
-                                    } else {
-                                        $ui.menu({
-                                            items: Object.keys(videoReg),
-                                            handler: function (title, idx) {
-                                                let proxyName = mTitle
-                                                let videoProxy = $("serverEditor").info
-                                                videoProxy[title] = proxyName
-                                                $("serverEditor").info = videoProxy
-                                                saveWorkspace()
-                                            }
-                                        })
-                                    }
-                                }
-                            })
+                            groupShortcut()
                         }
                     }
                 }
@@ -487,6 +460,44 @@ function renderUI() {
     })
 }
 
+function specialProxyGroup() {
+    if (getRulesReplacement()) {
+        $ui.alert('检测到有规则替换，无法使用特殊代理设置')
+        return
+    }
+    let groups = getProxyGroups();
+    const menuItems = groups.concat(['🚀 Direct', '查看设置', '清除设置']);
+    $ui.menu({
+        items: menuItems,
+        handler: function (mTitle, idx) {
+            if (idx === menuItems.length - 1) {
+                $("serverEditor").info = {};
+                saveWorkspace();
+            }
+            else if (idx === menuItems.length - 2) {
+                let videoProxy = $("serverEditor").info;
+                let output = [];
+                for (let k in videoProxy) {
+                    output.push(`${k} - ${videoProxy[k]}`);
+                }
+                $ui.alert(output.length > 0 ? output.join('\n') : "无设置特殊代理");
+            }
+            else {
+                $ui.menu({
+                    items: Object.keys(videoReg),
+                    handler: function (title, idx) {
+                        let proxyName = mTitle;
+                        let videoProxy = $("serverEditor").info;
+                        videoProxy[title] = proxyName;
+                        $("serverEditor").info = videoProxy;
+                        saveWorkspace();
+                    }
+                });
+            }
+        }
+    });
+}
+
 function genControlItems() {
     let currentProxyGroup = PROXY_HEADER
     try {
@@ -725,7 +736,7 @@ function renderAdvanceUI() {
                 font: $font(14)
             },
             events: {
-                didEndEditing: sender => {
+                didChange: sender => {
                     let content = sender.text
                     if (sender.text == '') {
                         content = $file.read('defaultConf/' + settingKeys[idx]).string
@@ -1218,8 +1229,6 @@ function setDefaultSettings() {
 }
 
 function autoGen() {
-    let settings = JSON.parse($file.read(FILE).string)
-    console.log(settings)
     $ui.render({
         props: {
             title: ""
@@ -1253,6 +1262,22 @@ function autoGen() {
                     make.center.equalTo(view.super)
                     make.height.equalTo(3)
                 }
+            }, {
+                type: "button",
+                props: {
+                    title: "CLOSE"
+                },
+                layout: (make, view) => {
+                    make.width.equalTo(80)
+                    make.top.equalTo(view.prev.bottom).offset(20)
+                    make.centerX.equalTo(view.super)
+                },
+                events: {
+                    tapped: sender => {
+                        $http.stopServer()
+                        $app.close()
+                    }
+                }
             }]
         }]
     })
@@ -1270,20 +1295,11 @@ function autoGen() {
                         $http.stopServer()
                         $app.close()
                     })
-                    $app.listen({
-                        resume: function () {
-                            $http.stopServer()
-                            $app.close()
-                        }
-                    })
                 },
                 onError: res => {
                     $ui.alert("无法生成配置文件，可能是规则仓库发生变化或网络出现问题")
                 }
             })
-        },
-        exit: function () {
-
         }
     })
 }
@@ -1346,15 +1362,7 @@ function makeConf(params) {
         let headerRewrite = ''
         let hostName = ''
         let rename = null
-        let rulesReplacement = null
-
-        if (advanceSettings.customSettings) {
-            let cs = advanceSettings.customSettings
-            let pat = cs.match(/\/\/\s*replacement\s*:\s*(.*?)[\n\r]/)
-            if (pat && pat[1]) {
-                rulesReplacement = pat[1]
-            }
-        }
+        let rulesReplacement = getRulesReplacement()
 
         let pgs = 0
 
@@ -1423,7 +1431,7 @@ function makeConf(params) {
             // 配置代理分组
             if (advanceSettings.proxyGroupSettings) {
                 let pgs = advanceSettings.proxyGroupSettings
-                rename = pgs.match(/\/\/\s*rename\s*:\s*(.*?)[\n\r]/)
+                rename = pgs.match(/\/\/\s*rename\s*:\s*(.*?)(?:\n|\r|$)/)
                 pgs = pgs.replace(/Proxy Header/g, proxyHeaders)
                 for (let name in customProxyGroup) {
                     let nameReg = new RegExp(name, 'g')
@@ -1531,6 +1539,18 @@ function makeConf(params) {
     }
 }
 
+function getRulesReplacement(content = '') {
+    let advanceSettings = content ? content : JSON.parse($file.read(FILE).string)
+    if (advanceSettings.customSettings) {
+        let cs = advanceSettings.customSettings;
+        let pat = cs.match(/\/\/\s*replacement\s*:\s*(.*?)(?:\n|\r|$)/);
+        if (pat && pat[1]) {
+            return pat[1];
+        }
+    }
+    return null;
+}
+
 function exportConf(fileName, fileData, actionSheet, actionSheetCancel) {
     let workspace = JSON.parse($file.read(FILE).string).workspace
     let usualData = workspace.usualData
@@ -1578,5 +1598,6 @@ function exportConf(fileName, fileData, actionSheet, actionSheetCancel) {
 module.exports = {
     renderUI: renderUI,
     setUpWorkspace: setUpWorkspace,
-    autoGen: autoGen
+    autoGen: autoGen,
+    getRulesReplacement: getRulesReplacement
 }

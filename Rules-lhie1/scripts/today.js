@@ -29,7 +29,8 @@ function renderTodayUI(bid) {
         $("newVersionTag").hidden = !newVersion
         return canUpdate ? pm(ruleUpdateUtil.getLatestCommitMessage) : Promise.resolve()
     }).then(res => {
-        $("updateStatus").text = res ? res.commit.message : ""
+        let { owner, repoName, filePath } = ruleUpdateUtil.getRepoInfo()
+        $("updateStatus").text = res ? res.commit.message : `${owner}\/${repoName}`
     })
     $ui.render({
         props: {
@@ -85,7 +86,7 @@ function renderTodayUI(bid) {
                     id: "updateStatus",
                     text: loadingHint,
                     font: $font(12),
-                    textColor: $rgba(50, 50, 50, .5)
+                    textColor: $rgba(50, 50, 50, .3)
                 },
                 layout: (make, view) => {
                     make.bottom.equalTo(view.super.bottom).offset(-5)

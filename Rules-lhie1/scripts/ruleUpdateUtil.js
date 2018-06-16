@@ -1,7 +1,18 @@
-const repo = 'https://api.github.com/repos/lhie1/Rules/contents/Auto'
-const commits = 'https://api.github.com/repos/lhie1/Rules/commits?path=Auto&sha=master'
+let githubRawReg = /^https:\/\/raw\.githubusercontent\.com\/(.*?)\/(.*?)\/master\/(.*?)$/
 
 const FILE = 'data.js'
+
+function getRulesReplacement(content = '') {
+    let advanceSettings = content ? content : JSON.parse($file.read(FILE).string)
+    if (advanceSettings.customSettings) {
+        let cs = advanceSettings.customSettings;
+        let pat = cs.match(/\/\/\s*replacement\s*:\s*(.*?)[\n\r]/);
+        if (pat && pat[1]) {
+            return pat[1];
+        }
+    }
+    return null;
+}
 
 function checkUpdate(oldSha, newSha) {
     return Object.keys(newSha).some(i => oldSha[i] !== newSha[i])
@@ -22,12 +33,14 @@ function getFilesSha() {
 }
 
 function getGitHubFilesSha(params) {
+    let { owner, repoName, filePath } = getRepoInfo();
     $http.get({
-        url: repo,
+        url: `https://api.github.com/repos/${owner}/${repoName}/contents/${filePath}`,
         handler: function (resp) {
             if (resp.response.statusCode === 200) {
                 let res = {}
-                resp.data.forEach(i => {
+                let respData = Array.isArray(resp.data) ? resp.data: [resp.data]
+                respData.forEach(i => {
                     res[i.name] = i.sha
                 })
                 params.handler(res)
@@ -38,9 +51,26 @@ function getGitHubFilesSha(params) {
     })
 }
 
+function getRepoInfo() {
+    let owner = 'lhie1';
+    let repoName = 'Rules';
+    let filePath = 'Auto';
+    let rulesRep = getRulesReplacement();
+    if (rulesRep) {
+        let reg = rulesRep.match(githubRawReg);
+        if (reg && reg.length === 4) {
+            owner = reg[1];
+            repoName = reg[2];
+            filePath = reg[3];
+        }
+    }
+    return { owner, repoName, filePath };
+}
+
 function getLatestCommitMessage(params) {
+    let { owner, repoName, filePath } = getRepoInfo()
     $http.get({
-        url: commits,
+        url: `https://api.github.com/repos/${owner}/${repoName}/commits?path=${filePath}&sha=master`,
         handler: function(resp) {
             if (resp.response.statusCode === 200 && resp.data.length > 0) {
                 params.handler(resp.data[0])
@@ -56,5 +86,6 @@ module.exports = {
     getGitHubFilesSha: getGitHubFilesSha,
     setFilesSha: setFilesSha,
     getFilesSha: getFilesSha,
-    getLatestCommitMessage: getLatestCommitMessage
+    getLatestCommitMessage: getLatestCommitMessage,
+    getRepoInfo: getRepoInfo
 }
