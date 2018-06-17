@@ -911,7 +911,8 @@ function renderAboutUI() {
             }, {
                 type: "list",
                 props: {
-                    data: ["🗂  脚本简介", "📃  更新日志", "🖥  论坛导航"]
+                    data: ["🗂  脚本简介", "📃  更新日志", "🖥  论坛导航"],
+                    scrollEnabled: false
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super)
@@ -946,7 +947,8 @@ function renderAboutUI() {
             }, {
                 type: "list",
                 props: {
-                    data: ["🙏  捐献打赏名单", "👍  赏杯咖啡支持作者"]
+                    data: ["🙏  捐献打赏名单", "👍  赏杯咖啡支持作者"],
+                    scrollEnabled: false
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super)
@@ -988,7 +990,8 @@ function renderAboutUI() {
             }, {
                 type: "list",
                 props: {
-                    data: ["📠  Telegram", "💡  GitHub"]
+                    data: ["📠  Telegram", "💡  GitHub"],
+                    scrollEnabled: false
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super)
