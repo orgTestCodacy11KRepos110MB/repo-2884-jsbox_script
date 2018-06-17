@@ -16,6 +16,10 @@ if (!$file.exists(FILE)) {
     })
 }
 
+String.prototype.reverse = function() {
+    return this.toString().split('').reverse().join('')
+}
+
 setDefaultSettings()
 
 let screenHeight = $device.info.screen.height
@@ -1500,20 +1504,23 @@ function makeConf(params) {
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
             prototype = prototype.replace('// Hostname', 'hostname = ' + hostName.concat(userHostname.add.filter(i => i != '')).join(', '))
 
-            if (rename && rename[1]) {
-                let renamePat = rename[1].split(/\s*,\s*/g).filter(i => i.indexOf('=') > -1).map(i => i.split(/\s*=\s*/))
-                renamePat.forEach(i => {
-                    let oldName = i[0]
-                    let newName = i[1]
-                    let oldNameReg = new RegExp(oldName, 'g')
-                    prototype = prototype.replace(oldNameReg, newName)
-                })
-            }
-
             if (isMitm) {
                 prototype = prototype.replace('# MITM', advanceSettings.mitmSettings)
             } else {
                 prototype = prototype.replace('# MITM', "")
+            }
+
+            if (rename && rename[1]) {
+                let renamePat = rename[1].split(/\s*,\s*/g).filter(i => i.indexOf('=') > -1).map(i => {
+                    let sp = i.reverse().split(/\s*=(?!\\)\s*/g)
+                    return sp.map(i => i.reverse().trim()).reverse()
+                })
+                renamePat.forEach(i => {
+                    let oldName = i[0]
+                    let newName = i[1].replace(/\\/g, '')
+                    let oldNameReg = new RegExp(oldName, 'g')
+                    prototype = prototype.replace(oldNameReg, newName)
+                })
             }
 
             let fn = (workspace.fileName || 'lhie1') + '.conf'
