@@ -409,7 +409,7 @@ function renderUI() {
                                     $("progressView").hidden = true
                                 }
                             })
-                            exportConf(res.fileName, res.fileData, res.actionSheet, () => {
+                            exportConf(res.fileName, res.fileData, res.actionSheet, false, () => {
                                 $http.stopServer()
                             })
                             $app.listen({
@@ -1291,7 +1291,7 @@ function autoGen() {
                     $("progressBar").value = p
                 },
                 onDone: res => {
-                    exportConf(res.fileName, res.fileData, res.actionSheet, () => {
+                    exportConf(res.fileName, res.fileData, res.actionSheet, true, () => {
                         $http.stopServer()
                         $app.close()
                     })
@@ -1551,7 +1551,7 @@ function getRulesReplacement(content = '') {
     return null;
 }
 
-function exportConf(fileName, fileData, actionSheet, actionSheetCancel) {
+function exportConf(fileName, fileData, actionSheet, isAuto, actionSheetCancel) {
     let workspace = JSON.parse($file.read(FILE).string).workspace
     let usualData = workspace.usualData
     let surge2 = usualData.find(i => i.title.text == 'Surge2') ? usualData.find(i => i.title.text == 'Surge2').title.bgcolor : false
@@ -1585,6 +1585,12 @@ function exportConf(fileName, fileData, actionSheet, actionSheetCancel) {
                         if (resp.response.statusCode == 200) {
                             let surgeScheme = `surge${surge2 ? "" : "3"}:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fileName)}`
                             $app.openURL(surgeScheme)
+                            $delay(10, () => {
+                                $http.stopServer()
+                                if (isAuto) {
+                                    $app.close()
+                                }
+                            })
                         } else {
                             $ui.alert("内置服务器启动失败，请重试")
                         }
