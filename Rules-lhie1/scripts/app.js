@@ -16,7 +16,7 @@ if (!$file.exists(FILE)) {
     })
 }
 
-String.prototype.reverse = function() {
+String.prototype.reverse = function () {
     return this.toString().split('').reverse().join('')
 }
 
@@ -38,7 +38,44 @@ const blackColor = $color("#000000")
 function renderUI() {
     $ui.render({
         props: {
-            title: "Surge规则生成"
+            title: "Surge规则",
+            navButtons: [{
+                title: 'Surge',
+                handler: () => {
+                    let advanceSettings = JSON.parse($file.read(FILE).string)
+                    let workspace = advanceSettings.workspace
+                    let usualData = workspace.usualData
+
+                    let usualValue = function (key) {
+                        return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key).title.bgcolor : false
+                    }
+
+                    $app.openURL(`surge${usualValue('Surge2') ? '':'3'}:///`)
+                }
+            }, {
+                title: 'Coffee',
+                handler: () => {
+                    $ui.alert({
+                        title: '感谢支持',
+                        message: '作者投入大量时间和精力对脚本进行开发和完善，你愿意给他赏杯咖啡支持一下吗？',
+                        actions: [{
+                            title: "支付宝",
+                            handler: () => {
+                                $app.openURL($qrcode.decode($file.read("assets/thankyou2.jpg").image))
+                            }
+                        },{
+                            title: "微信",
+                            handler: () => {
+                                $quicklook.open({
+                                    image: $file.read("assets/thankyou.jpg").image
+                                })
+                            }
+                        }, {
+                            title: "返回"
+                        }]
+                    })
+                }
+            }]
         },
         views: [{
             type: "view",
