@@ -324,9 +324,11 @@ function renderUI() {
                     make.centerX.equalTo(view.super)
                 },
                 events: {
-                    returned: sender => {
-                        $("serverSuffixEditor").blur()
+                    changed: sender => {
                         saveWorkspace()
+                    },
+                    returned: sender => {
+                        sender.blur()
                     }
                 }
             }, {
