@@ -940,7 +940,7 @@ function renderAboutUI() {
             title: "关于"
         },
         views: [{
-            type: "view",
+            type: "scroll",
             props: {
                 id: "mainAboutView"
             },
@@ -1039,23 +1039,27 @@ function renderAboutUI() {
             }, {
                 type: "list",
                 props: {
-                    data: ["📠  Telegram", "💡  GitHub"],
+                    data: ["📠  Telegram", "💡  GitHub", "📅  Channel"],
                     scrollEnabled: false
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super)
                     make.top.equalTo(view.prev.bottom).offset(0)
-                    make.height.equalTo(90)
+                    make.height.equalTo(140)
                 },
                 events: {
                     didSelect: (sender, indexPath, data) => {
-                        if (indexPath.row == 0) {
+                        if (indexPath.row === 0) {
                             $safari.open({
                                 url: "https://t.me/Fndroid",
                             })
-                        } else {
+                        } else if (indexPath.row === 1) {
                             $safari.open({
                                 url: "https://github.com/Fndroid/jsbox_script/tree/master/Rules-lhie1/README.md",
+                            })
+                        } else {
+                            $safari.open({
+                                url: "https://t.me/Fndroids",
                             })
                         }
                     }
