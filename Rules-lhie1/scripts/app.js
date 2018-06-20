@@ -40,17 +40,23 @@ function renderUI() {
         props: {
             title: "Surge规则",
             navButtons: [{
-                title: 'Surge',
+                title: 'data.js',
                 handler: () => {
-                    let advanceSettings = JSON.parse($file.read(FILE).string)
-                    let workspace = advanceSettings.workspace
-                    let usualData = workspace.usualData
+                    $ui.alert({
+                        title: "注意",
+                        message: "data.js文件存储了您的所有脚本数据，包括订阅链接、节点信息等隐私数据，请谨慎传播！",
+                        actions: [{
+                            title: "取消",
+                            handler: function () {
 
-                    let usualValue = function (key) {
-                        return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key).title.bgcolor : false
-                    }
-
-                    $app.openURL(`surge${usualValue('Surge2') ? '':'3'}:///`)
+                            }
+                        }, {
+                            title: '发送',
+                            handler: () => {
+                                $share.sheet(['data.js', $file.read(FILE)])
+                            }
+                        }]
+                    })
                 }
             }, {
                 title: 'Coffee',
@@ -63,7 +69,7 @@ function renderUI() {
                             handler: () => {
                                 $app.openURL($qrcode.decode($file.read("assets/thankyou2.jpg").image))
                             }
-                        },{
+                        }, {
                             title: "微信",
                             handler: () => {
                                 $quicklook.open({
