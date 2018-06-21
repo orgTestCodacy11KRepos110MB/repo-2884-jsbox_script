@@ -1455,16 +1455,31 @@ function makeConf(params) {
             promiseArray[2] = emptyPromise(onPgs)
             promiseArray[3] = emptyPromise(onPgs)
             promiseArray[4] = emptyPromise(onPgs)
+            promiseArray[5] = emptyPromise(onPgs)
+            promiseArray[6] = emptyPromise(onPgs)
+            promiseArray[7] = emptyPromise(onPgs)
+            promiseArray[8] = emptyPromise(onPgs)
+            promiseArray[9] = emptyPromise(onPgs)
+        }
+
+        let filePartReg = function(name) {
+            let reg = `\\[${name}\\]([\\S\\s]*?)(?:\\[General\\]|\\[Replica\\]|\\[Proxy\\]|\\[Proxy Group\\]|\\[Rule\\]|\\[Host\\]|\\[URL Rewrite\\]|\\[Header Rewrite\\]|\\[SSID Setting\\]|\\[MITM\\]|$)`
+            return new RegExp(reg)
         }
 
         Promise.all(promiseArray).then(v => {
-            console.log(v)
             prototype = v[0]
             if (rulesReplacement) {
-                let repRules = v[1].match(/\[Rule\]([\S\s]*?)(?:\[|$)/)
-                if (repRules && repRules[1]) {
-                    v[1] = repRules[1]
-                }
+                let repRules = v[1].match(filePartReg('Rule'))
+                let repHost = v[1].match(filePartReg('Host'))
+                let repUrlRewrite = v[1].match(filePartReg('URL Rewrite'))
+                let repHeaderRewrite = v[1].match(filePartReg('Header Rewrite'))
+                let repHostName = v[1].match(/hostname\s*=\s*(.*?)[\n\r]/)
+                repRules && repRules[1] && (v[1] = repRules[1])
+                repHost && repHost[1] && (v[5] = repHost[1])
+                repUrlRewrite && repUrlRewrite[1] && (v[6] = repUrlRewrite[1])
+                repHeaderRewrite && repHeaderRewrite[1] && (v[8] = repHeaderRewrite[1])
+                repHostName && repHostName[1] && (v[9] = repHostName[1])
             }
             rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
             host = v[5]
