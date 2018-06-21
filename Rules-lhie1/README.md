@@ -20,9 +20,7 @@
 
 ### 界面截图
 
-![](https://github.com/Fndroid/jsbox_script/blob/master/imgs/Rules-lhie1_pre3.jpg?raw=true)
-![](https://github.com/Fndroid/jsbox_script/blob/master/imgs/Rules-lhie1_pre4.jpg?raw=true)
-![](https://github.com/Fndroid/jsbox_script/blob/master/imgs/Rules-lhie1_pre5.jpg?raw=true)
+![](https://github.com/Fndroid/jsbox_script/blob/master/imgs/Rules-lhie1_pre6.png?raw=true)
 
 ### 下载脚本
 
