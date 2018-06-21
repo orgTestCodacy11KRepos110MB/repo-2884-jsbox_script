@@ -1448,6 +1448,7 @@ function makeConf(params) {
         if (!ads) {
             promiseArray[2] = emptyPromise(onPgs)
             promiseArray[7] = emptyPromise(onPgs)
+            promiseArray[9] = emptyPromise(onPgs)
         }
 
         if (rulesReplacement) {
@@ -1566,7 +1567,10 @@ function makeConf(params) {
             prototype = prototype.replace('# URL REJECT', urlReject)
             prototype = prototype.replace('# SSID', userSSID)
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
-            prototype = prototype.replace('// Hostname', 'hostname = ' + hostName.concat(userHostname.add.filter(i => i != '')).join(', '))
+            let finalHostNames = hostName.concat(userHostname.add.filter(i => i != '')).join(', ')
+            if (finalHostNames !== '') {
+                prototype = prototype.replace('// Hostname', 'hostname = ' + finalHostNames)
+            }
 
             if (isMitm) {
                 prototype = prototype.replace('# MITM', advanceSettings.mitmSettings)
