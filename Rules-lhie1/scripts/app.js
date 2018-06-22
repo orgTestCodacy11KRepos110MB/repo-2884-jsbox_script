@@ -481,6 +481,9 @@ function renderUI() {
 
 function archivesHandler() {
     const ARCHIVES = 'archivesFiles'
+    if (!$file.exists(ARCHIVES)) {
+        $file.mkdir(ARCHIVES)
+    }
     $("bodyView").add({
         type: "view",
         props: {
