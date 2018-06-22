@@ -39,47 +39,17 @@ function renderUI() {
     $ui.render({
         props: {
             title: "Surge规则",
+            id: "bodyView",
             navButtons: [{
-                title: 'data.js',
+                title: '  🗂 ',
                 handler: () => {
-                    $ui.alert({
-                        title: "注意",
-                        message: "data.js文件存储了您的所有脚本数据，包括订阅链接、节点信息等隐私数据，请谨慎传播！",
-                        actions: [{
-                            title: "取消",
-                            handler: function () {
-
-                            }
-                        }, {
-                            title: '发送',
-                            handler: () => {
-                                $share.sheet(['data.js', $file.read(FILE)])
-                            }
-                        }]
-                    })
+                    archivesHandler()
                 }
             }, {
-                title: 'Coffee',
+                title: '  🎁 ',
                 handler: () => {
-                    $ui.alert({
-                        title: '感谢支持',
-                        message: '作者投入大量时间和精力对脚本进行开发和完善，你愿意给他赏杯咖啡支持一下吗？',
-                        actions: [{
-                            title: "支付宝",
-                            handler: () => {
-                                $app.openURL($qrcode.decode($file.read("assets/thankyou2.jpg").image))
-                            }
-                        }, {
-                            title: "微信",
-                            handler: () => {
-                                $quicklook.open({
-                                    image: $file.read("assets/thankyou.jpg").image
-                                })
-                            }
-                        }, {
-                            title: "返回"
-                        }]
-                    })
+                    $clipboard.text = '支付宝发红包啦！即日起还有机会额外获得余额宝消费红包！长按复制此消息，打开最新版支付宝就能领取！mlCOiX84s7'
+                    $app.openURL("alipay://")
                 }
             }]
         },
@@ -505,7 +475,122 @@ function renderUI() {
                     make.height.equalTo(3)
                 }
             }]
+        },]
+    })
+}
+
+function archivesHandler() {
+    const ARCHIVES = 'archivesFiles'
+    $("bodyView").add({
+        type: "view",
+        props: {
+            id: "archivesView",
+            alpha: 0
+        },
+        layout: (make, view) => {
+            make.height.width.equalTo(view.super)
+            make.center.equalTo(view.super)
+        },
+        views: [{
+            type: "blur",
+            props: {
+                style: 2,
+                alpha: 1,
+            },
+            layout: $layout.fill,
+            events: {
+                tapped: sender => {
+                    sender.super.remove()
+                }
+            }
+        }, {
+            type: "list",
+            props: {
+                id: "archivesList",
+                radius: 15,
+                data: $file.list(ARCHIVES),
+                header: {
+                    type: "label",
+                    props: {
+                        text: "配置备份",
+                        height: 50,
+                        font: $font("bold", 20),
+                        align: $align.center
+                    }
+                },
+                actions: [{
+                    title: "删除",
+                    color: $color('red'),
+                    handler: (sender, indexPath) => {
+                        let fileName = sender.object(indexPath)
+                        let success = $file.delete(ARCHIVES + '/' + fileName)
+                        if (success) {
+                            sender.data = $file.list(ARCHIVES)
+                        }
+                    }
+                }, {
+                    title: "导出",
+                    handler: (sender, indexPath) => {
+                        let fileName = sender.object(indexPath)
+                        $share.sheet(['data.js', $file.read(ARCHIVES + "/" + fileName)])
+                    }
+                }]
+            },
+            layout: (make, view) => {
+                make.height.width.equalTo(view.super).dividedBy(12 / 9)
+                make.center.equalTo(view.super)
+            },
+            events: {
+                didSelect: (sender, indexPath, data) => {
+                    let success = $file.copy({
+                        src: ARCHIVES + '/' + data,
+                        dst: "data.js"
+                    })
+                    if (success) {
+                        $app.notify({
+                            name: 'loadData'
+                        })
+                        sender.super.remove()
+                    }
+                }
+            }
+        }, {
+            type: "button",
+            props: {
+                title: "+",
+                circular: true,
+            },
+            layout: (make, view) => {
+                make.bottom.equalTo(view.prev)
+                make.right.equalTo(view.prev).offset(-5)
+                make.height.width.equalTo(50)
+            },
+            events: {
+                tapped: sender => {
+                    $input.text({
+                        type: $kbType.default,
+                        placeholder: "请输入备份文件名",
+                        handler: function (text) {
+                            let success = $file.copy({
+                                src: "data.js",
+                                dst: ARCHIVES + '/' + text
+                            })
+                            if (success) {
+                                sender.prev.data = $file.list(ARCHIVES)
+                            }
+                        }
+                    })
+                }
+            }
         }]
+    })
+
+    $ui.animate({
+        duration: .3,
+        animation: () => {
+            $("archivesView").alpha = 1
+            $("archivesList").scale(1.1)
+        }
     })
 }
 
@@ -574,58 +659,115 @@ function groupShortcut() {
     let controlInfo = $("serverControl").info
     let currentProxyGroup = controlInfo.currentProxyGroup || PROXY_HEADER
     let customProxyGroup = controlInfo.customProxyGroup || {}
-    let menuItems = Object.keys(customProxyGroup).concat(['新增占位符']).filter(i => i !== currentProxyGroup)
-    $ui.menu({
-        items: menuItems,
-        handler: function (title, idx) {
-            if (idx === menuItems.length - 1) {
-                $input.text({
-                    type: $kbType.default,
-                    placeholder: "占位符，在进阶设置中使用",
-                    handler: function (text) {
-                        if ([PROXY_HEADER, 'Proxy Header'].indexOf(text) > -1) {
-                            $ui.error("占位符名称冲突")
+    let menuItems = Object.keys(customProxyGroup)
+    $("bodyView").add({
+        type: "view",
+        props: {
+            id: "placeholderView",
+            alpha: 0
+        },
+        layout: (make, view) => {
+            make.height.width.equalTo(view.super)
+            make.center.equalTo(view.super)
+        },
+        views: [{
+            type: "blur",
+            props: {
+                style: 2,
+                alpha: 1,
+            },
+            layout: $layout.fill,
+            events: {
+                tapped: sender => {
+                    sender.super.remove()
+                }
+            }
+        }, {
+            type: "list",
+            props: {
+                id: "placeholderList",
+                radius: 15,
+                data: menuItems,
+                header: {
+                    type: "label",
+                    props: {
+                        text: "占位符",
+                        height: 50,
+                        font: $font("bold", 20),
+                        align: $align.center
+                    }
+                },
+                actions: [{
+                    title: "删除",
+                    color: $color('red'),
+                    handler: (sender, indexPath) => {
+                        let title = sender.object(indexPath)
+                        if ([PROXY_HEADER, 'Proxy Header'].indexOf(title) > -1) {
+                            $ui.error("此占位符无法删除")
                             return
                         }
-                        customProxyGroup[text] = []
+                        delete customProxyGroup[title]
                         $("serverControl").info = controlInfo
                         saveWorkspace()
-                        $ui.toast(`切换到占位符：${text}`)
-                        switchToGroup(text)
+                        $("placeholderList").data = Object.keys(customProxyGroup)
                     }
-                })
-            } else {
-                $ui.alert({
-                    title: "请选择",
-                    message: "占位符代表一组节点名称，配合进阶设置可以进行自定义策略组",
-                    actions: [{
-                        title: '编辑',
-                        handler: () => {
-                            switchToGroup(title)
-                        }
-                    }, {
-                        title: '复制',
-                        handler: () => {
-                            $clipboard.text = title
-                            $ui.toast("已复制到剪贴板")
-                        }
-                    }, {
-                        title: '删除',
-                        handler: () => {
-                            if ([PROXY_HEADER, 'Proxy Header'].indexOf(title) > -1) {
-                                $ui.error("此占位符无法删除")
+                }, {
+                    title: "复制",
+                    handler: (sender, indexPath) => {
+                        let title = sender.object(indexPath)
+                        $clipboard.text = title
+                        $ui.toast("已复制到剪贴板")
+                    }
+                }]
+            },
+            layout: (make, view) => {
+                make.height.width.equalTo(view.super).dividedBy(12 / 9)
+                make.center.equalTo(view.super)
+            },
+            events: {
+                didSelect: (sender, indexPath, data) => {
+                    $ui.toast(`当前占位符为：${data}`)
+                    switchToGroup(data)
+                    sender.super.remove()
+                }
+            }
+        }, {
+            type: "button",
+            props: {
+                title: "+",
+                circular: true,
+            },
+            layout: (make, view) => {
+                make.bottom.equalTo(view.prev)
+                make.right.equalTo(view.prev).offset(-5)
+                make.height.width.equalTo(50)
+            },
+            events: {
+                tapped: sender => {
+                    $input.text({
+                        type: $kbType.default,
+                        placeholder: "占位符，在进阶设置中使用",
+                        handler: function (text) {
+                            if ([PROXY_HEADER, 'Proxy Header'].indexOf(text) > -1) {
+                                $ui.error("占位符名称冲突")
                                 return
                             }
-                            delete customProxyGroup[title]
+                            customProxyGroup[text] = []
                             $("serverControl").info = controlInfo
                             saveWorkspace()
-                            $ui.toast(`已删除占位符：${title}`)
+                            $("placeholderList").data = Object.keys(customProxyGroup)
                         }
-                    }, {
-                        title: '取消'
-                    }]
-                })
+                    })
+                }
             }
+        }]
+    })
+    
+    $ui.animate({
+        duration: .3,
+        animation: () => {
+            $("placeholderView").alpha = 1
+            $("placeholderList").scale(1.1)
         }
     })
 
@@ -996,31 +1138,41 @@ function renderAboutUI() {
             }, {
                 type: "list",
                 props: {
-                    data: ["🙏  捐献打赏名单", "👍  赏杯咖啡支持作者"],
+                    data: ["🙏  捐献打赏名单", "👍  赏杯咖啡支持作者", "🎟  支付宝红包领取"],
                     scrollEnabled: false
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super)
                     make.top.equalTo(view.prev.bottom).offset(0)
-                    make.height.equalTo(90)
+                    make.height.equalTo(140)
                 },
                 events: {
                     didSelect: (sender, indexPath, data) => {
-                        if (indexPath.row == 0) {
+                        if (indexPath.row === 0) {
                             previewMD(data, 'donate.md')
-                        } else {
-                            $ui.menu({
-                                items: ["支付宝", "微信"],
-                                handler: function (title, idx) {
-                                    if (idx == 0) {
+                        } else if (indexPath.row === 1) {
+                            $ui.alert({
+                                title: '感谢支持',
+                                message: '作者投入大量时间和精力对脚本进行开发和完善，你愿意给他赏杯咖啡支持一下吗？',
+                                actions: [{
+                                    title: "支付宝",
+                                    handler: () => {
                                         $app.openURL($qrcode.decode($file.read("assets/thankyou2.jpg").image))
-                                    } else {
+                                    }
+                                }, {
+                                    title: "微信",
+                                    handler: () => {
                                         $quicklook.open({
                                             image: $file.read("assets/thankyou.jpg").image
                                         })
                                     }
-                                }
+                                }, {
+                                    title: "返回"
+                                }]
                             })
+                        } else {
+                            $clipboard.text = '支付宝发红包啦！即日起还有机会额外获得余额宝消费红包！长按复制此消息，打开最新版支付宝就能领取！mlCOiX84s7'
+                            $app.openURL("alipay://")
                         }
                     }
                 }
@@ -1191,6 +1343,11 @@ function autoServerGroup() {
 function setUpWorkspace() {
     $app.listen({
         ready: function () {
+            $app.notify({
+                name: 'loadData'
+            })
+        },
+        loadData: () => {
             let file = JSON.parse($file.read(FILE).string)
             if (file && file.workspace) {
                 let workspace = file.workspace
@@ -1463,7 +1620,7 @@ function makeConf(params) {
             promiseArray[9] = emptyPromise(onPgs)
         }
 
-        let filePartReg = function(name) {
+        let filePartReg = function (name) {
             let reg = `\\[${name}\\]([\\S\\s]*?)(?:\\[General\\]|\\[Replica\\]|\\[Proxy\\]|\\[Proxy Group\\]|\\[Rule\\]|\\[Host\\]|\\[URL Rewrite\\]|\\[Header Rewrite\\]|\\[SSID Setting\\]|\\[MITM\\]|$)`
             return new RegExp(reg)
         }
