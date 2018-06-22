@@ -480,10 +480,18 @@ function renderUI() {
 }
 
 function archivesHandler() {
-    const ARCHIVES = 'archivesFiles'
-    if (!$file.exists(ARCHIVES)) {
-        $file.mkdir(ARCHIVES)
+    const ARCHIVES = $addin.current.name + '/archivesFiles'
+    if (!$drive.exists(ARCHIVES)) {
+        $drive.mkdir(ARCHIVES)
     }
+    let getFiles = function() {
+        return $drive.list(ARCHIVES).map(i => {
+            let path = i.runtimeValue().invoke('pathComponents').rawValue()
+            let absPath = i.runtimeValue().invoke('absoluteString').rawValue()
+            return path[path.length - 1]
+        })
+    }
+    console.log(getFiles())
     $("bodyView").add({
         type: "view",
         props: {
@@ -511,7 +519,7 @@ function archivesHandler() {
             props: {
                 id: "archivesList",
                 radius: 15,
-                data: $file.list(ARCHIVES),
+                data: getFiles(),
                 header: {
                     type: "label",
                     props: {
@@ -526,16 +534,16 @@ function archivesHandler() {
                     color: $color('red'),
                     handler: (sender, indexPath) => {
                         let fileName = sender.object(indexPath)
-                        let success = $file.delete(ARCHIVES + '/' + fileName)
+                        let success = $drive.delete(ARCHIVES + '/' + fileName)
                         if (success) {
-                            sender.data = $file.list(ARCHIVES)
+                            sender.data = getFiles()
                         }
                     }
                 }, {
                     title: "导出",
                     handler: (sender, indexPath) => {
                         let fileName = sender.object(indexPath)
-                        $share.sheet(['data.js', $file.read(ARCHIVES + "/" + fileName)])
+                        $share.sheet(['data.js', $drive.read(ARCHIVES + "/" + fileName)])
                     }
                 }]
             },
@@ -545,9 +553,9 @@ function archivesHandler() {
             },
             events: {
                 didSelect: (sender, indexPath, data) => {
-                    let success = $file.copy({
-                        src: ARCHIVES + '/' + data,
-                        dst: "data.js"
+                    let success = $file.write({
+                        data: $drive.read(ARCHIVES + '/' + data),
+                        path: "data.js"
                     })
                     if (success) {
                         $app.notify({
@@ -574,12 +582,12 @@ function archivesHandler() {
                         type: $kbType.default,
                         placeholder: "请输入备份文件名",
                         handler: function (text) {
-                            let success = $file.copy({
-                                src: "data.js",
-                                dst: ARCHIVES + '/' + text
+                            let success = $drive.write({
+                                data: $file.read('data.js'),
+                                path: ARCHIVES + '/' + text
                             })
                             if (success) {
-                                sender.prev.data = $file.list(ARCHIVES)
+                                sender.prev.data = getFiles()
                             }
                         }
                     })
