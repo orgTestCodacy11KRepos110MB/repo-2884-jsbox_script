@@ -1677,12 +1677,12 @@ function makeConf(params) {
                     let nameReg = new RegExp(name, 'g')
                     let serverNames = customProxyGroup[name]
                     serverNames = serverNames.filter(i => proxyNameLegal(i))
-                    pgs = pgs.replace(nameReg, serverNames.join(',') || 'DIRECT')
+                    pgs = pgs.replace(nameReg, serverNames.join(',') || flatServerData.map(i => i.proxyName.text).join(','))
                 }
                 prototype = prototype.replace(/\[Proxy Group\][\s\S]+\[Rule\]/, pgs + '\n\n[Rule]')
             } else {
                 prototype = prototype.replace(/Proxy Header/g, proxyHeaders)
-                prototype = prototype.replace(/ProxyHeader/g, customProxyGroup[PROXY_HEADER].filter(i => proxyNameLegal(i)).join(',') || 'DIRECT')
+                prototype = prototype.replace(/ProxyHeader/g, customProxyGroup[PROXY_HEADER].filter(i => proxyNameLegal(i)).join(',') || flatServerData.map(i => i.proxyName.text).join(','))
             }
             // 配置常规设置
             if (advanceSettings.generalSettings) {
