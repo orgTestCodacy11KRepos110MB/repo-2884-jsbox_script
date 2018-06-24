@@ -1261,7 +1261,7 @@ function deleteServerGroup() {
                         let keywords = text.split(/\s+/g).filter(i => i !== '')
                         let editorData = $("serverEditor").data
                         editorData.map(section => {
-                            section.rows = section.rows.filter(item => keywords.every(k => item.proxyName.text.indexOf(k) === -1))
+                            section.rows = section.rows.filter(item => keywords.every(k => !(new RegExp(k, 'g')).test(item.proxyName.text)))
                             return section
                         })
                         $("serverEditor").data = editorData
