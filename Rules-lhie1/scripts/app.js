@@ -108,7 +108,6 @@ function renderUI() {
                                 if (existsSec) {
                                     selectedRows = section.rows.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyName.text)
                                 }
-                                console.error(selectedRows)
                                 section.rows = []
                                 for (let idx in res) {
                                     if (res[idx].split("=")[1].trim() == 'direct') {
@@ -915,7 +914,7 @@ function importMenu(params) {
                 })
             } else if (title === staticItems[2]) {
                 let listSections = $("serverEditor").data
-                linkHandler(listSections.map(i => i.url).join('\n'), params)
+                linkHandler(listSections.filter(i => /^http/.test(i.url)).map(i => i.url).join('\n'), params)
             }
         }
     })
@@ -941,8 +940,6 @@ function linkHandler(url, params) {
             servers.ignore.push(item)
         }
     })
-
-    console.log(servers)
 
     for (let k in servers) {
         if (servers[k].length === 0) {
