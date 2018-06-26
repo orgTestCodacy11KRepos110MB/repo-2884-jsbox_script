@@ -1814,11 +1814,13 @@ function makeConf(params) {
                 })
                 renamePat.forEach(i => {
                     let oldName = i[0]
-                    let newName = i[1].replace(/\\=/g, '=')
+                    let newName = i[1].replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\=/g, '=')
                     let oldNameReg = new RegExp(oldName, 'g')
                     prototype = prototype.replace(oldNameReg, newName)
                 })
             }
+
+            console.log('aaa\n\n' + prototype)
 
             let fn = (workspace.fileName || 'lhie1') + '.conf'
 
