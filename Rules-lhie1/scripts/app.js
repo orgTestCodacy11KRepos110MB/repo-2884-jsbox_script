@@ -484,7 +484,7 @@ function archivesHandler() {
     if (!$drive.exists(ARCHIVES)) {
         $drive.mkdir(ARCHIVES)
     }
-    let getFiles = function() {
+    let getFiles = function () {
         return $drive.list(ARCHIVES).map(i => {
             let path = i.runtimeValue().invoke('pathComponents').rawValue()
             let absPath = i.runtimeValue().invoke('absoluteString').rawValue()
@@ -511,7 +511,16 @@ function archivesHandler() {
             layout: $layout.fill,
             events: {
                 tapped: sender => {
-                    sender.super.remove()
+                    $ui.animate({
+                        duration: 0.2,
+                        animation: () => {
+                            $("archivesView").alpha = 0
+                            $("archivesList").frame = $rect(0, 0, screenWidth, screenHeight)
+                        },
+                        completion: () => {
+                            sender.super.remove()
+                        }
+                    })
                 }
             }
         }, {
@@ -561,7 +570,16 @@ function archivesHandler() {
                         $app.notify({
                             name: 'loadData'
                         })
-                        sender.super.remove()
+                        $ui.animate({
+                            duration: 0.2,
+                            animation: () => {
+                                $("archivesView").alpha = 0
+                                $("archivesList").frame = $rect(0, 0, screenWidth, screenHeight)
+                            },
+                            completion: () => {
+                                sender.super.remove()
+                            }
+                        })
                     }
                 }
             }
@@ -670,7 +688,7 @@ function groupShortcut() {
     let controlInfo = $("serverControl").info
     let currentProxyGroup = controlInfo.currentProxyGroup || PROXY_HEADER
     let customProxyGroup = controlInfo.customProxyGroup || {}
-    let menuItems = Object.keys(customProxyGroup)
+    let menuItems = Object.keys(customProxyGroup).sort()
     $("bodyView").add({
         type: "view",
         props: {
@@ -690,7 +708,16 @@ function groupShortcut() {
             layout: $layout.fill,
             events: {
                 tapped: sender => {
-                    sender.super.remove()
+                    $ui.animate({
+                        duration: 0.2,
+                        animation: () => {
+                            $("placeholderView").alpha = 0
+                            $("placeholderList").frame = $("serverEditor").frame
+                        },
+                        completion: () => {
+                            sender.super.remove()
+                        }
+                    })
                 }
             }
         }, {
@@ -720,7 +747,34 @@ function groupShortcut() {
                         delete customProxyGroup[title]
                         $("serverControl").info = controlInfo
                         saveWorkspace()
-                        $("placeholderList").data = Object.keys(customProxyGroup)
+                        $("placeholderList").data = Object.keys(customProxyGroup).sort()
+                    }
+                }, {
+                    title: "重命名",
+                    handler: (sender, indexPath) => {
+                        let title = sender.object(indexPath)
+                        if ([PROXY_HEADER, 'Proxy Header'].indexOf(title) > -1) {
+                            $ui.error("此占位符无法重命名")
+                            return
+                        }
+                        $input.text({
+                            type: $kbType.default,
+                            placeholder: title,
+                            handler: function (text) {
+                                if (sender.data.indexOf(text) > -1) {
+                                    $ui.error("此名称已被占用")
+                                } else {
+                                    customProxyGroup[text] = customProxyGroup[title]
+                                    delete customProxyGroup[title]
+                                    if ($("serverControl").info.currentProxyGroup === title) {
+                                        switchToGroup(text)
+                                    }
+                                    $("serverControl").info = controlInfo
+                                    saveWorkspace()
+                                    sender.data = Object.keys(customProxyGroup).sort()
+                                }
+                            }
+                        })
                     }
                 }, {
                     title: "复制",
@@ -739,7 +793,16 @@ function groupShortcut() {
                 didSelect: (sender, indexPath, data) => {
                     $ui.toast(`当前占位符为：${data}`)
                     switchToGroup(data)
-                    sender.super.remove()
+                    $ui.animate({
+                        duration: 0.2,
+                        animation: () => {
+                            $("placeholderView").alpha = 0
+                            $("placeholderList").frame = $("serverEditor").frame
+                        },
+                        completion: () => {
+                            sender.super.remove()
+                        }
+                    })
                 }
             }
         }, {
@@ -766,16 +829,17 @@ function groupShortcut() {
                             customProxyGroup[text] = []
                             $("serverControl").info = controlInfo
                             saveWorkspace()
-                            $("placeholderList").data = Object.keys(customProxyGroup)
+                            $("placeholderList").data = Object.keys(customProxyGroup).sort()
                         }
                     })
                 }
             }
         }]
     })
-    
+
     $ui.animate({
         duration: .3,
+        damping: 0.8,
         animation: () => {
             $("placeholderView").alpha = 1
             $("placeholderList").scale(1.1)
