@@ -1796,6 +1796,7 @@ function makeConf(params) {
             prototype = prototype.replace('# URL REJECT', urlReject)
             prototype = prototype.replace('# SSID', userSSID)
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
+            console.log(hostName)
             let finalHostNames = hostName.concat(userHostname.add.filter(i => i != '')).join(', ')
             if (finalHostNames !== '') {
                 prototype = prototype.replace('// Hostname', 'hostname = ' + finalHostNames)
@@ -1804,7 +1805,8 @@ function makeConf(params) {
             if (isMitm) {
                 prototype = prototype.replace('# MITM', advanceSettings.mitmSettings)
             } else {
-                prototype = prototype.replace('# MITM', "")
+                // prototype = prototype.replace('# MITM', "")
+                prototype = prototype.replace(/\[MITM\][\s\S]*$/, '')
             }
 
             if (rename && rename[1]) {
@@ -1819,8 +1821,6 @@ function makeConf(params) {
                     prototype = prototype.replace(oldNameReg, newName)
                 })
             }
-
-            console.log('aaa\n\n' + prototype)
 
             let fn = (workspace.fileName || 'lhie1') + '.conf'
 
