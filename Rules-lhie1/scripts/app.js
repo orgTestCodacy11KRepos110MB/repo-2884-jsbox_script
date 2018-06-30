@@ -1804,7 +1804,6 @@ function makeConf(params) {
             if (isMitm) {
                 prototype = prototype.replace('# MITM', advanceSettings.mitmSettings)
             } else {
-                // prototype = prototype.replace('# MITM', "")
                 prototype = prototype.replace(/\[MITM\][\s\S]*$/, '')
             }
 
