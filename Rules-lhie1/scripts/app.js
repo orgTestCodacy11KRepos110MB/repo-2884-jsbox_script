@@ -1796,7 +1796,6 @@ function makeConf(params) {
             prototype = prototype.replace('# URL REJECT', urlReject)
             prototype = prototype.replace('# SSID', userSSID)
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
-            console.log(hostName)
             let finalHostNames = hostName.concat(userHostname.add.filter(i => i != '')).join(', ')
             if (finalHostNames !== '') {
                 prototype = prototype.replace('// Hostname', 'hostname = ' + finalHostNames)
