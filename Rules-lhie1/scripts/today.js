@@ -19,32 +19,38 @@ let pm = function (method) {
     })
 }
 
-function vpnStatus(params) {
-    $network.startPinging({
-        host: "198.18.0.1",
-        timeout: 1,
-        didReceiveReply: function(summary) {
-            $network.stopPinging()
-            params.handler(true);
-        },
-        didTimeout: function(summary) {
-            $network.stopPinging()
-            params.handler(false)
+function getIfaData() {
+    return Object.keys($network.ifa_data).filter(i => i.indexOf('utun') > -1)
+}
+
+function vpnStatus() {
+    if ($cache.get("surgeOn")) {
+        let surgeOn = $cache.get('surgeOn')
+        let nowIfa = getIfaData()
+        let oldIfa = surgeOn.ifaKeys
+        if (nowIfa.length === oldIfa.length) {
+            return surgeOn.status ? 1 : 0
+        } else {
+            return surgeOn.status ? 0 : 1
         }
-      })
+    }
+    return -1
+}
+
+function genSrugeLabel(status) {
+    if (status === -1) {
+        return '长按设置'
+    } else if (status === 0) {
+        return '开启Surge'
+    } else {
+        return '关闭Surge'
+    }
 }
 
 function renderTodayUI(bid) {
     let isLauncher = bid === 'app.cyan.jsbox.ghost'
     let checks = [pm(ruleUpdateUtil.getGitHubFilesSha), pm(updateUtil.getLatestVersion)]
-    vpnStatus({
-        handler: res => {
-            if (res) {
-                $("surgeBtn").data = $file.read("assets/today_surge.png");
-                $("surgeLabel").text = "关闭Surge";
-            }
-        }
-    })
+    let vStatus = vpnStatus()
     Promise.all(checks).then(res => {
         let canUpdate = ruleUpdateUtil.checkUpdate(ruleUpdateUtil.getFilesSha(), res[0])
         let newVersion = updateUtil.needUpdate(res[1], updateUtil.getCurVersion())
@@ -137,7 +143,7 @@ function renderTodayUI(bid) {
                 type: "image",
                 props: {
                     id: "surgeBtn",
-                    data: $file.read("assets/today_surge_off.png"),
+                    data: vStatus === 0 ? $file.read("assets/today_surge_off.png") : $file.read("assets/today_surge.png"),
                     radius: 25,
                     bgcolor: $rgba(255, 255, 255, 0)
                 },
@@ -152,6 +158,29 @@ function renderTodayUI(bid) {
                         let usualData = workspace.usualData
                         let surge2 = usualData.find(i => i.title.text == 'Surge2') ? usualData.find(i => i.title.text == 'Surge2').title.bgcolor : false
                         $app.openURL(`surge${surge2 ? "" : "3"}:///toggle?autoclose=true`)
+                    },
+                    longPressed: sender => {
+                        $ui.alert({
+                            title: "初始设置",
+                            message: '请选择当前Surge开关状态？',
+                            actions: [{
+                                title: '已关闭',
+                                handler: () => {
+                                    $cache.set("surgeOn", {
+                                        status: false,
+                                        ifaKeys: getIfaData()
+                                    })
+                                }
+                            }, {
+                                title: '已开启',
+                                handler: () => {
+                                    $cache.set("surgeOn", {
+                                        status: true,
+                                        ifaKeys: getIfaData()
+                                    })
+                                }
+                            }]
+                        })
                     }
                 }
             }, {
@@ -190,7 +219,7 @@ function renderTodayUI(bid) {
                 type: "label",
                 props: {
                     id: "surgeLabel",
-                    text: "开启Sruge",
+                    text: genSrugeLabel(vStatus),
                     font: $font(12),
                     textColor: $rgba(50, 50, 50, .8),
                     align: $align.center
