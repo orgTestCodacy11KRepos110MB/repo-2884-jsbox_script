@@ -19,22 +19,32 @@ let pm = function (method) {
     })
 }
 
-function vpnStatus() {
-    let ifaData = $network.ifa_data
-    let tuns = Object.keys(ifaData).map(k => {
-        let v = ifaData[k];
-        if (v.received === 0 && v.sent === 0) {
-            return null
+function vpnStatus(params) {
+    $network.startPinging({
+        host: "198.18.0.1",
+        timeout: 1,
+        didReceiveReply: function(summary) {
+            $network.stopPinging()
+            params.handler(true);
+        },
+        didTimeout: function(summary) {
+            $network.stopPinging()
+            params.handler(false)
         }
-        return k
-    }).filter(i => i !== null).find(i => i.indexOf('tun') > -1)
-    return tuns
+      })
 }
 
 function renderTodayUI(bid) {
     let isLauncher = bid === 'app.cyan.jsbox.ghost'
     let checks = [pm(ruleUpdateUtil.getGitHubFilesSha), pm(updateUtil.getLatestVersion)]
-    let tuns = vpnStatus()
+    vpnStatus({
+        handler: res => {
+            if (res) {
+                $("surgeBtn").data = $file.read("assets/today_surge.png");
+                $("surgeLabel").text = "关闭Surge";
+            }
+        }
+    })
     Promise.all(checks).then(res => {
         let canUpdate = ruleUpdateUtil.checkUpdate(ruleUpdateUtil.getFilesSha(), res[0])
         let newVersion = updateUtil.needUpdate(res[1], updateUtil.getCurVersion())
@@ -127,7 +137,7 @@ function renderTodayUI(bid) {
                 type: "image",
                 props: {
                     id: "surgeBtn",
-                    data: tuns ? $file.read("assets/today_surge.png") : $file.read("assets/today_surge_off.png"),
+                    data: $file.read("assets/today_surge_off.png"),
                     radius: 25,
                     bgcolor: $rgba(255, 255, 255, 0)
                 },
@@ -179,7 +189,8 @@ function renderTodayUI(bid) {
             }, {
                 type: "label",
                 props: {
-                    text: tuns ? "关闭Sruge": "开启Surge",
+                    id: "surgeLabel",
+                    text: "开启Sruge",
                     font: $font(12),
                     textColor: $rgba(50, 50, 50, .8),
                     align: $align.center
