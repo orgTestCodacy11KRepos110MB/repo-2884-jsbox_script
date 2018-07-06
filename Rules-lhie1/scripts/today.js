@@ -24,17 +24,26 @@ function getIfaData() {
 }
 
 function vpnStatus() {
-    if ($cache.get("surgeOn")) {
-        let surgeOn = $cache.get('surgeOn')
-        let nowIfa = getIfaData()
-        let oldIfa = surgeOn.ifaKeys
-        if (nowIfa.length === oldIfa.length) {
-            return surgeOn.status ? 1 : 0
-        } else {
-            return surgeOn.status ? 0 : 1
+    try {
+        // 支持最新TF（$network.proxy_settings）
+        let proxySettings = $network.proxy_settings
+        let proxyScoped = proxySettings['__SCOPED__']
+        let lans = Object.keys(proxyScoped)
+        return lans.find(i => i.indexOf('utun') > -1) ? 1 : 0
+    } catch (e) {
+        // 兼容旧版，需要手动设置状态
+        if ($cache.get("surgeOn")) {
+            let surgeOn = $cache.get('surgeOn')
+            let nowIfa = getIfaData()
+            let oldIfa = surgeOn.ifaKeys
+            if (nowIfa.length === oldIfa.length) {
+                return surgeOn.status ? 1 : 0
+            } else {
+                return surgeOn.status ? 0 : 1
+            }
         }
+        return -1
     }
-    return -1
 }
 
 function genSrugeLabel(status) {
