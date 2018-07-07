@@ -20,6 +20,10 @@ String.prototype.reverse = function () {
     return this.toString().split('').reverse().join('')
 }
 
+String.prototype.contains = function (sub) {
+    return this.indexOf(sub) > -1
+}
+
 setDefaultSettings()
 
 let screenHeight = $device.info.screen.height
@@ -310,25 +314,27 @@ function renderUI() {
                 type: "matrix",
                 props: {
                     id: "usualSettings",
-                    columns: 4,
+                    columns: 5,
                     itemHeight: 40,
                     spacing: 5,
                     scrollEnabled: false,
                     data: [{
-                        title: { text: '去广告', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: 'ADS', bgcolor: defaultColor, textColor: blackColor }
                     }, {
-                        title: { text: '开启MITM', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: 'MITM', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: 'Surge2', bgcolor: defaultColor, textColor: blackColor }
+                    },{
+                        title: { text: 'Quan', bgcolor: defaultColor, textColor: blackColor }
                     }, {
-                        title: { text: '导出配置', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: '导出', bgcolor: defaultColor, textColor: blackColor }
                     }],
                     template: [{
                         type: "label",
                         props: {
                             id: "title",
                             align: $align.center,
-                            font: $font(12),
+                            font: $font(14),
                             radius: 5,
                             borderColor: tintColor,
                             borderWidth: 0.3,
@@ -427,7 +433,7 @@ function renderUI() {
                                     $("progressView").hidden = true
                                 }
                             })
-                            exportConf(res.fileName, res.fileData, res.actionSheet, false, () => {
+                            exportConf(res.fileName, res.fileData, res.target, res.actionSheet, false, () => {
                                 $http.stopServer()
                             })
                             $app.listen({
@@ -1576,7 +1582,7 @@ function autoGen() {
                     $("progressBar").value = p
                 },
                 onDone: res => {
-                    exportConf(res.fileName, res.fileData, res.actionSheet, true, () => {
+                    exportConf(res.fileName, res.fileData, res.target,  res.actionSheet, true, () => {
                         $http.stopServer()
                         $app.close()
                     })
@@ -1614,10 +1620,11 @@ function makeConf(params) {
             return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key).title.bgcolor : false
         }
 
-        let ads = usualValue('去广告')
-        let isMitm = usualValue('开启MITM')
-        let isActionSheet = usualValue('导出配置')
+        let ads = usualValue('ADS')
+        let isMitm = usualValue('MITM')
+        let isActionSheet = usualValue('导出')
         let surge2 = usualValue('Surge2')
+        let isQuan = usualValue('Quan')
 
         let serverEditorData = workspace.serverData
         let flatServerData = serverEditorData.reduce((all, cur) => {
@@ -1711,7 +1718,7 @@ function makeConf(params) {
                 repHeaderRewrite && repHeaderRewrite[1] && (v[8] = repHeaderRewrite[1])
                 repHostName && repHostName[1] && (v[9] = repHostName[1])
             }
-            rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
+            rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 || isQuan ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
             host = v[5]
             urlRewrite += v[6]
             urlReject += v[7]
@@ -1792,7 +1799,7 @@ function makeConf(params) {
                 prototype = prototype.replace('# All Rules', rules)
             }
             prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
-            prototype = prototype.replace('# URL Rewrite', urlRewrite.replace(/307/g, surge2 ? '302' : '307') + prettyInsert(userUrl.add))
+            prototype = prototype.replace('# URL Rewrite', urlRewrite.replace(/307/g, surge2 || isQuan ? '302' : '307') + prettyInsert(userUrl.add))
             prototype = prototype.replace('# URL REJECT', urlReject)
             prototype = prototype.replace('# SSID', userSSID)
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
@@ -1807,20 +1814,87 @@ function makeConf(params) {
                 prototype = prototype.replace(/\[MITM\][\s\S]*$/, '')
             }
 
-            if (rename && rename[1]) {
-                let renamePat = rename[1].split(/\s*,\s*/g).filter(i => i.indexOf('=') > -1).map(i => {
-                    let sp = i.reverse().split(/\s*=(?!\\)\s*/g)
-                    return sp.map(i => i.reverse().trim()).reverse()
+            function genQuanPolices(content) {
+                let items = content.split(/[\n\r]+/).filter(i => i !== '' && !/^\/\//.test(i)).map(sta => {
+                    let matcher = sta.match(/^(.*?)=(.*?),(.*?)$/);
+                    if (matcher.length === 4) {
+                        let data = matcher[3].split(/,/g)
+                        if (matcher[2].contains('url-test') || matcher[2].contains('fallback')) {
+                            let v = data.filter(i => !/url\s*=\s*/.test(i) && !/interval\s*=\s*/.test(i))
+                            return {
+                                name: matcher[1],
+                                sta: ' auto',
+                                data: v
+                            }
+                        } else {
+                            return {
+                                name: matcher[1],
+                                sta: matcher[2].replace(/select/, 'static'),
+                                data: data
+                            }
+                        }
+                    } else {
+                        return null
+                    }
                 })
-                renamePat.forEach(i => {
-                    let oldName = i[0]
-                    let newName = i[1].replace(/\\=/g, '=')
-                    let oldNameReg = new RegExp(oldName, 'g')
-                    prototype = prototype.replace(oldNameReg, newName)
+                items.push({
+                    name: '🚀 Direct',
+                    sta: 'static',
+                    data: ["DIRECT"]
+                })
+                let policies = items.map(i => {
+                    if (i.sta.contains('auto')) {
+                        return `${i.name} : ${i.sta}\n${i.data.join('\n')}`
+                    } else if (i.sta.contains('static')) {
+                        return `${i.name} : ${i.sta}, ${i.data[0]}\n${i.data.join('\n')}`
+                    } else {
+                        return `${i.name} : ${i.data[0]}, ${i.data[1]}`
+                    }
+                })
+                return policies.map(i => {
+                    if (rename && rename[1]) {
+                        i = globalRename(rename, i) // 圈特殊性
+                    }
+                    return $text.base64Encode(i)
                 })
             }
 
+            function genQuanRewrite(content) {
+                let items = content.split(/[\n\r]+/).filter(i => i !== '' && !/^\/\//.test(i)).map(i => i.split(/\s+/))
+                return items.map(i => {
+                    let key = ['modify', '302']
+                    let isHeader = i[2].contains('header')
+                    return `${i[0]} url ${isHeader ? key[0] : key[1]} ${i[1]}`
+                }).join('\n')
+            }
+
+            if (isQuan) {
+                prototype = prototype.replace(/☁️ Others,dns-failed/, '☁️ Others')
+                let proxyGroup = prototype.match(filePartReg('Proxy Group'))
+                if (proxyGroup && proxyGroup[1]) {
+                    let policies = genQuanPolices(proxyGroup[1])
+                    prototype += `\n[POLICY]\n${policies.join('\n')}\n`
+                }
+                prototype += `\n[URL-REJECTION]\n${urlReject}\n`
+                prototype += `\n[REWRITE]\n${genQuanRewrite(urlRewrite)}\n`
+                prototype += `\n[HOST]\n${host + prettyInsert(userHost.add)}\n`
+            }
+
+            if (rename && rename[1]) {
+                prototype = globalRename(rename, prototype);
+            }
+
             let fn = (workspace.fileName || 'lhie1') + '.conf'
+
+            let exportTarget = 0
+
+            if (surge2) {
+                exportTarget = 1
+            }
+            
+            if (isQuan) {
+                exportTarget = 2
+            }
 
             if ('onDone' in params) {
                 ruleUpdateUtil.getGitHubFilesSha({
@@ -1833,6 +1907,7 @@ function makeConf(params) {
                     }
                 })
                 params.onDone({
+                    target: exportTarget,
                     actionSheet: isActionSheet,
                     fileName: fn,
                     fileData: prototype
@@ -1843,6 +1918,20 @@ function makeConf(params) {
         })
     } catch (e) {
         'onError' in params && params.onError(e)
+    }
+
+    function globalRename(rename, prototype) {
+        let renamePat = rename[1].split(/\s*,\s*/g).filter(i => i.indexOf('=') > -1).map(i => {
+            let sp = i.reverse().split(/\s*=(?!\\)\s*/g);
+            return sp.map(i => i.reverse().trim()).reverse();
+        });
+        renamePat.forEach(i => {
+            let oldName = i[0];
+            let newName = i[1].replace(/\\=/g, '=');
+            let oldNameReg = new RegExp(oldName, 'g');
+            prototype = prototype.replace(oldNameReg, newName);
+        });
+        return prototype;
     }
 }
 
@@ -1858,53 +1947,69 @@ function getRulesReplacement(content = '') {
     return null;
 }
 
-function exportConf(fileName, fileData, actionSheet, isAuto, actionSheetCancel) {
-    let workspace = JSON.parse($file.read(FILE).string).workspace
-    let usualData = workspace.usualData
-    let surge2 = usualData.find(i => i.title.text == 'Surge2') ? usualData.find(i => i.title.text == 'Surge2').title.bgcolor : false
-    let fnReg = /^[\x21-\x2A\x2C-\x2E\x30-\x3B\x3D\x3F-\x5B\x5D\x5F\x61-\x7B\x7D-\x7E]+$/
-    if (actionSheet || !fnReg.test(fileName)) {
-        $share.sheet({
-            items: [fileName, $data({ "string": fileData })],
-            handler: success => {
-                if (!success && actionSheetCancel) {
-                    actionSheetCancel()
-                }
-            }
-        })
-    } else {
-        if (!$file.exists("confs")) {
-            $file.mkdir("confs")
-        } else {
-            $file.list('confs').forEach(i => $file.delete('confs/' + i))
-        }
-        $file.write({
-            data: $data({ "string": fileData }),
-            path: `confs/${fileName}`
-        })
-        $http.startServer({
-            path: "confs/",
-            handler: res => {
-                let serverUrl = `http://127.0.0.1:${res.port}/`
-                $http.get({
-                    url: serverUrl + "list?path=",
-                    handler: function (resp) {
-                        if (resp.response.statusCode == 200) {
-                            let surgeScheme = `surge${surge2 ? "" : "3"}:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fileName)}`
-                            $app.openURL(surgeScheme)
-                            $delay(10, () => {
-                                $http.stopServer()
-                                if (isAuto) {
-                                    $app.close()
-                                }
-                            })
-                        } else {
-                            $ui.alert("内置服务器启动失败，请重试")
-                        }
+function exportConf(fileName, fileData, exportTarget, actionSheet, isAuto, actionSheetCancel) {
+    let surge3 = exportTarget === 0
+    let surge2 = exportTarget === 1
+    let isQuan = exportTarget === 2
+    if (surge2 || surge3) {
+        let fnReg = /^[\x21-\x2A\x2C-\x2E\x30-\x3B\x3D\x3F-\x5B\x5D\x5F\x61-\x7B\x7D-\x7E]+$/
+        if (actionSheet || !fnReg.test(fileName)) {
+            $share.sheet({
+                items: [fileName, $data({ "string": fileData })],
+                handler: success => {
+                    if (!success && actionSheetCancel) {
+                        actionSheetCancel()
                     }
-                })
+                }
+            })
+        } else {
+            if (!$file.exists("confs")) {
+                $file.mkdir("confs")
+            } else {
+                $file.list('confs').forEach(i => $file.delete('confs/' + i))
             }
-        })
+            $file.write({
+                data: $data({ "string": fileData }),
+                path: `confs/${fileName}`
+            })
+            $http.startServer({
+                path: "confs/",
+                handler: res => {
+                    let serverUrl = `http://127.0.0.1:${res.port}/`
+                    $http.get({
+                        url: serverUrl + "list?path=",
+                        handler: function (resp) {
+                            if (resp.response.statusCode == 200) {
+                                let surgeScheme = `surge${surge2 ? "" : "3"}:///install-config?url=${encodeURIComponent(serverUrl + "download?path=" + fileName)}`
+                                $app.openURL(surgeScheme)
+                                $delay(10, () => {
+                                    $http.stopServer()
+                                    if (isAuto) {
+                                        $app.close()
+                                    }
+                                })
+                            } else {
+                                $ui.alert("内置服务器启动失败，请重试")
+                            }
+                        }
+                    })
+                }
+            })
+        }
+    } else if (isQuan) {
+        if (actionSheet) {
+            $share.sheet({
+                items: [fileName, $data({ "string": fileData })],
+                handler: success => {
+                    if (!success && actionSheetCancel) {
+                        actionSheetCancel()
+                    }
+                }
+            })
+        } else {
+            $clipboard.text = fileData
+            $app.openURL("quantumult://settings?configuration=clipboard")
+        }
     }
 }
 
