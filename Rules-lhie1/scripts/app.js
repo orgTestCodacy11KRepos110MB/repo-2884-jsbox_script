@@ -1742,10 +1742,10 @@ function makeConf(params) {
                 rename = pgs.match(/\/\/\s*rename\s*:\s*(.*?)(?:\n|\r|$)/)
                 pgs = pgs.replace(/Proxy Header/g, proxyHeaders)
                 for (let name in customProxyGroup) {
-                    let nameReg = new RegExp(name, 'g')
+                    let nameReg = new RegExp(`,\\s*${name}`, 'g')
                     let serverNames = customProxyGroup[name]
                     serverNames = serverNames.filter(i => proxyNameLegal(i))
-                    pgs = pgs.replace(nameReg, serverNames.join(',') || flatServerData.map(i => i.proxyName.text).join(','))
+                    pgs = pgs.replace(nameReg, ',' + (serverNames.join(',') || flatServerData.map(i => i.proxyName.text).join(',')))
                 }
                 prototype = prototype.replace(/\[Proxy Group\][\s\S]+\[Rule\]/, pgs + '\n\n[Rule]')
             } else {
