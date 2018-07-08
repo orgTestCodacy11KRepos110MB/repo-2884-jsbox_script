@@ -1649,7 +1649,18 @@ function makeConf(params) {
                 return i.proxyLink.indexOf(ps) < 0
             })
             return i.proxyLink + notExistSuffix.join(',')
-        }).join('\n')
+        })
+        if (isQuan) {
+            // hack处理obfs-host问题
+            proxies = proxies.map(i => {
+                let matcher = i.match(/obfs-host\s*=\s*([^\s]*?)(?:,|$)/)
+                if (matcher && matcher[1]) {
+                    i = i.replace(matcher[1], `_${matcher[1]}_`)
+                }
+                return i
+            })
+        }
+        proxies = proxies.join('\n')
         let proxyHeaders = flatServerData.map(i => i.proxyName.text).join(', ')
         let rules = ''
         let prototype = ''
