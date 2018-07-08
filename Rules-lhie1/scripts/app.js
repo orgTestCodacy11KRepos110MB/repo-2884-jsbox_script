@@ -2036,7 +2036,7 @@ function exportConf(fileName, fileData, exportTarget, actionSheet, isAuto, actio
                             if (resp.response.statusCode == 200) {
                                 let filterURL = `${serverUrl}download?path=filter.conf`
                                 let rejectionURL = `${serverUrl}download?path=rejection.conf`
-                                let quanScheme = `quantumult://configuration?server=${urlsaveBase64Encode()}&filter=${urlsaveBase64Encode(filterURL)}&rejection=${urlsaveBase64Encode(rejectionURL)}`
+                                let quanScheme = `quantumult://configuration?filter=${urlsaveBase64Encode(filterURL)}&rejection=${urlsaveBase64Encode(rejectionURL)}`
                                 $app.openURL(quanScheme)
                                 $delay(10, () => {
                                     $http.stopServer()
