@@ -46,17 +46,21 @@ function vpnStatus() {
     }
 }
 
-function genSrugeLabel(status) {
+function genSrugeLabel(status, isQuan) {
     if (status === -1) {
         return '长按设置'
     } else if (status === 0) {
-        return '开启Surge'
+        return isQuan ? '开启Quantumult' : '开启Surge'
     } else {
-        return '关闭Surge'
+        return isQuan ? '关闭Quantumult' : '关闭Surge'
     }
 }
 
 function renderTodayUI(bid) {
+    let workspace = JSON.parse($file.read(FILE).string).workspace
+    let usualData = workspace.usualData
+    let surge2 = usualData.find(i => i.title.text == 'Surge2') ? usualData.find(i => i.title.text == 'Surge2').title.bgcolor : false
+    let isQuan = usualData.find(i => i.title.text == 'Quan') ? usualData.find(i => i.title.text == 'Quan').title.bgcolor : false
     let isLauncher = bid === 'app.cyan.jsbox.ghost'
     let checks = [pm(ruleUpdateUtil.getGitHubFilesSha), pm(updateUtil.getLatestVersion)]
     let vStatus = vpnStatus()
@@ -70,6 +74,12 @@ function renderTodayUI(bid) {
         let { owner, repoName, filePath } = ruleUpdateUtil.getRepoInfo()
         $("updateStatus").text = res ? res.commit.message : `${owner}\/${repoName}`
     })
+    let targetAppOn = $file.read("assets/today_surge.png")
+    let targetAppOff = $file.read("assets/today_surge_off.png")
+    if (isQuan) {
+        targetAppOn = $file.read("assets/today_quan.png")
+        targetAppOff = $file.read("assets/today_quan_off.png")
+    }
     $ui.render({
         props: {
             id: "todayMainView",
@@ -152,7 +162,7 @@ function renderTodayUI(bid) {
                 type: "image",
                 props: {
                     id: "surgeBtn",
-                    data: vStatus === 0 ? $file.read("assets/today_surge_off.png") : $file.read("assets/today_surge.png"),
+                    data: vStatus === 0 ? targetAppOff : targetAppOn,
                     radius: 25,
                     bgcolor: $rgba(255, 255, 255, 0)
                 },
@@ -163,15 +173,16 @@ function renderTodayUI(bid) {
                 },
                 events: {
                     tapped: sender => {
-                        let workspace = JSON.parse($file.read(FILE).string).workspace
-                        let usualData = workspace.usualData
-                        let surge2 = usualData.find(i => i.title.text == 'Surge2') ? usualData.find(i => i.title.text == 'Surge2').title.bgcolor : false
-                        $app.openURL(`surge${surge2 ? "" : "3"}:///toggle?autoclose=true`)
+                        let url = `surge${surge2 ? "" : "3"}:///toggle?autoclose=true`
+                        if (isQuan) {
+                            url = 'quantumult://' + (vStatus === 0 ? 'start' : 'stop')
+                        }
+                        $app.openURL(url)
                     },
                     longPressed: sender => {
                         $ui.alert({
                             title: "初始设置",
-                            message: '请选择当前Surge开关状态？',
+                            message: '请选择当前VPN开关状态？',
                             actions: [{
                                 title: '已关闭',
                                 handler: () => {
@@ -228,7 +239,7 @@ function renderTodayUI(bid) {
                 type: "label",
                 props: {
                     id: "surgeLabel",
-                    text: genSrugeLabel(vStatus),
+                    text: genSrugeLabel(vStatus, isQuan),
                     font: $font(12),
                     textColor: $rgba(50, 50, 50, .8),
                     align: $align.center
@@ -236,7 +247,6 @@ function renderTodayUI(bid) {
                 layout: (make, view) => {
                     make.height.equalTo(10)
                     make.top.equalTo(view.prev.top)
-                    make.width.equalTo($("pullBtn").width)
                     make.centerX.equalTo($("surgeBtn"))
                 }
             }, {

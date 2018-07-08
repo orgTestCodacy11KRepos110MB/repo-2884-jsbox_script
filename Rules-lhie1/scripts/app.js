@@ -42,7 +42,7 @@ const blackColor = $color("#000000")
 function renderUI() {
     $ui.render({
         props: {
-            title: "Surge规则",
+            title: "lhie1规则",
             id: "bodyView",
             navButtons: [{
                 title: '  🗂 ',
@@ -324,7 +324,7 @@ function renderUI() {
                         title: { text: 'MITM', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: 'Surge2', bgcolor: defaultColor, textColor: blackColor }
-                    },{
+                    }, {
                         title: { text: 'Quan', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: '导出', bgcolor: defaultColor, textColor: blackColor }
@@ -1418,6 +1418,11 @@ function autoServerGroup() {
     })
 }
 
+let filePartReg = function (name) {
+    let reg = `\\[${name}\\]([\\S\\s]*?)(?:\\[General\\]|\\[Replica\\]|\\[Proxy\\]|\\[Proxy Group\\]|\\[Rule\\]|\\[Host\\]|\\[URL Rewrite\\]|\\[Header Rewrite\\]|\\[SSID Setting\\]|\\[MITM\\]|\\[URL-REJECTION\\]|\\[HOST\\]|\\[POLICY\\]|\\[REWRITE\\]|$)`
+    return new RegExp(reg)
+}
+
 function setUpWorkspace() {
     $app.listen({
         ready: function () {
@@ -1582,7 +1587,7 @@ function autoGen() {
                     $("progressBar").value = p
                 },
                 onDone: res => {
-                    exportConf(res.fileName, res.fileData, res.target,  res.actionSheet, true, () => {
+                    exportConf(res.fileName, res.fileData, res.target, res.actionSheet, true, () => {
                         $http.stopServer()
                         $app.close()
                     })
@@ -1697,11 +1702,6 @@ function makeConf(params) {
             promiseArray[7] = emptyPromise(onPgs)
             promiseArray[8] = emptyPromise(onPgs)
             promiseArray[9] = emptyPromise(onPgs)
-        }
-
-        let filePartReg = function (name) {
-            let reg = `\\[${name}\\]([\\S\\s]*?)(?:\\[General\\]|\\[Replica\\]|\\[Proxy\\]|\\[Proxy Group\\]|\\[Rule\\]|\\[Host\\]|\\[URL Rewrite\\]|\\[Header Rewrite\\]|\\[SSID Setting\\]|\\[MITM\\]|$)`
-            return new RegExp(reg)
         }
 
         Promise.all(promiseArray).then(v => {
@@ -1826,10 +1826,16 @@ function makeConf(params) {
                                 sta: ' auto',
                                 data: v
                             }
-                        } else {
+                        } else if (matcher[2].contains('select')) {
                             return {
                                 name: matcher[1],
                                 sta: matcher[2].replace(/select/, 'static'),
+                                data: data
+                            }
+                        } else {
+                            return {
+                                name: matcher[1],
+                                sta: '',
                                 data: data
                             }
                         }
@@ -1847,8 +1853,14 @@ function makeConf(params) {
                         return `${i.name} : ${i.sta}\n${i.data.join('\n')}`
                     } else if (i.sta.contains('static')) {
                         return `${i.name} : ${i.sta}, ${i.data[0]}\n${i.data.join('\n')}`
-                    } else {
-                        return `${i.name} : ${i.data[0]}, ${i.data[1]}`
+                    } else if (i.sta === '') {
+                        let wifi = i.data.find(i => /default\s*=/.test(i))
+                        let cellular = i.data.find(i => /cellular\s*=/.test(i)) || 'cellular = DIRECT'
+                        let left = i.data.filter(i => i !== wifi && i !== cellular).map(i => {
+                            let p = i.split('=')
+                            return p[0].replace(/"/g, '') + '=' + p.slice(1).join('=')
+                        })
+                        return `${i.name} : ${wifi.replace(/default\s*=/, 'wifi =')}, ${cellular}\n${left.join('\n')}`
                     }
                 })
                 return policies.map(i => {
@@ -1891,7 +1903,7 @@ function makeConf(params) {
             if (surge2) {
                 exportTarget = 1
             }
-            
+
             if (isQuan) {
                 exportTarget = 2
             }
@@ -2007,10 +2019,51 @@ function exportConf(fileName, fileData, exportTarget, actionSheet, isAuto, actio
                 }
             })
         } else {
-            $clipboard.text = fileData
-            $app.openURL("quantumult://settings?configuration=clipboard")
+            if (!$file.exists("confs")) {
+                $file.mkdir("confs")
+            } else {
+                $file.list('confs').forEach(i => $file.delete('confs/' + i))
+            }
+            genServerFiles('filter.conf', fileData.match(filePartReg('Rule'))[1])
+            genServerFiles('rejection.conf', fileData.match(filePartReg('URL-REJECTION'))[1])
+            $http.startServer({
+                path: "confs/",
+                handler: res => {
+                    let serverUrl = `http://127.0.0.1:${res.port}/`
+                    $http.get({
+                        url: serverUrl + "list?path=",
+                        handler: function (resp) {
+                            if (resp.response.statusCode == 200) {
+                                let filterURL = `${serverUrl}download?path=filter.conf`
+                                let rejectionURL = `${serverUrl}download?path=rejection.conf`
+                                let quanScheme = `quantumult://configuration?server=${urlsaveBase64Encode()}&filter=${urlsaveBase64Encode(filterURL)}&rejection=${urlsaveBase64Encode(rejectionURL)}`
+                                $app.openURL(quanScheme)
+                                $delay(10, () => {
+                                    $http.stopServer()
+                                    if (isAuto) {
+                                        $app.close()
+                                    }
+                                })
+                            } else {
+                                $ui.alert("内置服务器启动失败，请重试")
+                            }
+                        }
+                    })
+                }
+            })
         }
     }
+
+    function genServerFiles(name, data) {
+        $file.write({
+            data: $data({ "string": data }),
+            path: `confs/${name}`
+        });
+    }
+}
+
+function urlsaveBase64Encode(url) {
+    return $text.base64Encode(url).replace(/\+/g, '-').replace(/\\/g, '_').replace(/=/g, '')
 }
 
 module.exports = {
