@@ -1892,16 +1892,24 @@ function makeConf(params) {
                 }).join('\n')
             }
 
+            function genQuanPart(name, content) {
+                return `\n[${name}]\n${content}\n`
+            }
+
             if (isQuan) {
                 prototype = prototype.replace(/☁️ Others,dns-failed/, '☁️ Others')
                 let proxyGroup = prototype.match(filePartReg('Proxy Group'))
                 if (proxyGroup && proxyGroup[1]) {
                     let policies = genQuanPolices(proxyGroup[1])
-                    prototype += `\n[POLICY]\n${policies.join('\n')}\n`
+                    prototype += genQuanPart('POLICY', policies.join('\n'))
                 }
-                prototype += `\n[URL-REJECTION]\n${urlReject}\n`
-                prototype += `\n[REWRITE]\n${genQuanRewrite(urlRewrite)}\n`
-                prototype += `\n[HOST]\n${host + prettyInsert(userHost.add)}\n`
+                prototype += genQuanPart('URL-REJECTION', urlReject)
+                prototype += genQuanPart('REWRITE', genQuanRewrite(urlRewrite))
+                prototype += genQuanPart('HOST', host + prettyInsert(userHost.add))
+                let customDNS = prototype.match(/dns-server\s*=\s*(.*?)(?:\n|\r|$)/)
+                if (customDNS && customDNS[1]) {
+                    prototype += genQuanPart('DNS', customDNS[1])
+                }
             }
 
             if (rename && rename[1]) {
@@ -2031,38 +2039,8 @@ function exportConf(fileName, fileData, exportTarget, actionSheet, isAuto, actio
                 }
             })
         } else {
-            if (!$file.exists("confs")) {
-                $file.mkdir("confs")
-            } else {
-                $file.list('confs').forEach(i => $file.delete('confs/' + i))
-            }
-            genServerFiles('filter.conf', fileData.match(filePartReg('Rule'))[1])
-            genServerFiles('rejection.conf', fileData.match(filePartReg('URL-REJECTION'))[1])
-            $http.startServer({
-                path: "confs/",
-                handler: res => {
-                    let serverUrl = `http://127.0.0.1:${res.port}/`
-                    $http.get({
-                        url: serverUrl + "list?path=",
-                        handler: function (resp) {
-                            if (resp.response.statusCode == 200) {
-                                let filterURL = `${serverUrl}download?path=filter.conf`
-                                let rejectionURL = `${serverUrl}download?path=rejection.conf`
-                                let quanScheme = `quantumult://configuration?filter=${urlsaveBase64Encode(filterURL)}&rejection=${urlsaveBase64Encode(rejectionURL)}`
-                                $app.openURL(quanScheme)
-                                $delay(10, () => {
-                                    $http.stopServer()
-                                    if (isAuto) {
-                                        $app.close()
-                                    }
-                                })
-                            } else {
-                                $ui.alert("内置服务器启动失败，请重试")
-                            }
-                        }
-                    })
-                }
-            })
+            $clipboard.text = fileData
+            $app.openURL("quantumult://settings?configuration=clipboard&autoclear=1")
         }
     }
 
