@@ -1162,7 +1162,8 @@ function renderAboutUI() {
         views: [{
             type: "scroll",
             props: {
-                id: "mainAboutView"
+                id: "mainAboutView",
+                contentSize: $size(0, 650)
             },
             layout: $layout.fill,
             views: [{
