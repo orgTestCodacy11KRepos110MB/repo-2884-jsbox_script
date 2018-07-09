@@ -1,5 +1,11 @@
 **如打赏名单有遗漏，请TG联系我加一下**
 
+#### 2018.07.09
+1. 修复下滑问题 - v1.7.27
+2. 修复Quantumult无法获取配置DNS问题 - v1.7.27
+3. 去除URL Scheme导出filter和rejection的特性，因为Quantumult无法识别里面的Policy - v1.7.27
+4. 支持使用特殊占位符``WidgetHeader``来配置Quantumult的Widget节点 - v1.7.27
+
 #### 2018.07.08
 1. hack解决圈obfs-host识别问题 - v1.7.26
 2. 修复占位符会替换策略组名问题（占位符不要与节点名冲突）- v1.7.26
