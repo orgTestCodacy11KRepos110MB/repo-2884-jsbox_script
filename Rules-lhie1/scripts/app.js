@@ -1912,6 +1912,7 @@ function makeConf(params) {
                 }
                 let widgetProxies = customProxyGroup['WidgetHeader'] || null
                 if (widgetProxies) {
+                    widgetProxies = widgetProxies.filter(i => proxyNameLegal(i))
                     prototype += genQuanPart('BACKUP-SERVER', widgetProxies.join('\n'))
                 }
             }
