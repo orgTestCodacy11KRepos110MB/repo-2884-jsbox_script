@@ -1,6 +1,6 @@
 const filenameUtil = require('scripts/filenameUtil')
 
-String.prototype.strictTrim = function() {
+String.prototype.strictTrim = function () {
     let trimed = this.trim()
     if ((matcher = trimed.match(/([\s\S]+),$/)) !== null) {
         return matcher[1]
@@ -48,6 +48,29 @@ function getServersFromConfFile(params) {
     })
 }
 
+function decodeVmess(params) {
+    let links = params.urls
+    let result = []
+    let tag
+
+    for (let idx in links) {
+        let link = links[idx]
+        let contentMatcher = link.match(/^vmess:\/\/(.*?)$/)
+        if (contentMatcher && contentMatcher[1]) {
+            let encryptContent = contentMatcher[1]
+            let rawContent = JSON.parse($text.base64Decode(encryptContent))
+            let res = `${rawContent.ps.replace(/[\[\]]/g, '')} = vmess, ${rawContent.add}, ${rawContent.port}, aes-128-cfb, "${rawContent.id}", over-tls=${rawContent.tls === 'tls' ? 'true' : 'false'}, certificate=1`
+            if (rawContent.type === 'http') {
+                res += `, obfs=http, obfs-path=${rawContent.path}, obfs-header="Host: ${rawContent.host}"`
+            }
+            result.push(res)
+            tag = rawContent.ps
+        }
+    }
+
+    params.handler({ servers: result, sstag: result.length > 1 ? `批量V2Ray节点（${result.length}）` : tag })
+}
+
 function decodeScheme(params) {
     let urls = params.ssURL
     let result = []
@@ -79,7 +102,7 @@ function decodeScheme(params) {
             let obfsHostMatcher = ps.match(/obfs-host=(.*?)(;|$)/)
             if (obfsMatcher) {
                 let obfs = obfsMatcher[1]
-                let obfsHost = obfsHostMatcher? obfsHostMatcher[1] : 'cloudfront.net'
+                let obfsHost = obfsHostMatcher ? obfsHostMatcher[1] : 'cloudfront.net'
                 plugin = `obfs=${obfs}, obfs-host=${obfsHost}`
             }
         } else {
@@ -97,10 +120,11 @@ function decodeScheme(params) {
         result[idx] = proxy
     }
 
-    params.handler({ servers: result, sstag: result.length > 1? `批量ss节点（${result.length}）`: tag })
+    params.handler({ servers: result, sstag: result.length > 1 ? `批量ss节点（${result.length}）` : tag })
 }
 
 module.exports = {
     proxyFromConf: getServersFromConfFile,
-    proxyFromURL: decodeScheme
+    proxyFromURL: decodeScheme,
+    proxyFromVmess: decodeVmess
 }

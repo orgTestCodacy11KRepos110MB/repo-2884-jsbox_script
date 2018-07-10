@@ -931,6 +931,7 @@ function linkHandler(url, params) {
         shadowsocks: [],
         surge: [],
         online: [],
+        vmess: [],
         ignore: []
     }
 
@@ -942,7 +943,9 @@ function linkHandler(url, params) {
             servers.online.push(item)
         } else if (/[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls)/.test(item)) {
             servers.surge.push(item)
-        } else {
+        } else if (/^vmess:\/\//.test(item)) {
+            servers.vmess.push(item)
+        }else {
             servers.ignore.push(item)
         }
     })
@@ -977,7 +980,14 @@ function linkHandler(url, params) {
                     params.handler(res.servers, res.filename, res.url)
                 }
             })
-        } else {
+        } else if (k === 'vmess') {
+            proxyUtil.proxyFromVmess({
+                urls: servers[k],
+                handler: res => {
+                    params.handler(res.servers, res.sstag, servers[k].join('\n'))
+                }
+            })
+        }else {
             $ui.alert('剪贴板存在无法识别的行：\n\n' + servers.ignore.join('\n') + '\n\n以上行将被丢弃！')
         }
     }
