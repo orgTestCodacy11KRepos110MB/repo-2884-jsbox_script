@@ -945,7 +945,7 @@ function linkHandler(url, params) {
             servers.surge.push(item)
         } else if (/^vmess:\/\//.test(item)) {
             servers.vmess.push(item)
-        }else {
+        } else {
             servers.ignore.push(item)
         }
     })
@@ -987,7 +987,7 @@ function linkHandler(url, params) {
                     params.handler(res.servers, res.sstag, servers[k].join('\n'))
                 }
             })
-        }else {
+        } else {
             $ui.alert('剪贴板存在无法识别的行：\n\n' + servers.ignore.join('\n') + '\n\n以上行将被丢弃！')
         }
     }
@@ -1643,6 +1643,16 @@ function makeConf(params) {
         let isQuan = usualValue('Quan')
 
         let serverEditorData = workspace.serverData
+        if (isQuan) {
+            serverEditorData = serverEditorData.map(i => {
+                let rows = i.rows.map(s => {
+                    s.proxyLink += `,group=${i.title}`
+                    return s
+                })
+                i.rows = rows
+                return i
+            })
+        }
         let flatServerData = serverEditorData.reduce((all, cur) => {
             return {
                 rows: all.rows.concat(cur.rows)
