@@ -1173,7 +1173,7 @@ function renderAboutUI() {
             type: "scroll",
             props: {
                 id: "mainAboutView",
-                contentSize: $size(0, 650)
+                contentSize: $size(0, 685)
             },
             layout: $layout.fill,
             views: [{
@@ -1191,19 +1191,23 @@ function renderAboutUI() {
             }, {
                 type: "list",
                 props: {
-                    data: ["🗂  脚本简介", "📃  更新日志", "🖥  论坛导航"],
+                    data: ["🗂  脚本简介", "🛠  使用手册","📃  更新日志", "🖥  论坛导航"],
                     scrollEnabled: false
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super)
                     make.top.equalTo(view.prev.bottom).offset(0)
-                    make.height.equalTo(135)
+                    make.height.equalTo(180)
                 },
                 events: {
                     didSelect: (sender, indexPath, data) => {
-                        if (indexPath.row == 0) {
+                        if (indexPath.row === 0) {
                             previewMD(data, 'docs.md')
-                        } else if (indexPath.row == 1) {
+                        } else if (indexPath.row === 1) {
+                            $safari.open({
+                                url: "https://github.com/Fndroid/jsbox_script/wiki/Rules-lhie1"
+                            })
+                        }else if (indexPath.row === 2) {
                             previewMD(data, 'updateLog.md')
                         } else {
                             $safari.open({
