@@ -8,6 +8,19 @@ String.prototype.strictTrim = function () {
     return trimed
 }
 
+function urlsaveBase64Encode(url) {
+    return $text.base64Encode(url).replace(/\-/g, '+').replace(/\\/g, '_').replace(/=+$/, '')
+}
+
+function urlsaveBase64Decode(base64) {
+    // Add removed at end '='
+    base64 += Array(5 - base64.length % 4).join('=');
+    base64 = base64
+        .replace(/\-/g, '+') // Convert '-' to '+'
+        .replace(/\_/g, '/'); // Convert '_' to '/'
+    return $text.base64Decode(base64).replace(/\u0000/, '');
+}
+
 function promiseConf(url) {
     return new Promise((resolve, reject) => {
         $http.get({
@@ -21,18 +34,103 @@ function promiseConf(url) {
                 } catch (e) {
                     filename = filenameUtil.getConfName(url)
                 }
-                let servers = data.match(/\[Proxy\]([\s\S]*?)\[Proxy Group\]/)
-                if (servers != null) {
+                let decodedData = $text.base64Decode(data)
+                let surgeConfMatcher = data.match(/\[Proxy\]([\s\S]*?)\[Proxy Group\]/)
+                if (surgeConfMatcher && surgeConfMatcher[1]) {
+                    // Surge托管
                     resolve({
-                        servers: servers[1],
+                        servers: surgeConfMatcher[1],
                         filename: filename
                     })
+                } else if (/^ssr:\/\//.test(decodedData)) {
+                    // SSR订阅
+                    let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '');
+                    decodeSSR({
+                        urls: rawLinks,
+                        handler: res => {
+                            resolve({
+                                servers: res.servers.join('\n'),
+                                filename: res.sstag || filename
+                            })
+                        }
+                    });
+                } else if (/^vmess:\/\//.test(decodedData)) {
+                    let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '');
+                    decodeVmess({
+                        urls: rawLinks,
+                        handler: res => {
+                            resolve({
+                                servers: res.servers.join('\n'),
+                                filename: res.sstag || filename
+                            })
+                        }
+                    });
                 } else {
                     reject()
                 }
             }
         })
     })
+}
+
+function decodeSSR(params) {
+    let links = params.urls
+    let tag = ''
+    let first = ''
+    function getParam(key, content) {
+        let reg = new RegExp(`${key}=(.*?)(?:&|$)`);
+        let matcher = content.match(reg);
+        return matcher && matcher[1] ? matcher[1] : '';
+    }
+    let decodedLinks = links.map(i => {
+        let rawContentMatcher = i.match(/^ssr:\/\/(.*?)$/);
+        if (rawContentMatcher && rawContentMatcher[1]) {
+            let rawContent = urlsaveBase64Decode(rawContentMatcher[1]);
+            let rawContentParts = rawContent.split(/\/\?/g);
+            let paramsMatcher = rawContentParts[0].match(/^(.*?):(.*?):(.*?):(.*?):(.*?):(.*?)$/);
+            if (paramsMatcher && paramsMatcher.length === 7) {
+                let host = paramsMatcher[1];
+                let port = paramsMatcher[2];
+                let protocol = paramsMatcher[3];
+                let method = paramsMatcher[4];
+                let obfs = paramsMatcher[5];
+                let pass = urlsaveBase64Decode(paramsMatcher[6]);
+                let obfsparam = '';
+                let protoparam = '';
+                let group = '';
+                let remarks = '未命名节点';
+                if (rawContentParts.length > 1) {
+                    let target = rawContentParts[1];
+                    obfsparam = urlsaveBase64Decode(getParam('obfsparam', target));
+                    protoparam = urlsaveBase64Decode(getParam('protoparam', target));
+                    group = urlsaveBase64Decode(getParam('group', target));
+                    remarks = urlsaveBase64Decode(getParam('remarks', target));
+                }
+                first = remarks
+                if (tag === '' && group !== '') {
+                    tag = group;
+                }
+                let res = `${remarks} = shadowsocksr, ${host}, ${port}, ${method}, "${pass}", protocol=${protocol}, obfs=${obfs}`;
+                res += protoparam ? `, protocol_param=${protoparam}` : '';
+                res += obfsparam ? `, obfs_param="${obfsparam}"` : '';
+                return res;
+            }
+            else {
+                return '';
+            }
+        }
+        else {
+            return '';
+        }
+    });
+    let sstag = first
+    if (decodedLinks.length > 1) {
+        sstag = `批量SSR节点（${decodedLinks.length}）`
+    }
+    if (tag !== '') {
+        sstag = tag
+    }
+    params.handler({ servers: decodedLinks, sstag: sstag })
 }
 
 function getServersFromConfFile(params) {
@@ -126,5 +224,6 @@ function decodeScheme(params) {
 module.exports = {
     proxyFromConf: getServersFromConfFile,
     proxyFromURL: decodeScheme,
-    proxyFromVmess: decodeVmess
+    proxyFromVmess: decodeVmess,
+    proxyFromSSR: decodeSSR
 }

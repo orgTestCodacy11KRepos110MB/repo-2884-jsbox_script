@@ -932,7 +932,8 @@ function linkHandler(url, params) {
         surge: [],
         online: [],
         vmess: [],
-        ignore: []
+        ignore: [],
+        shadowsocksr: []
     }
 
     let urls = url.split(/[\r\n]+/g).map(i => i.trim()).filter(i => i !== '')
@@ -945,7 +946,9 @@ function linkHandler(url, params) {
             servers.surge.push(item)
         } else if (/^vmess:\/\//.test(item)) {
             servers.vmess.push(item)
-        } else {
+        } else if (/^ssr:\/\//.test(item)) {
+            servers.shadowsocksr.push(item)
+        }else {
             servers.ignore.push(item)
         }
     })
@@ -982,6 +985,13 @@ function linkHandler(url, params) {
             })
         } else if (k === 'vmess') {
             proxyUtil.proxyFromVmess({
+                urls: servers[k],
+                handler: res => {
+                    params.handler(res.servers, res.sstag, servers[k].join('\n'))
+                }
+            })
+        } else if (k === 'shadowsocksr') {
+            proxyUtil.proxyFromSSR({
                 urls: servers[k],
                 handler: res => {
                     params.handler(res.servers, res.sstag, servers[k].join('\n'))
@@ -1650,7 +1660,12 @@ function makeConf(params) {
         if (isQuan) {
             serverEditorData = serverEditorData.map(i => {
                 let rows = i.rows.map(s => {
-                    s.proxyLink += `,group=${i.title}`
+                    let containsOP = /obfs_param/.test(s.proxyLink)
+                    if (containsOP) {
+                        s.proxyLink = s.proxyLink.replace(/obfs_param/, `group=${i.title}, obfs_param`)
+                    }else {
+                        s.proxyLink += `, group=${i.title}`
+                    }
                     return s
                 })
                 i.rows = rows
@@ -1965,7 +1980,7 @@ function makeConf(params) {
                 })
             }
         }).catch(e => {
-            console.error(e)
+            console.error(e.stack)
         })
     } catch (e) {
         'onError' in params && params.onError(e)
