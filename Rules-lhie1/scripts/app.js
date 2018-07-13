@@ -250,7 +250,11 @@ function renderUI() {
                                 align: $align.center,
                                 autoFontSize: true
                             },
-                            layout: $layout.fill
+                            layout: (make, view) => {
+                                make.width.equalTo(view.super).offset(-6)
+                                make.height.equalTo(view.super)
+                                make.center.equalTo(view.super)
+                            }
                         }]
                     },
                     // radius: 5

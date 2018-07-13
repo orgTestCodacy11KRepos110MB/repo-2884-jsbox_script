@@ -34,7 +34,13 @@ function promiseConf(url) {
                 } catch (e) {
                     filename = filenameUtil.getConfName(url)
                 }
-                let decodedData = $text.base64Decode(data)
+                // 兼容不规范ssr链接
+                let noPaddingData = data
+                let padding = noPaddingData.length % 4 == 0 ? 0 : 4 - noPaddingData.length % 4
+                for (let i = 0; i < padding; i++) {
+                    noPaddingData += '='
+                }
+                let decodedData = $text.base64Decode(noPaddingData)
                 let surgeConfMatcher = data.match(/\[Proxy\]([\s\S]*?)\[Proxy Group\]/)
                 if (surgeConfMatcher && surgeConfMatcher[1]) {
                     // Surge托管
