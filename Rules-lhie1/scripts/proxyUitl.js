@@ -26,7 +26,7 @@ function promiseConf(url) {
         $http.get({
             url: url,
             handler: function (resp) {
-                let data = resp.data
+                let data = resp.data + ''
                 let filename = url
                 try {
                     let matcher = resp.response.runtimeValue().invoke('allHeaderFields').rawValue()["Content-Disposition"].match(/filename=(.*?).conf/)
@@ -45,36 +45,27 @@ function promiseConf(url) {
                 } else if (/^ssr:\/\//.test(decodedData)) {
                     // SSR订阅
                     let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '');
-                    decodeSSR({
-                        urls: rawLinks,
-                        handler: res => {
-                            resolve({
-                                servers: res.servers.join('\n'),
-                                filename: res.sstag || filename
-                            })
-                        }
-                    });
+                    let res = decodeSSR(rawLinks);
+                    resolve({
+                        servers: res.servers.join('\n'),
+                        filename: res.sstag || filename
+                    })
                 } else if (/^vmess:\/\//.test(decodedData)) {
                     let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '');
-                    decodeVmess({
-                        urls: rawLinks,
-                        handler: res => {
-                            resolve({
-                                servers: res.servers.join('\n'),
-                                filename: res.sstag || filename
-                            })
-                        }
-                    });
+                    let res = decodeVmess(rawLinks);
+                    resolve({
+                        servers: res.servers.join('\n'),
+                        filename: res.sstag || filename
+                    })
                 } else {
-                    reject()
+                    resolve()
                 }
             }
         })
     })
 }
 
-function decodeSSR(params) {
-    let links = params.urls
+function decodeSSR(links) {
     let tag = ''
     let first = ''
     function getParam(key, content) {
@@ -130,18 +121,20 @@ function decodeSSR(params) {
     if (tag !== '') {
         sstag = tag
     }
-    params.handler({ servers: decodedLinks, sstag: sstag })
+    return { servers: decodedLinks, sstag: sstag }
 }
 
 function getServersFromConfFile(params) {
     let promiseArray = params.urls.map(i => promiseConf(i))
     Promise.all(promiseArray).then(confs => {
+        console.log(confs)
         confs.forEach((res, idx) => {
-            console.log(res.servers)
+            if (!res) return
             let servers = res.servers.split(/[\n\r]+/).filter(item => item !== '').map(i => i.strictTrim())
             params.handler({ servers: servers, filename: res.filename, url: params.urls[idx] })
         })
     }).catch(reason => {
+        console.error(reason.stack)
         params.handler(null)
     })
 }
@@ -165,8 +158,7 @@ function decodeVmess(params) {
             tag = rawContent.ps
         }
     }
-
-    params.handler({ servers: result, sstag: result.length > 1 ? `批量V2Ray节点（${result.length}）` : tag })
+    return { servers: result, sstag: result.length > 1 ? `批量V2Ray节点（${result.length}）` : tag }
 }
 
 function decodeScheme(params) {

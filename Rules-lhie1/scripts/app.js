@@ -936,6 +936,11 @@ function linkHandler(url, params) {
         shadowsocksr: []
     }
 
+    if (!url) {
+        $ui.alert('没有识别到有效链接')
+        return
+    }
+
     let urls = url.split(/[\r\n]+/g).map(i => i.trim()).filter(i => i !== '')
     urls.forEach(item => {
         if (/^ss:\/\//.test(item)) {
@@ -951,6 +956,17 @@ function linkHandler(url, params) {
         }else {
             servers.ignore.push(item)
         }
+    })
+
+    let updateHint = ''
+    updateHint += servers.shadowsocks.length > 0 ? `\nShadowsocks链接${servers.shadowsocks.length}个\n`: ''
+    updateHint += servers.shadowsocksr.length > 0 ? `\nShadowsocksR链接${servers.shadowsocksr.length}个\n` : ''
+    updateHint += servers.surge.length > 0 ? `\nSurge链接${servers.surge.length}个\n` : ''
+    updateHint += servers.vmess.length > 0 ? `\nV2Ray链接${servers.vmess.length}个\n` : ''
+    updateHint += servers.online.length > 0 ? `\n托管或订阅${servers.online.length}个\n` : ''
+    $ui.alert({
+        title: '更新概况',
+        message: updateHint
     })
 
     for (let k in servers) {
@@ -984,19 +1000,11 @@ function linkHandler(url, params) {
                 }
             })
         } else if (k === 'vmess') {
-            proxyUtil.proxyFromVmess({
-                urls: servers[k],
-                handler: res => {
-                    params.handler(res.servers, res.sstag, servers[k].join('\n'))
-                }
-            })
+            let res = proxyUtil.proxyFromVmess(servers[k])
+            params.handler(res.servers, res.sstag, servers[k].join('\n'))
         } else if (k === 'shadowsocksr') {
-            proxyUtil.proxyFromSSR({
-                urls: servers[k],
-                handler: res => {
-                    params.handler(res.servers, res.sstag, servers[k].join('\n'))
-                }
-            })
+            let res = proxyUtil.proxyFromSSR(servers[k])
+            params.handler(res.servers, res.sstag, servers[k].join('\n'))
         } else {
             $ui.alert('剪贴板存在无法识别的行：\n\n' + servers.ignore.join('\n') + '\n\n以上行将被丢弃！')
         }
