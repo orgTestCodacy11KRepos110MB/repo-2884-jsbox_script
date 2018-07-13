@@ -133,9 +133,12 @@ function decodeSSR(links) {
 function getServersFromConfFile(params) {
     let promiseArray = params.urls.map(i => promiseConf(i))
     Promise.all(promiseArray).then(confs => {
-        console.log(confs)
+        // console.log(confs)
         confs.forEach((res, idx) => {
-            if (!res) return
+            if (!res) {
+                $ui.loading(false)
+                return
+            }
             let servers = res.servers.split(/[\n\r]+/).filter(item => item !== '').map(i => i.strictTrim())
             params.handler({ servers: servers, filename: res.filename, url: params.urls[idx] })
         })
@@ -145,8 +148,7 @@ function getServersFromConfFile(params) {
     })
 }
 
-function decodeVmess(params) {
-    let links = params.urls
+function decodeVmess(links) {
     let result = []
     let tag
 
