@@ -102,8 +102,8 @@ function renderUI() {
                             handler: (res, name, url) => {
                                 // 如果是托管，url不为undefined
                                 console.log([res, name, url])
-                                if (!res) {
-                                    $ui.alert("没有检测到节点信息")
+                                if (!res || res.length === 0) {
+                                    $ui.toast("没有检测到节点信息")
                                 }
                                 let listData = $("serverEditor").data || []
                                 let existsSec = listData.find(item => item.url === url)
@@ -500,7 +500,6 @@ function archivesHandler() {
             return path[path.length - 1]
         })
     }
-    console.log(getFiles())
     $("bodyView").add({
         type: "view",
         props: {

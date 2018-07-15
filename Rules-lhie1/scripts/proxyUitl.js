@@ -154,16 +154,40 @@ function decodeVmess(links) {
 
     for (let idx in links) {
         let link = links[idx]
-        let contentMatcher = link.match(/^vmess:\/\/(.*?)$/)
-        if (contentMatcher && contentMatcher[1]) {
-            let encryptContent = contentMatcher[1]
-            let rawContent = JSON.parse($text.base64Decode(encryptContent))
-            let res = `${rawContent.ps.replace(/[\[\]]/g, '')} = vmess, ${rawContent.add}, ${rawContent.port}, aes-128-cfb, "${rawContent.id}", over-tls=${rawContent.tls === 'tls' ? 'true' : 'false'}, certificate=1`
-            if (rawContent.type === 'http') {
-                res += `, obfs=http, obfs-path=${rawContent.path}, obfs-header="Host: ${rawContent.host}"`
+        let isV2RayNV2 = /^vmess:\/\/\S+\?/.test(link)
+        if (isV2RayNV2) {
+            let contentMatcher = link.match(/^vmess:\/\/(.*?)\?(.*?)$/)
+            if (contentMatcher && contentMatcher.length === 3) {
+                let encryptContent = contentMatcher[1]
+                let params = contentMatcher[2].split(/&/g).map(i => i.split(/=/))
+                let rawContent = urlsaveBase64Decode(encryptContent)
+                let rawContentMatcher = rawContent.match(/^(.*?):(.*?)@(.*?):(.*?)$/)
+                let getParam = key => {
+                    let target = params.find(i => i[0] === key)
+                    if (target && target[1]) {
+                        return target[1]
+                    }
+                    return ''
+                }
+                if (rawContentMatcher && rawContentMatcher.length === 5) {
+                    let remark = getParam('remark') || getParam('remarks') || '无法识别节点名'
+                    let res = `${decodeURI(remark).replace(/[\[\]]/g, '')} = vmess, ${rawContentMatcher[3]}, ${rawContentMatcher[4]}, aes-128-cfb, "${rawContentMatcher[2]}", over-tls=${getParam('tls') === '1'? 'true': 'false'}, certificate=${getParam('allowInsecure') === '1'? '0':'1'}`
+                    result.push(res)
+                    tag = decodeURI(remark)
+                }
             }
-            result.push(res)
-            tag = rawContent.ps
+        } else {
+            let contentMatcher = link.match(/^vmess:\/\/(.*?)$/)
+            if (contentMatcher && contentMatcher[1]) {
+                let encryptContent = contentMatcher[1]
+                let rawContent = JSON.parse($text.base64Decode(encryptContent))
+                let res = `${rawContent.ps.replace(/[\[\]]/g, '')} = vmess, ${rawContent.add}, ${rawContent.port}, aes-128-cfb, "${rawContent.id}", over-tls=${rawContent.tls === 'tls' ? 'true' : 'false'}, certificate=1`
+                if (rawContent.type === 'http') {
+                    res += `, obfs=http, obfs-path=${rawContent.path}, obfs-header="Host: ${rawContent.host}"`
+                }
+                result.push(res)
+                tag = rawContent.ps
+            }
         }
     }
     return { servers: result, sstag: result.length > 1 ? `批量V2Ray节点（${result.length}）` : tag }
