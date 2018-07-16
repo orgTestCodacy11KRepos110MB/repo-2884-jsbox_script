@@ -1,4 +1,4 @@
-#!MANAGED-CONFIG  interval=86400 strict=true
+#!MANAGED-CONFIG https://raw.githubusercontent.com/Fndroid/jsbox_script/master/test/surge interval=86400 strict=true
 # FireWall
 [General]
 loglevel = notify
