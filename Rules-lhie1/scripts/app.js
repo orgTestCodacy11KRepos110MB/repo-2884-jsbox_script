@@ -104,6 +104,7 @@ function renderUI() {
                                 console.log([res, name, url])
                                 if (!res || res.length === 0) {
                                     $ui.toast("没有检测到节点信息")
+                                    return
                                 }
                                 let listData = $("serverEditor").data || []
                                 let existsSec = listData.find(item => item.url === url)
@@ -215,7 +216,13 @@ function renderUI() {
                                             placeholder: "请输入组别名称",
                                             text: od[indexPath.section].title,
                                             handler: function (text) {
-                                                od[indexPath.section].title = text
+                                                let exist = od.find(i => i.title === text)
+                                                if (exist) {
+                                                    exist.rows = exist.rows.concat(od[indexPath.section].rows)
+                                                    od = od.filter(i => i.title != od[indexPath.section].title)
+                                                } else {
+                                                    od[indexPath.section].title = text
+                                                }
                                                 sender.data = od
                                                 saveWorkspace()
                                             }
