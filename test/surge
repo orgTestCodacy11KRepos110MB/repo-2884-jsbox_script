@@ -1,5 +1,5 @@
 #!MANAGED-CONFIG https://raw.githubusercontent.com/Fndroid/jsbox_script/master/test/surge interval=86400 strict=true
-# FireWall
+# GitHubuserContent
 [General]
 loglevel = notify
 skip-proxy = 192.168.0.0/16, 193.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 100.64.0.0/10, 127.0.0.1, localhost, *.local
@@ -17,7 +17,7 @@ replica = false
 
 
 [Proxy Group]
-Proxy = DIRECT
+Proxy = Direct
 
 [Host]
 localhost = 127.0.0.1
