@@ -562,6 +562,17 @@ function archivesHandler() {
                         let fileName = sender.object(indexPath)
                         $share.sheet(['data.js', $drive.read(ARCHIVES + "/" + fileName)])
                     }
+                }, {
+                    title: "覆盖",
+                    color: $color("tint"),
+                    handler: (sender, indexPath) => {
+                        let filename = sender.object(indexPath)
+                        let success = $drive.write({
+                            data: $file.read('data.js'),
+                            path: ARCHIVES + '/' + filename
+                        })
+                        $ui.toast("配置文件覆盖" + (success ? "成功" : "失败"))
+                    }
                 }]
             },
             layout: (make, view) => {
@@ -594,7 +605,7 @@ function archivesHandler() {
         }, {
             type: "button",
             props: {
-                title: "+",
+                title: "＋",
                 circular: true,
             },
             layout: (make, view) => {
@@ -816,7 +827,7 @@ function groupShortcut() {
         }, {
             type: "button",
             props: {
-                title: "+",
+                title: "＋",
                 circular: true,
             },
             layout: (make, view) => {
@@ -956,13 +967,13 @@ function linkHandler(url, params) {
             servers.vmess.push(item)
         } else if (/^ssr:\/\//.test(item)) {
             servers.shadowsocksr.push(item)
-        }else {
+        } else {
             servers.ignore.push(item)
         }
     })
 
     let updateHint = ''
-    updateHint += servers.shadowsocks.length > 0 ? `\nShadowsocks链接${servers.shadowsocks.length}个\n`: ''
+    updateHint += servers.shadowsocks.length > 0 ? `\nShadowsocks链接${servers.shadowsocks.length}个\n` : ''
     updateHint += servers.shadowsocksr.length > 0 ? `\nShadowsocksR链接${servers.shadowsocksr.length}个\n` : ''
     updateHint += servers.surge.length > 0 ? `\nSurge链接${servers.surge.length}个\n` : ''
     updateHint += servers.vmess.length > 0 ? `\nV2Ray链接${servers.vmess.length}个\n` : ''
@@ -1212,7 +1223,7 @@ function renderAboutUI() {
             }, {
                 type: "list",
                 props: {
-                    data: ["🗂  脚本简介", "🛠  使用手册","📃  更新日志", "🖥  论坛导航"],
+                    data: ["🗂  脚本简介", "🛠  使用手册", "📃  更新日志", "🖥  论坛导航"],
                     scrollEnabled: false
                 },
                 layout: (make, view) => {
@@ -1228,7 +1239,7 @@ function renderAboutUI() {
                             $safari.open({
                                 url: "https://github.com/Fndroid/jsbox_script/wiki/Rules-lhie1"
                             })
-                        }else if (indexPath.row === 2) {
+                        } else if (indexPath.row === 2) {
                             previewMD(data, 'updateLog.md')
                         } else {
                             $safari.open({
@@ -1674,7 +1685,7 @@ function makeConf(params) {
                     let containsOP = /obfs_param/.test(s.proxyLink)
                     if (containsOP) {
                         s.proxyLink = s.proxyLink.replace(/obfs_param/, `group=${i.title}, obfs_param`)
-                    }else {
+                    } else {
                         s.proxyLink += `, group=${i.title}`
                     }
                     return s
