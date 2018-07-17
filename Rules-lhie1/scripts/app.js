@@ -1964,6 +1964,12 @@ function makeConf(params) {
                 prototype += genQuanPart('URL-REJECTION', urlReject)
                 prototype += genQuanPart('REWRITE', genQuanRewrite(urlRewrite))
                 prototype += genQuanPart('HOST', host + prettyInsert(userHost.add))
+                prototype += genQuanPart('SOURCE', serverEditorData.filter(i => {
+                    let isSSR = i.rows.find(l => /^.*?=\s*shadowsocksr/.test(l.proxyLink))
+                    return isSSR !== undefined
+                }).map(i => {
+                    return `${i.title}, server, ${i.url}, false, true, false, ${i.title}`
+                }).join('\n'))
                 let customDNS = prototype.match(/dns-server\s*=\s*(.*?)(?:\n|\r|$)/)
                 if (customDNS && customDNS[1]) {
                     prototype += genQuanPart('DNS', customDNS[1])
