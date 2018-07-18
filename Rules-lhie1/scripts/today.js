@@ -56,12 +56,12 @@ function genSrugeLabel(status, isQuan) {
     }
 }
 
-function renderTodayUI(bid) {
+function renderTodayUI() {
     let workspace = JSON.parse($file.read(FILE).string).workspace
     let usualData = workspace.usualData
     let surge2 = usualData.find(i => i.title.text == 'Surge2') ? usualData.find(i => i.title.text == 'Surge2').title.bgcolor : false
     let isQuan = usualData.find(i => i.title.text == 'Quan') ? usualData.find(i => i.title.text == 'Quan').title.bgcolor : false
-    let isLauncher = bid === 'app.cyan.jsbox.ghost'
+    let isLauncher = $app.widgetIndex < 0 || $app.widgetIndex > 2
     let checks = [pm(ruleUpdateUtil.getGitHubFilesSha), pm(updateUtil.getLatestVersion)]
     let vStatus = vpnStatus()
     Promise.all(checks).then(res => {
@@ -84,10 +84,8 @@ function renderTodayUI(bid) {
         props: {
             id: "todayMainView",
             title: "Surge3规则生成",
-            frame: $rect(0, 0, sw, 110),
             hideNavbar: true,
             navBarHidden: true,
-            bgcolor: $color("clear"),
         },
         views: [{
             type: "blur",

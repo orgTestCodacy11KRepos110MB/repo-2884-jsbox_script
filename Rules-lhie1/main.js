@@ -9,7 +9,6 @@ $app.keyboardToolbarEnabled = true
 
 let query = $context.query
 
-let bid = $objc("NSBundle").invoke("mainBundle.bundleIdentifier").rawValue()
 
 $objc('notification').invoke('objectForKey')
 
@@ -19,7 +18,7 @@ if (query.auto == 1) {
 }
 
 if ($app.env === $env.today) {
-    today.renderTodayUI(bid)
+    today.renderTodayUI()
     return
 } else if ($app.env === $env.safari) {
     extension.renderExtensionUI()
