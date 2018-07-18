@@ -45,12 +45,12 @@ function renderUI() {
             title: "lhie1规则",
             id: "bodyView",
             navButtons: [{
-                title: '  🗂 ',
+                title: '备份',
                 handler: () => {
                     archivesHandler()
                 }
             }, {
-                title: '  🎁 ',
+                title: '红包',
                 handler: () => {
                     $clipboard.text = '支付宝发红包啦！即日起还有机会额外获得余额宝消费红包！长按复制此消息，打开最新版支付宝就能领取！mlCOiX84s7'
                     $app.openURL("alipay://")
@@ -309,9 +309,9 @@ function renderUI() {
                 },
                 layout: (make, view) => {
                     make.top.equalTo(view.prev.bottom).offset(10)
-                    make.width.equalTo(view.prev)
+                    make.width.equalTo(view.prev).offset(-100)
                     make.height.equalTo(45)
-                    make.centerX.equalTo(view.super)
+                    make.left.equalTo(view.prev.left)
                 },
                 events: {
                     changed: sender => {
@@ -322,10 +322,51 @@ function renderUI() {
                     }
                 }
             }, {
+                type: "view",
+                props: {
+                    id: "outputFormatLabel",
+                },
+                layout: (make, view) => {
+                    make.right.equalTo(view.super.right).offset(-10)
+                    make.top.equalTo(view.prev)
+                    make.height.equalTo(view.prev)
+                    make.width.equalTo(90)
+                },
+                views: [{
+                    type: "image",
+                    props: {
+                        id: "outputFormatIcon",
+                        data: $file.read('assets/today_surge.png'),
+                        bgcolor: $color("clear")
+                    },
+                    layout: (make, view) => {
+                        make.left.equalTo(view.super)
+                        make.height.width.equalTo(view.super.height).offset(-15)
+                        make.centerY.equalTo(view.super)
+                    }
+                }, {
+                    type: 'label',
+                    props: {
+                        id: 'outputFormatType',
+                        text: 'Surge3',
+                    },
+                    layout: (make, view) => {
+                        make.height.equalTo(view.super)
+                        make.width.equalTo(view.super).offset(-30)
+                        make.right.equalTo(view.super)
+                        make.top.equalTo(view.super)
+                    }
+                }],
+                events: {
+                    tapped: sender => {
+                        renderOutputFormatMenu(sender)
+                    }
+                }
+            }, {
                 type: "matrix",
                 props: {
                     id: "usualSettings",
-                    columns: 5,
+                    columns: 3,
                     itemHeight: 40,
                     spacing: 5,
                     scrollEnabled: false,
@@ -333,10 +374,6 @@ function renderUI() {
                         title: { text: 'ADS', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: 'MITM', bgcolor: defaultColor, textColor: blackColor }
-                    }, {
-                        title: { text: 'Surge2', bgcolor: defaultColor, textColor: blackColor }
-                    }, {
-                        title: { text: 'Quan', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: '导出', bgcolor: defaultColor, textColor: blackColor }
                     }],
@@ -493,6 +530,86 @@ function renderUI() {
             }]
         },]
     })
+}
+
+function renderOutputFormatMenu(superView) {
+    $("bodyView").add({
+        type: "view",
+        props: {
+            id: "outputFormatSelectorView",
+            alpha: 0
+        },
+        layout: (make, view) => {
+            make.height.width.equalTo(view.super)
+            make.center.equalTo(view.super)
+        },
+        views: [{
+            type: "blur",
+            props: {
+                style: 2,
+                alpha: 1,
+            },
+            layout: $layout.fill,
+            events: {
+                tapped: sender => {
+                    hideView(sender);
+                }
+            }
+        }, {
+            type: "list",
+            props: {
+                id: "outputFormatSelectorItems",
+                radius: 15,
+                rowHeight: 50,
+                alwaysBounceVertical: false,
+                data: ['Surge3', 'Surge2', 'Quantumult'],
+                frame: superView.frame,
+                header: {
+                    type: "label",
+                    props: {
+                        text: "选择导出格式",
+                        height: 50,
+                        font: $font("bold", 15),
+                        align: 1
+                    }
+                },
+                separatorHidden: true
+            },
+            events: {
+                didSelect: (sender, indexPath, data) => {
+                    let isQuan = data === 'Quantumult'
+                    $("outputFormatType").text = isQuan ? 'Quan': data
+                    $("outputFormatIcon").data = $file.read(`assets/today_${isQuan ? 'quan': 'surge'}.png`)
+                    saveWorkspace()
+                    hideView(sender)
+                }
+            }
+        }]
+    })
+
+    $ui.animate({
+        duration: 0.3,
+        damping: 0.8,
+        velocity: 0.3,
+        animation: () => {
+            $("outputFormatSelectorView").alpha = 1
+            $("outputFormatSelectorItems").frame = $rect(80, screenHeight - 380, screenWidth - 90, 200)
+        }
+    })
+
+    function hideView(sender) {
+        $ui.animate({
+            duration: 0.2,
+            velocity: 0.5,
+            animation: () => {
+                $("outputFormatSelectorView").alpha = 0;
+                $("outputFormatSelectorItems").frame = superView.frame;
+            },
+            completion: () => {
+                sender.super.remove();
+            }
+        });
+    }
 }
 
 function archivesHandler() {
@@ -1519,6 +1636,9 @@ function setUpWorkspace() {
                     customProxyGroup: customProxyGroup,
                     currentProxyGroup: defaultGroupName
                 }
+                let outputFormat = workspace.outputFormat || 'Surge3'
+                $("outputFormatType").text = outputFormat
+                $("outputFormatIcon").data = $file.read(`assets/today_${outputFormat === 'Quan' ? 'quan': 'surge'}.png`)
             } else if (file && !file.workspace) {
                 let customProxyGroup = {}
                 let defaultGroupName = PROXY_HEADER
@@ -1550,6 +1670,7 @@ function saveWorkspace() {
             i.title.textColor = cu.isEqual(defaultColor, i.title.textColor)
             return i
         }),
+        outputFormat: $("outputFormatType").text,
         serverSuffix: $("serverSuffixEditor").text,
         videoProxy: $("serverEditor").info || {},
         deleteKeywords: $("serverControl").info.deleteKeywords || '',
@@ -1682,8 +1803,10 @@ function makeConf(params) {
         let ads = usualValue('ADS')
         let isMitm = usualValue('MITM')
         let isActionSheet = usualValue('导出')
-        let surge2 = usualValue('Surge2')
-        let isQuan = usualValue('Quan')
+
+        let outputFormat = workspace.outputFormat
+        let surge2 = outputFormat === 'Surge2'
+        let isQuan = outputFormat === 'Quan'
 
         let serverEditorData = workspace.serverData
         if (isQuan) {

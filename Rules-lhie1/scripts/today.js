@@ -58,9 +58,9 @@ function genSrugeLabel(status, isQuan) {
 
 function renderTodayUI() {
     let workspace = JSON.parse($file.read(FILE).string).workspace
-    let usualData = workspace.usualData
-    let surge2 = usualData.find(i => i.title.text == 'Surge2') ? usualData.find(i => i.title.text == 'Surge2').title.bgcolor : false
-    let isQuan = usualData.find(i => i.title.text == 'Quan') ? usualData.find(i => i.title.text == 'Quan').title.bgcolor : false
+    let outputFormat = workspace.outputFormat
+    let surge2 = outputFormat === 'Surge2'
+    let isQuan = outputFormat === 'Quan'
     let isLauncher = $app.widgetIndex < 0 || $app.widgetIndex > 2
     let checks = [pm(ruleUpdateUtil.getGitHubFilesSha), pm(updateUtil.getLatestVersion)]
     let vStatus = vpnStatus()
