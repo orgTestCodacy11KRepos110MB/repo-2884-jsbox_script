@@ -79,6 +79,8 @@ function renderTodayUI() {
     if (isQuan) {
         targetAppOn = $file.read("assets/today_quan.png")
         targetAppOff = $file.read("assets/today_quan_off.png")
+    } else if (surge2) {
+        targetAppOn = $file.read("assets/today_surge2.png")
     }
     $ui.render({
         props: {

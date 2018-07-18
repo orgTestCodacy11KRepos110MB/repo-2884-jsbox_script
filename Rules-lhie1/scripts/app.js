@@ -577,9 +577,14 @@ function renderOutputFormatMenu(superView) {
             },
             events: {
                 didSelect: (sender, indexPath, data) => {
-                    let isQuan = data === 'Quantumult'
-                    $("outputFormatType").text = isQuan ? 'Quan': data
-                    $("outputFormatIcon").data = $file.read(`assets/today_${isQuan ? 'quan': 'surge'}.png`)
+                    let type = 'surge'
+                    if (data === 'Quantumult') {
+                        type = 'quan'
+                    } else if (data === 'Surge2') {
+                        type = 'surge2'
+                    }
+                    $("outputFormatType").text = data === 'Quantumult' ? 'Quan' : data
+                    $("outputFormatIcon").data = $file.read(`assets/today_${type}.png`)
                     saveWorkspace()
                     hideView(sender)
                 }
@@ -1637,8 +1642,14 @@ function setUpWorkspace() {
                     currentProxyGroup: defaultGroupName
                 }
                 let outputFormat = workspace.outputFormat || 'Surge3'
+                let type = 'surge'
+                if (outputFormat === 'Quan') {
+                    type = 'quan'
+                } else if (outputFormat === 'Surge2') {
+                    type = 'surge2'
+                }
                 $("outputFormatType").text = outputFormat
-                $("outputFormatIcon").data = $file.read(`assets/today_${outputFormat === 'Quan' ? 'quan': 'surge'}.png`)
+                $("outputFormatIcon").data = $file.read(`assets/today_${type}.png`)
             } else if (file && !file.workspace) {
                 let customProxyGroup = {}
                 let defaultGroupName = PROXY_HEADER
