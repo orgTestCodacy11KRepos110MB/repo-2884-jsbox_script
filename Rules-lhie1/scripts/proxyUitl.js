@@ -25,11 +25,14 @@ function promiseConf(url) {
     return new Promise((resolve, reject) => {
         $http.get({
             url: url,
+            header: {
+                'User-Agent': 'Surge/1174 CFNetwork/962 Darwin/18.0.0'
+            },
             handler: function (resp) {
                 let data = resp.data + ''
                 let filename = url
                 try {
-                    let matcher = resp.response.runtimeValue().invoke('allHeaderFields').rawValue()["Content-Disposition"].match(/filename=(.*?).conf/)
+                    let matcher = resp.response.runtimeValue().invoke('allHeaderFields').rawValue()["Content-Disposition"].match(/filename="?(.*?)(?:.conf|"|$)/)
                     filename = matcher[1]
                 } catch (e) {
                     filename = filenameUtil.getConfName(url)
