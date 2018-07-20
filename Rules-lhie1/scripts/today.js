@@ -111,7 +111,7 @@ function renderTodayUI() {
                     value: usage.download / usage.total
                 },
                 usageDetail: {
-                    text: `↑${(usage.upload / GB).toFixed(2)}GB  ↓${(usage.download / GB).toFixed(2)}GB`
+                    text: `↑ ${(usage.upload / GB).toFixed(2)}GB   ↓ ${(usage.download / GB).toFixed(2)}GB`
                 }, 
                 usageDetail2: {
                     text: `${(usage.total / GB).toFixed(2)}GB`
@@ -239,7 +239,7 @@ function renderTodayUI() {
                 layout: (make, view) => {
                     make.width.height.equalTo(55)
                     make.centerY.equalTo(view.super).offset(-10)
-                    make.right.equalTo(view.prev.left).offset(- (sw / 9))
+                    make.left.equalTo(view.prev.left).offset(-(sw / 3.5))
                 },
                 events: {
                     tapped: sender => {
@@ -284,7 +284,7 @@ function renderTodayUI() {
                 layout: (make, view) => {
                     make.width.height.equalTo(50)
                     make.centerY.equalTo(view.super).offset(-10)
-                    make.left.equalTo(view.prev.prev.right).offset((sw / 9))
+                    make.right.equalTo(view.prev.prev.right).offset((sw / 3.5))
                 },
                 events: {
                     tapped: sender => {
@@ -419,7 +419,8 @@ function renderTodayUI() {
                             props: {
                                 id: 'usageDetail',
                                 align: $align.center,
-                                font: $font(10)
+                                font: $font("bold", 10),
+                                textColor: $color("#595959")
                             },
                             layout: (make, view) => {
                                 make.width.equalTo(view.super)
@@ -432,7 +433,8 @@ function renderTodayUI() {
                             props: {
                                 id: 'usageDetail2',
                                 align: $align.center,
-                                font: $font(10)
+                                font: $font("bold", 10),
+                                textColor: $color("#595959")
                             },
                             layout: (make, view) => {
                                 make.width.equalTo(view.super)
