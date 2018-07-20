@@ -495,6 +495,9 @@ function renderUI() {
                             $("progressView").hidden = true
                         }
                     })
+                },
+                longPressed: sender => {
+                    $share.sheet(['data.js', $file.read('data.js')])
                 }
             }
         }, {
