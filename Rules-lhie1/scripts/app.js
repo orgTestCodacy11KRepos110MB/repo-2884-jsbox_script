@@ -767,6 +767,8 @@ function archivesHandler() {
 
     $ui.animate({
         duration: .3,
+        damping: 0.8,
+        velocity: 0.3,
         animation: () => {
             $("archivesView").alpha = 1
             $("archivesList").scale(1.1)

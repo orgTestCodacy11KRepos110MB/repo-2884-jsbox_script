@@ -56,8 +56,79 @@ function genSrugeLabel(status, isQuan) {
     }
 }
 
+function requestHead(url) {
+    return new Promise((resolve, reject) => {
+        $http.request({
+            method: "HEAD",
+            url: url,
+            header: {
+                // 'User-Agent': 'Quantumult'
+            },
+            handler: function (resp) {
+                let headerFields = resp.response.runtimeValue().$allHeaderFields().rawValue()
+                if ('subscription-userinfo' in headerFields) {
+                    resolve(headerFields['subscription-userinfo'])
+                } else {
+                    resolve('')
+                }
+            }
+        })
+    })
+}
+
+function parseUsage(usageStr) {
+    let uploadMatcher = usageStr.match(/upload=(\d+)(?:;|$)/)
+    let downloadMatcher = usageStr.match(/download=(\d+)(?:;|$)/)
+    let totalMatcher = usageStr.match(/total=(\d+)(?:;|$)/)
+    let upload = 0
+    let download = 0
+    let total = 0
+    if (uploadMatcher && uploadMatcher[1]) upload = uploadMatcher[1] * 1
+    if (downloadMatcher && downloadMatcher[1]) download = downloadMatcher[1] * 1
+    if (totalMatcher && totalMatcher[1]) total = totalMatcher[1] * 1
+    return {
+        upload: upload,
+        download: download,
+        total: total
+    }
+}
+
 function renderTodayUI() {
     let workspace = JSON.parse($file.read(FILE).string).workspace
+    let groupNames = workspace.serverData.map(i => i.title)
+    let groupURLs = workspace.serverData.map(i => i.url).filter(i => /^https?:\/\//.test(i)).map(i => requestHead(i))
+    Promise.all(groupURLs).then(res => {
+        let usageData = []
+        for (let idx in res) {
+            if (res[idx] === '') continue
+            let usage = parseUsage(res[idx])
+            const GB = Math.pow(1024, 3)
+            usageData.push({
+                groupName: {
+                    text: groupNames[idx]
+                },
+                usageProgress: {
+                    value: usage.download / usage.total
+                },
+                usageDetail: {
+                    text: `↑${(usage.upload / GB).toFixed(2)}GB  ↓${(usage.download / GB).toFixed(2)}GB`
+                }, 
+                usageDetail2: {
+                    text: `${(usage.total / GB).toFixed(2)}GB`
+                }
+            })
+        }
+        $("usageView").data = usageData
+        $("usageView").updateLayout(make => {
+            make.height.equalTo(usageData.length * 50)
+        })
+        $widget.height = 110 + (usageData.length * 50)
+    })
+    $widget.modeChanged = mode => {
+        if (mode === 1) {
+            $widget.height = 110 + ($("usageView").data.length * 50)
+        }
+    }
     let outputFormat = workspace.outputFormat
     let surge2 = outputFormat === 'Surge2'
     let isQuan = outputFormat === 'Quan'
@@ -114,7 +185,6 @@ function renderTodayUI() {
             layout: (make, view) => {
                 make.height.equalTo(110)
                 make.width.equalTo(view.super).offset(0)
-                make.center.equalTo(view.super)
             },
             views: [{
                 type: "label",
@@ -309,6 +379,76 @@ function renderTodayUI() {
                     }
                 }
             }]
+        }, {
+            type: 'list',
+            props: {
+                id: "usageView",
+                data: [],
+                rowHeight: 50,
+                alwaysBounceVertical: false,
+                separatorHidden: true,
+                template: {
+                    props: {
+
+                    },
+                    views: [{
+                        type: "label",
+                        props: {
+                            id: 'groupName',
+                            autoFontSize: true,
+                            align: $align.center
+                        },
+                        layout: (make, view) => {
+                            make.centerY.equalTo(view.super)
+                            make.left.inset(10)
+                            make.width.equalTo(view.super).multipliedBy(0.2)
+                        }
+                    }, {
+                        type: "progress",
+                        props: {
+                            id: 'usageProgress'
+                        },
+                        layout: function (make, view) {
+                            make.centerY.equalTo(view.super)
+                            make.height.equalTo(3)
+                            make.left.equalTo(view.prev.right).offset(10)
+                            make.width.equalTo(view.super).multipliedBy(0.8).offset(-30)
+                        },
+                        views: [{
+                            type: 'label',
+                            props: {
+                                id: 'usageDetail',
+                                align: $align.center,
+                                font: $font(10)
+                            },
+                            layout: (make, view) => {
+                                make.width.equalTo(view.super)
+                                make.height.equalTo(20)
+                                make.top.equalTo(view.super).offset(-20)
+                                make.centerX.equalTo(view.super)
+                            }
+                        }, {
+                            type: 'label',
+                            props: {
+                                id: 'usageDetail2',
+                                align: $align.center,
+                                font: $font(10)
+                            },
+                            layout: (make, view) => {
+                                make.width.equalTo(view.super)
+                                make.height.equalTo(23)
+                                make.top.equalTo(view.super)
+                                make.centerX.equalTo(view.super)
+                            }
+                        }]
+                    }]
+                }
+            },
+            layout: (make, view) => {
+                make.top.equalTo(110)
+                make.width.equalTo(view.super)
+                make.height.width.equalTo(100)
+            }
         }]
     })
 }
