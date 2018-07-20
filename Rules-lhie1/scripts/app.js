@@ -1334,7 +1334,7 @@ function renderAboutUI() {
             type: "scroll",
             props: {
                 id: "mainAboutView",
-                contentSize: $size(0, 685)
+                contentSize: $size(0, 785)
             },
             layout: $layout.fill,
             views: [{
@@ -1374,6 +1374,36 @@ function renderAboutUI() {
                             $safari.open({
                                 url: "https://jsboxbbs.com/d/290-lhie1"
                             })
+                        }
+                    }
+                }
+            }, {
+                type: "label",
+                props: {
+                    text: "外部拓展",
+                    font: $font(13),
+                    textColor: $color("#505050")
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(view.prev.bottom).offset(20)
+                    make.height.equalTo(30)
+                    make.left.equalTo(15)
+                }
+            }, {
+                type: "list",
+                props: {
+                    data: ["🤖️  Rules-lhie1托管"],
+                    scrollEnabled: false
+                },
+                layout: (make, view) => {
+                    make.width.equalTo(view.super)
+                    make.top.equalTo(view.prev.bottom).offset(0)
+                    make.height.equalTo(40)
+                },
+                events: {
+                    didSelect: (sender, indexPath, data) => {
+                        if (indexPath.row === 0) {
+                            $app.openURL("https://t.me/rules_lhie1_bot")
                         }
                     }
                 }
