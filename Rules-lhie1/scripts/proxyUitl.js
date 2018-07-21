@@ -110,7 +110,7 @@ function decodeSSR(links) {
                 if (tag === '' && group !== '') {
                     tag = group;
                 }
-                let res = `${remarks} = shadowsocksr, ${host}, ${port}, ${method}, "${pass}", protocol=${protocol}, obfs=${obfs}`;
+                let res = `${remarks.replace(/^\[/, '［')} = shadowsocksr, ${host}, ${port}, ${method}, "${pass}", protocol=${protocol}, obfs=${obfs}`;
                 res += protoparam ? `, protocol_param=${protoparam}` : '';
                 res += obfsparam ? `, obfs_param="${obfsparam}"` : '';
                 return res;
@@ -174,7 +174,7 @@ function decodeVmess(links) {
                 }
                 if (rawContentMatcher && rawContentMatcher.length === 5) {
                     let remark = getParam('remark') || getParam('remarks') || '无法识别节点名'
-                    let res = `${decodeURI(remark)} = vmess, ${rawContentMatcher[3]}, ${rawContentMatcher[4]}, aes-128-cfb, "${rawContentMatcher[2]}", over-tls=${getParam('tls') === '1'? 'true': 'false'}, certificate=${getParam('allowInsecure') === '1'? '0':'1'}`
+                    let res = `${decodeURI(remark).replace(/^\[/, '［')} = vmess, ${rawContentMatcher[3]}, ${rawContentMatcher[4]}, aes-128-cfb, "${rawContentMatcher[2]}", over-tls=${getParam('tls') === '1'? 'true': 'false'}, certificate=${getParam('allowInsecure') === '1'? '0':'1'}`
                     result.push(res)
                     tag = decodeURI(remark)
                 }
