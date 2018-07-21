@@ -2130,6 +2130,13 @@ function makeConf(params) {
                     let policies = genQuanPolices(proxyGroup[1])
                     prototype += genQuanPart('POLICY', policies.join('\n'))
                 }
+                userUrl.add.forEach(i => {
+                    if (/reject\s*$/.test(i)) {
+                        urlReject += `${i}\n`
+                    } else {
+                        urlRewrite += `${i}\n`
+                    }
+                })
                 prototype += genQuanPart('URL-REJECTION', urlReject)
                 prototype += genQuanPart('REWRITE', genQuanRewrite(urlRewrite))
                 prototype += genQuanPart('HOST', host + prettyInsert(userHost.add))
