@@ -174,7 +174,7 @@ function decodeVmess(links) {
                 }
                 if (rawContentMatcher && rawContentMatcher.length === 5) {
                     let remark = getParam('remark') || getParam('remarks') || '无法识别节点名'
-                    let res = `${decodeURI(remark).replace(/[\[\]]/g, '')} = vmess, ${rawContentMatcher[3]}, ${rawContentMatcher[4]}, aes-128-cfb, "${rawContentMatcher[2]}", over-tls=${getParam('tls') === '1'? 'true': 'false'}, certificate=${getParam('allowInsecure') === '1'? '0':'1'}`
+                    let res = `${decodeURI(remark)} = vmess, ${rawContentMatcher[3]}, ${rawContentMatcher[4]}, aes-128-cfb, "${rawContentMatcher[2]}", over-tls=${getParam('tls') === '1'? 'true': 'false'}, certificate=${getParam('allowInsecure') === '1'? '0':'1'}`
                     result.push(res)
                     tag = decodeURI(remark)
                 }

@@ -1864,6 +1864,7 @@ function makeConf(params) {
                     } else {
                         s.proxyLink += `, group=${i.title}`
                     }
+                    s.proxyLink = s.proxyLink.replace(/^\[/, '［')
                     return s
                 })
                 i.rows = rows
