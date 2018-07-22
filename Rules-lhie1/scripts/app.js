@@ -751,6 +751,10 @@ function archivesHandler() {
                         type: $kbType.default,
                         placeholder: "请输入备份文件名",
                         handler: function (text) {
+                            if (text === '') {
+                                $ui.error("无法创建备份")
+                                return
+                            }
                             let success = $drive.write({
                                 data: $file.read('data.js'),
                                 path: ARCHIVES + '/' + text
@@ -975,7 +979,7 @@ function groupShortcut() {
                         type: $kbType.default,
                         placeholder: "占位符，在进阶设置中使用",
                         handler: function (text) {
-                            if ([PROXY_HEADER, 'Proxy Header'].indexOf(text) > -1) {
+                            if ([PROXY_HEADER, 'Proxy Header', ''].indexOf(text) > -1) {
                                 $ui.error("占位符名称冲突")
                                 return
                             }
