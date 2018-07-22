@@ -1835,7 +1835,8 @@ function makeConf(params) {
             urlreject: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/URL%20REJECT.conf',
             headerrewrite: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Header%20Rewrite.conf',
             hostname: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Hostname.conf',
-            mitm: 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge/MITM.conf'
+            mitm: 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge/MITM.conf',
+            quanreject: 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult.conf'
         }
         let advanceSettings = JSON.parse($file.read(FILE).string)
         let workspace = advanceSettings.workspace
@@ -1924,6 +1925,10 @@ function makeConf(params) {
             getAutoRules(pu.headerrewrite, onPgs), // 8
             getAutoRules(pu.hostname, onPgs) // 9
         ]
+        
+        if (isQuan) {
+            promiseArray[2] = getAutoRules(pu.quanreject, onPgs)
+        }
 
         if (!ads) {
             promiseArray[2] = emptyPromise(onPgs)
@@ -1957,6 +1962,11 @@ function makeConf(params) {
                 repHeaderRewrite && repHeaderRewrite[1] && (v[8] = repHeaderRewrite[1])
                 repHostName && repHostName[1] && (v[9] = repHostName[1])
             }
+
+            if (isQuan) {
+                v[2] = v[2].split(/[\n\r]+/g).filter(i => /^.*?,\s*REJECT\s*$/.test(i)).join('\n')
+            }
+
             rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 || isQuan ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
             host = v[5]
             urlRewrite += v[6]
