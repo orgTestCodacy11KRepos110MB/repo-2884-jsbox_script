@@ -1642,6 +1642,7 @@ function setUpWorkspace() {
             })
         },
         loadData: () => {
+            console.log('重新加载数据')
             let file = JSON.parse($file.read(FILE).string)
             if (file && file.workspace) {
                 let workspace = file.workspace
