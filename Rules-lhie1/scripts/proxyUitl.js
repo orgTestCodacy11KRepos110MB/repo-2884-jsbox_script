@@ -98,7 +98,7 @@ function decodeSSR(links) {
                 let obfsparam = '';
                 let protoparam = '';
                 let group = '';
-                let remarks = '未命名节点';
+                let remarks = '';
                 if (rawContentParts.length > 1) {
                     let target = rawContentParts[1];
                     obfsparam = urlsaveBase64Decode(getParam('obfsparam', target));
@@ -106,11 +106,12 @@ function decodeSSR(links) {
                     group = urlsaveBase64Decode(getParam('group', target));
                     remarks = urlsaveBase64Decode(getParam('remarks', target));
                 }
-                first = remarks
                 if (tag === '' && group !== '') {
                     tag = group;
                 }
-                let res = `${remarks} = shadowsocksr, ${host}, ${port}, ${method}, "${pass}", protocol=${protocol}, obfs=${obfs}`;
+                let finalName = remarks === '' ? `${host}:${port}` : remarks
+                first = finalName
+                let res = `${finalName} = shadowsocksr, ${host}, ${port}, ${method}, "${pass}", protocol=${protocol}, obfs=${obfs}`;
                 res += protoparam ? `, protocol_param=${protoparam}` : '';
                 res += obfsparam ? `, obfs_param="${obfsparam}"` : '';
                 return res;
@@ -173,10 +174,11 @@ function decodeVmess(links) {
                     return ''
                 }
                 if (rawContentMatcher && rawContentMatcher.length === 5) {
-                    let remark = getParam('remark') || getParam('remarks') || '无法识别节点名'
-                    let res = `${decodeURI(remark)} = vmess, ${rawContentMatcher[3]}, ${rawContentMatcher[4]}, aes-128-cfb, "${rawContentMatcher[2]}", over-tls=${getParam('tls') === '1'? 'true': 'false'}, certificate=${getParam('allowInsecure') === '1'? '0':'1'}`
+                    let remark = getParam('remark') || getParam('remarks') || ''
+                    let finalName = decodeURI(remark) === '' ? `${rawContentMatcher[3]}:${rawContentMatcher[4]}`:decodeURI(remark)
+                    let res = `${finalName} = vmess, ${rawContentMatcher[3]}, ${rawContentMatcher[4]}, aes-128-cfb, "${rawContentMatcher[2]}", over-tls=${getParam('tls') === '1' ? 'true' : 'false'}, certificate=${getParam('allowInsecure') === '1' ? '0' : '1'}`
                     result.push(res)
-                    tag = decodeURI(remark)
+                    tag = finalName
                 }
             }
         } else {
