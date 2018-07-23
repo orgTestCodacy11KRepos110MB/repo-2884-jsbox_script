@@ -309,7 +309,7 @@ function renderUI() {
                 },
                 layout: (make, view) => {
                     make.top.equalTo(view.prev.bottom).offset(10)
-                    make.width.equalTo(view.prev).offset(-100)
+                    make.width.equalTo(view.prev).offset(-110)
                     make.height.equalTo(45)
                     make.left.equalTo(view.prev.left)
                 },
@@ -330,9 +330,20 @@ function renderUI() {
                     make.right.equalTo(view.super.right).offset(-10)
                     make.top.equalTo(view.prev)
                     make.height.equalTo(view.prev)
-                    make.width.equalTo(90)
+                    make.width.equalTo(100)
                 },
                 views: [{
+                    type: "image",
+                    props: {
+                        data: $file.read('assets/menu_icon.png'),
+                        bgcolor: $color("clear")
+                    },
+                    layout: (make, view) => {
+                        make.left.equalTo(view.super)
+                        make.height.width.equalTo(view.super.height).offset(-35)
+                        make.centerY.equalTo(view.super)
+                    }
+                }, {
                     type: "image",
                     props: {
                         id: "outputFormatIcon",
@@ -340,7 +351,7 @@ function renderUI() {
                         bgcolor: $color("clear")
                     },
                     layout: (make, view) => {
-                        make.left.equalTo(view.super)
+                        make.left.equalTo(view.prev.right)
                         make.height.width.equalTo(view.super.height).offset(-15)
                         make.centerY.equalTo(view.super)
                     }
@@ -352,8 +363,8 @@ function renderUI() {
                     },
                     layout: (make, view) => {
                         make.height.equalTo(view.super)
-                        make.width.equalTo(view.super).offset(-30)
-                        make.right.equalTo(view.super)
+                        make.width.equalTo(view.super)
+                        make.left.equalTo(view.prev.right)
                         make.top.equalTo(view.super)
                     }
                 }],
@@ -1930,7 +1941,7 @@ function makeConf(params) {
             getAutoRules(pu.headerrewrite, onPgs), // 8
             getAutoRules(pu.hostname, onPgs) // 9
         ]
-        
+
         if (isQuan) {
             promiseArray[2] = getAutoRules(pu.quanreject, onPgs)
         }
