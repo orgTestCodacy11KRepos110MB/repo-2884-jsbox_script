@@ -238,7 +238,7 @@ function decodeScheme(params) {
             if (padding < 4) {
                 mdps += Array(padding + 1).join('=')
             }
-            [method, password, hostname, port] = $text.base64Decode(mdps).split(/[:,@]/)
+            [_, method, password, hostname, port] = $text.base64Decode(mdps).match(/^(.*?):(.*?)@(.*?):(.*?)$/)
         }
         let proxy = `${tag} = custom, ${hostname}, ${port}, ${method}, ${password}, http://omgib13x8.bkt.clouddn.com/SSEncrypt.module`
         if (plugin != undefined) {
