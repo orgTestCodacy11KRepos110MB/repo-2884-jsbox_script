@@ -111,10 +111,10 @@ function renderTodayUI() {
                     value: usage.download / usage.total
                 },
                 usageDetail: {
-                    text: `↑ ${(usage.upload / GB).toFixed(2)}GB   ↓ ${(usage.download / GB).toFixed(2)}GB`
+                    text: `↑ ${(usage.upload / GB).toFixed(2)}GB   ↓ ${(usage.download / GB).toFixed(2)}GB   ≡ ${(usage.total / GB).toFixed(2)}GB`
                 }, 
                 usageDetail2: {
-                    text: `${(usage.total / GB).toFixed(2)}GB`
+                    text: `${groupNames[idx]}`
                 }
             })
         }
@@ -392,27 +392,15 @@ function renderTodayUI() {
 
                     },
                     views: [{
-                        type: "label",
-                        props: {
-                            id: 'groupName',
-                            autoFontSize: true,
-                            align: $align.center
-                        },
-                        layout: (make, view) => {
-                            make.centerY.equalTo(view.super)
-                            make.left.inset(10)
-                            make.width.equalTo(view.super).multipliedBy(0.2)
-                        }
-                    }, {
                         type: "progress",
                         props: {
                             id: 'usageProgress'
                         },
                         layout: function (make, view) {
-                            make.centerY.equalTo(view.super)
+                            make.centerY.equalTo(view.super).offset(-3);
+                            make.centerX.equalTo(view.super);
                             make.height.equalTo(3)
-                            make.left.equalTo(view.prev.right).offset(10)
-                            make.width.equalTo(view.super).multipliedBy(0.8).offset(-30)
+                            make.width.equalTo(view.super).multipliedBy(1).offset(-50)
                         },
                         views: [{
                             type: 'label',
@@ -433,7 +421,7 @@ function renderTodayUI() {
                             props: {
                                 id: 'usageDetail2',
                                 align: $align.center,
-                                font: $font("bold", 10),
+                                font: $font("bold", 12),
                                 textColor: $color("#595959")
                             },
                             layout: (make, view) => {
