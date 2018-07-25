@@ -57,6 +57,7 @@ function genSrugeLabel(status, isQuan) {
 }
 
 function requestHead(url) {
+    if (!/^https?:\/\//.test(url)) return Promise.resolve('')
     return new Promise((resolve, reject) => {
         $http.request({
             method: "HEAD",
@@ -96,7 +97,7 @@ function parseUsage(usageStr) {
 function renderTodayUI() {
     let workspace = JSON.parse($file.read(FILE).string).workspace
     let groupNames = workspace.serverData.map(i => i.title)
-    let groupURLs = workspace.serverData.map(i => i.url).filter(i => /^https?:\/\//.test(i)).map(i => requestHead(i))
+    let groupURLs = workspace.serverData.map(i => i.url).map(i => requestHead(i))
     Promise.all(groupURLs).then(res => {
         let usageData = []
         for (let idx in res) {
