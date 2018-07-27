@@ -66,8 +66,10 @@ function requestHead(url) {
                 // 'User-Agent': 'Quantumult'
             },
             handler: function (resp) {
-                let headerFields = resp.response.runtimeValue().$allHeaderFields().rawValue()
-                if ('subscription-userinfo' in headerFields) {
+                let headerFields = resp.response.runtimeValue().$allHeaderFields().rawValue();
+                if ('Subscription-userinfo' in headerFields) {
+                    resolve(headerFields['Subscription-userinfo'])
+                } else if ('subscription-userinfo' in headerFields) {
                     resolve(headerFields['subscription-userinfo'])
                 } else {
                     resolve('')

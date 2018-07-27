@@ -43,7 +43,7 @@ function promiseConf(url) {
                 for (let i = 0; i < padding; i++) {
                     noPaddingData += '='
                 }
-                let decodedData = $text.base64Decode(noPaddingData)
+                let decodedData = $text.base64Decode(data) || $text.base64Decode(noPaddingData)
                 let surgeConfMatcher = data.match(/\[Proxy\]([\s\S]*?)\[Proxy Group\]/)
                 if (surgeConfMatcher && surgeConfMatcher[1]) {
                     // Surge托管
@@ -59,6 +59,18 @@ function promiseConf(url) {
                         servers: res.servers.join('\n'),
                         filename: res.sstag || filename
                     })
+                } else if (/^ss:\/\//.test(decodedData)) {
+                    // SS订阅
+                    let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '');
+                    decodeScheme({
+                        ssURL: rawLinks,
+                        handler: serInfo => {
+                            resolve({
+                                servers: serInfo.servers.join('\n'),
+                                filename: serInfo.sstag || filename
+                            })
+                        }
+                    });
                 } else if (/^vmess:\/\//.test(decodedData)) {
                     let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '');
                     let res = decodeVmess(rawLinks);
