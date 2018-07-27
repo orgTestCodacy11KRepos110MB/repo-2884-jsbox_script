@@ -149,15 +149,13 @@ function decodeSSR(links) {
 function getServersFromConfFile(params) {
     let promiseArray = params.urls.map(i => promiseConf(i))
     Promise.all(promiseArray).then(confs => {
-        // console.log(confs)
-        confs.forEach((res, idx) => {
-            if (!res) {
-                $ui.loading(false)
-                return
-            }
-            let servers = res.servers.split(/[\n\r]+/).filter(item => item !== '').map(i => i.strictTrim())
-            params.handler({ servers: servers, filename: res.filename, url: params.urls[idx] })
-        })
+        $ui.loading(false);
+        for (let idx in confs) {
+            let res = confs[idx]
+            let filename = res ? res.filename : '';
+            let servers = res ? res.servers.split(/[\n\r]+/).filter(item => item !== '').map(i => i.strictTrim()) : [];
+            params.handler({ servers: servers, filename: filename, url: params.urls[idx] })
+        }
     }).catch(reason => {
         console.error(reason.stack)
         params.handler(null)
@@ -187,7 +185,7 @@ function decodeVmess(links) {
                 }
                 if (rawContentMatcher && rawContentMatcher.length === 5) {
                     let remark = getParam('remark') || getParam('remarks') || ''
-                    let finalName = decodeURI(remark) === '' ? `${rawContentMatcher[3]}:${rawContentMatcher[4]}`:decodeURI(remark)
+                    let finalName = decodeURI(remark) === '' ? `${rawContentMatcher[3]}:${rawContentMatcher[4]}` : decodeURI(remark)
                     let res = `${finalName} = vmess, ${rawContentMatcher[3]}, ${rawContentMatcher[4]}, aes-128-cfb, "${rawContentMatcher[2]}", over-tls=${getParam('tls') === '1' ? 'true' : 'false'}, certificate=${getParam('allowInsecure') === '1' ? '0' : '1'}`
                     result.push(res)
                     tag = finalName

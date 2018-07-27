@@ -102,12 +102,15 @@ function renderUI() {
                             handler: (res, name, url) => {
                                 // 如果是托管，url不为undefined
                                 console.log([res, name, url])
-                                if (!res || res.length === 0) {
-                                    $ui.toast("没有检测到节点信息")
-                                    return
-                                }
                                 let listData = $("serverEditor").data || []
                                 let existsSec = listData.find(item => item.url === url)
+                                if (!res || res.length === 0) {
+                                    $ui.alert({
+                                        title: `${existsSec? '更新' : '获取'}失败`,
+                                        message: `${existsSec ? existsSec.title : url}`
+                                    })
+                                    return
+                                }
                                 let section = existsSec || { title: name, rows: [], url: url }
                                 let selectedRows = []
                                 if (existsSec) {
@@ -1127,10 +1130,12 @@ function linkHandler(url, params) {
     updateHint += servers.surge.length > 0 ? `\nSurge链接${servers.surge.length}个\n` : ''
     updateHint += servers.vmess.length > 0 ? `\nV2Ray链接${servers.vmess.length}个\n` : ''
     updateHint += servers.online.length > 0 ? `\n托管或订阅${servers.online.length}个\n` : ''
-    $ui.alert({
-        title: '更新概况',
-        message: updateHint
-    })
+    // $ui.alert({
+    //     title: '更新概况',
+    //     message: updateHint
+    // })
+
+    console.log(servers)
 
     for (let k in servers) {
         if (servers[k].length === 0) {
