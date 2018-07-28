@@ -303,7 +303,7 @@ function renderTodayUI() {
                     align: $align.center
                 },
                 layout: (make, view) => {
-                    make.height.equalTo(10)
+                    make.height.equalTo(12)
                     make.top.equalTo($("pullBtn").bottom)
                     make.width.equalTo($("pullBtn").width)
                     make.centerX.equalTo($("pullBtn"))
@@ -318,7 +318,7 @@ function renderTodayUI() {
                     align: $align.center
                 },
                 layout: (make, view) => {
-                    make.height.equalTo(10)
+                    make.height.equalTo(12)
                     make.top.equalTo(view.prev.top)
                     make.centerX.equalTo($("surgeBtn"))
                 }
@@ -331,7 +331,7 @@ function renderTodayUI() {
                     align: $align.center
                 },
                 layout: (make, view) => {
-                    make.height.equalTo(10)
+                    make.height.equalTo(12)
                     make.top.equalTo($("pullBtn").bottom)
                     make.width.equalTo($("pullBtn").width)
                     make.centerX.equalTo($("jsboxBtn"))
