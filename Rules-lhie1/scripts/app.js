@@ -106,7 +106,7 @@ function renderUI() {
                                 let existsSec = listData.find(item => item.url === url)
                                 if (!res || res.length === 0) {
                                     $ui.alert({
-                                        title: `${existsSec? '更新' : '获取'}失败`,
+                                        title: `${existsSec ? '更新' : '获取'}失败`,
                                         message: `${existsSec ? existsSec.title : url}`
                                     })
                                     return
@@ -2069,7 +2069,7 @@ function makeConf(params) {
                 prototype = prototype.replace('# All Rules', rules)
             }
             prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
-            prototype = prototype.replace('# URL Rewrite', urlRewrite.replace(/307/g, surge2 || isQuan ? '302' : '307') + prettyInsert(userUrl.add))
+            prototype = prototype.replace('# URL Rewrite', urlRewrite.replace(/307/g, surge2 ? '302' : '307') + prettyInsert(userUrl.add))
             prototype = prototype.replace('# URL REJECT', urlReject)
             prototype = prototype.replace('# SSID', userSSID)
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
@@ -2144,9 +2144,8 @@ function makeConf(params) {
             function genQuanRewrite(content) {
                 let items = content.split(/[\n\r]+/).filter(i => i !== '' && !/^\/\//.test(i)).map(i => i.split(/\s+/))
                 return items.map(i => {
-                    let key = ['modify', '302']
                     let isHeader = i[2].contains('header')
-                    return `${i[0]} url ${isHeader ? key[0] : key[1]} ${i[1]}`
+                    return `${i[0]} url ${isHeader ? 'modify' : i[2]} ${i[1]}`
                 }).join('\n')
             }
 
@@ -2171,11 +2170,17 @@ function makeConf(params) {
                 prototype += genQuanPart('URL-REJECTION', urlReject)
                 prototype += genQuanPart('REWRITE', genQuanRewrite(urlRewrite))
                 prototype += genQuanPart('HOST', host + prettyInsert(userHost.add))
+                let sourceType = 'false, true, false'; 
+                let sourceTypeParam = proxySuffix.find(x => /\s*source-type\s*=\s*[0-7]\s*(?:,|$)/.test(x))
+                if (sourceTypeParam) {
+                    let type = sourceTypeParam.match(/\s*source-type\s*=\s*([0-7])/)[1] * 1;
+                    sourceType = `${type & 4 ? 'true':'false'}, ${type & 2 ? 'true':'false'}, ${type & 1 ? 'true':'false'}`
+                }
                 prototype += genQuanPart('SOURCE', serverEditorData.filter(i => {
                     let isSSR = i.rows.find(l => /^.*?=\s*shadowsocksr/.test(l.proxyLink))
                     return isSSR !== undefined
                 }).map(i => {
-                    return `${i.title}, server, ${i.url}, false, true, false, ${i.title}`
+                    return `${i.title}, server, ${i.url}, ${sourceType}, ${i.title}`
                 }).join('\n'))
                 let customDNS = prototype.match(/dns-server\s*=\s*(.*?)(?:\n|\r|$)/)
                 if (customDNS && customDNS[1]) {
