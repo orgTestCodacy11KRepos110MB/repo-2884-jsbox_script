@@ -1359,7 +1359,7 @@ function renderAboutUI() {
             type: "scroll",
             props: {
                 id: "mainAboutView",
-                contentSize: $size(0, 785)
+                contentSize: $size(0, 855)
             },
             layout: $layout.fill,
             views: [{
@@ -1417,18 +1417,22 @@ function renderAboutUI() {
             }, {
                 type: "list",
                 props: {
-                    data: ["🤖️  Rules-lhie1托管"],
+                    data: ["🤖️  Rules-lhie1托管", "🎩  Quantumult去FA更新"],
                     scrollEnabled: false
                 },
                 layout: (make, view) => {
                     make.width.equalTo(view.super)
                     make.top.equalTo(view.prev.bottom).offset(0)
-                    make.height.equalTo(40)
+                    make.height.equalTo(90)
                 },
                 events: {
                     didSelect: (sender, indexPath, data) => {
                         if (indexPath.row === 0) {
                             $app.openURL("https://t.me/rules_lhie1_bot")
+                        } else {
+                            $safari.open({
+                                url: "https://jsboxbbs.com/d/474-quantumult-filter-action",
+                            })
                         }
                     }
                 }
@@ -1512,7 +1516,7 @@ function renderAboutUI() {
                     didSelect: (sender, indexPath, data) => {
                         if (indexPath.row === 0) {
                             $safari.open({
-                                url: "https://t.me/Fndroid",
+                                url: "https://t.me/Rules_lhie1",
                             })
                         } else if (indexPath.row === 1) {
                             $safari.open({
@@ -1902,13 +1906,19 @@ function makeConf(params) {
             return flatServerData.map(i => i.proxyName.text).concat(getProxyGroups()).concat(['🚀 Direct']).find(i => i === name) !== undefined
         }
 
-        let proxySuffix = workspace.serverSuffix.split(/\s*,\s*/g).map(i => i.replace(/\s/g, ''))
+        let proxySuffix = workspace.serverSuffix.split(/\s*,\s*/g).map(i => i.replace(/\s/g, '')).filter(i => i !== '')
         let proxies = flatServerData.map(i => {
             let notExistSuffix = proxySuffix.filter((ps, idx) => {
                 if (idx === 0 && ps === '') return true
                 return i.proxyLink.indexOf(ps) < 0
             })
-            return i.proxyLink + notExistSuffix.join(',')
+            let containsOP = /obfs_param/.test(i.proxyLink)
+            if (containsOP) {
+                i.proxyLink = i.proxyLink.replace(/obfs_param/, `${notExistSuffix.join(',')},obfs_param`)
+            } else {
+                i.proxyLink += `,${notExistSuffix.join(',')}`
+            }
+            return i.proxyLink
         })
         proxies = proxies.join('\n')
         let proxyHeaders = flatServerData.map(i => i.proxyName.text).join(', ')
@@ -2170,11 +2180,11 @@ function makeConf(params) {
                 prototype += genQuanPart('URL-REJECTION', urlReject)
                 prototype += genQuanPart('REWRITE', genQuanRewrite(urlRewrite))
                 prototype += genQuanPart('HOST', host + prettyInsert(userHost.add))
-                let sourceType = 'false, true, false'; 
+                let sourceType = 'false, true, false';
                 let sourceTypeParam = proxySuffix.find(x => /\s*source-type\s*=\s*[0-7]\s*(?:,|$)/.test(x))
                 if (sourceTypeParam) {
                     let type = sourceTypeParam.match(/\s*source-type\s*=\s*([0-7])/)[1] * 1;
-                    sourceType = `${type & 4 ? 'true':'false'}, ${type & 2 ? 'true':'false'}, ${type & 1 ? 'true':'false'}`
+                    sourceType = `${type & 4 ? 'true' : 'false'}, ${type & 2 ? 'true' : 'false'}, ${type & 1 ? 'true' : 'false'}`
                 }
                 prototype += genQuanPart('SOURCE', serverEditorData.filter(i => {
                     let isSSR = i.rows.find(l => /^.*?=\s*shadowsocksr/.test(l.proxyLink))
