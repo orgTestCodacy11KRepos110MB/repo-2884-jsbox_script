@@ -481,7 +481,8 @@ function renderUI() {
                                 }
                             })
                         },
-                        onProgress: p => {
+                        onProgress: (p, hint) => {
+                            hint !== '' && ($("loadingHintLabel").text = hint)
                             $("progressBar").value = p
                         },
                         onDone: res => {
@@ -491,7 +492,8 @@ function renderUI() {
                                     $("progressView").alpha = 0
                                 },
                                 completion: function () {
-                                    $("progressView").value = 0
+                                    $("loadingHintLabel").text = '处理中，请稍后'
+                                    $("progressBar").value = 0
                                     $("progressView").hidden = true
                                 }
                             })
@@ -526,6 +528,7 @@ function renderUI() {
             views: [{
                 type: "label",
                 props: {
+                    id: "loadingHintLabel",
                     text: "处理中，请稍后",
                     textColor: $color("black"),
                 },
@@ -1046,24 +1049,12 @@ function listReplace(sender, indexPath, obj) {
     sender.data = oldData
 }
 
-function getPrototype(done) {
-    return new Promise((resolve, reject) => {
-        $http.get({
-            url: "https://raw.githubusercontent.com/lhie1/Rules/master/Surge/Prototype.conf",
-            handler: function (resp) {
-                if (done) done()
-                resolve(resp.data)
-            }
-        })
-    })
-}
-
-function getAutoRules(url, done) {
+function getAutoRules(url, done, hint='') {
     return new Promise((resolve, reject) => {
         $http.get({
             url: url,
             handler: function (resp) {
-                if (done) done()
+                if (done) done(hint)
                 resolve(resp.data)
             }
         })
@@ -1786,6 +1777,7 @@ function autoGen() {
             views: [{
                 type: "label",
                 props: {
+                    id: "loadingHintLabel",
                     text: "处理中，请稍后",
                     textColor: $color("black"),
                 },
@@ -1826,10 +1818,8 @@ function autoGen() {
     $app.listen({
         ready: function () {
             makeConf({
-                onStart: () => {
-                    console.log('start')
-                },
-                onProgress: p => {
+                onProgress: (p, hint) => {
+                    hint !== '' && ($("loadingHintLabel").text = hint)
                     $("progressBar").value = p
                 },
                 onDone: res => {
@@ -1850,6 +1840,7 @@ function makeConf(params) {
     'onStart' in params && params.onStart()
     try {
         let pu = {
+            prototype: "https://raw.githubusercontent.com/lhie1/Rules/master/Surge/Prototype.conf",
             apple: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Apple.conf',
             direct: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/DIRECT.conf',
             proxy: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/PROXY.conf',
@@ -1934,50 +1925,28 @@ function makeConf(params) {
 
         let pgs = 0
 
-        let onPgs = function () {
+        let onPgs = function (hint) {
             pgs += 0.1
-            'onProgress' in params && params.onProgress(pgs)
+            'onProgress' in params && params.onProgress(pgs, hint)
         }
 
-        let emptyPromise = function (done) {
-            if (done) done()
+        let emptyPromise = function (done, hint='') {
+            if (done) done(hint)
             return Promise.resolve('')
         }
 
         let promiseArray = [
-            getPrototype(onPgs), // 0
-            getAutoRules(pu.apple, onPgs), // 1
-            getAutoRules(pu.reject, onPgs),  // 2
-            getAutoRules(pu.proxy, onPgs), // 3
-            getAutoRules(pu.direct, onPgs), // 4
-            getAutoRules(pu.host, onPgs), // 5
-            getAutoRules(pu.urlrewrite, onPgs), // 6
-            getAutoRules(pu.urlreject, onPgs), // 7
-            getAutoRules(pu.headerrewrite, onPgs), // 8
-            getAutoRules(pu.hostname, onPgs) // 9
+            getAutoRules(pu.prototype, onPgs, '成功取回配置模板'), // 0
+            rulesReplacement ? getAutoRules(rulesReplacement, onPgs, '成功取回替换配置') : getAutoRules(pu.apple, onPgs, '成功取回APPLE规则'), // 1
+            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.quanreject : pu.reject, onPgs, '成功取回Reject规则'),  // 2
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.proxy, onPgs, '成功取回Proxy规则'), // 3
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.direct, onPgs, '成功取回Direct规则'), // 4
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.host, onPgs, '成功取回Proxy规则'), // 5
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.urlrewrite, onPgs, '成功取回URL Rewrite'), // 6
+            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.urlreject, onPgs, '成功取回URL Reject'), // 7
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.headerrewrite, onPgs, '成功取回Header Rewrite'), // 8
+            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.hostname, onPgs, '成功取回MITM Hostname') // 9
         ]
-
-        if (isQuan) {
-            promiseArray[2] = getAutoRules(pu.quanreject, onPgs)
-        }
-
-        if (!ads) {
-            promiseArray[2] = emptyPromise(onPgs)
-            promiseArray[7] = emptyPromise(onPgs)
-            promiseArray[9] = emptyPromise(onPgs)
-        }
-
-        if (rulesReplacement) {
-            promiseArray[1] = getAutoRules(rulesReplacement)
-            promiseArray[2] = emptyPromise(onPgs)
-            promiseArray[3] = emptyPromise(onPgs)
-            promiseArray[4] = emptyPromise(onPgs)
-            promiseArray[5] = emptyPromise(onPgs)
-            promiseArray[6] = emptyPromise(onPgs)
-            promiseArray[7] = emptyPromise(onPgs)
-            promiseArray[8] = emptyPromise(onPgs)
-            promiseArray[9] = emptyPromise(onPgs)
-        }
 
         Promise.all(promiseArray).then(v => {
             prototype = v[0]
@@ -2152,11 +2121,12 @@ function makeConf(params) {
             }
 
             function genQuanRewrite(content) {
-                let items = content.split(/[\n\r]+/).filter(i => i !== '' && !/^\/\//.test(i)).map(i => i.split(/\s+/))
-                return items.map(i => {
-                    let isHeader = i[2].contains('header')
-                    return `${i[0]} url ${isHeader ? 'modify' : i[2]} ${i[1]}`
+                let items = content.split(/[\n\r]+/).filter(i => i !== '' && /^(?!\/\/|#)/.test(i)).map(i => {
+                    let part = i.split(/\s+/)
+                    let isHeader = part[2].contains('header')
+                    return `${part[0]} url ${isHeader ? 'modify' : part[2]} ${part[1]}`
                 }).join('\n')
+                return items
             }
 
             function genQuanPart(name, content) {
