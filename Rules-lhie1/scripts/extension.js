@@ -214,7 +214,7 @@ let renderExtensionUI = function () {
         make.height.equalTo(styleListHeight)
     })
     let savedData = JSON.parse($file.read(FILE).string)
-    let proxyGroup = savedData.proxyGroupSettings.split('\n').filter(i => /^[\s\S]+=/.test(i)).map(i => i.split(/[\s]*=/)[0])
+    let proxyGroup = savedData.proxyGroupSettings.split('\n').filter(i => /^(?!\/|#)[\s\S]+=/.test(i)).map(i => i.split(/[\s]*=/)[0])
     let flatServerData = savedData.workspace.serverData.reduce((all, cur) => {
         return {
             rows: all.rows.concat(cur.rows)
