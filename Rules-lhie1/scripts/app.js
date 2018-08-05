@@ -1049,7 +1049,7 @@ function listReplace(sender, indexPath, obj) {
     sender.data = oldData
 }
 
-function getAutoRules(url, done, hint='') {
+function getAutoRules(url, done, hint = '') {
     return new Promise((resolve, reject) => {
         $http.get({
             url: url,
@@ -1062,7 +1062,7 @@ function getAutoRules(url, done, hint='') {
 }
 
 function importMenu(params) {
-    let staticItems = ['剪贴板导入', '二维码导入', '更新列表节点']
+    let staticItems = ['剪贴板导入', '二维码导入', '更新节点', '更新节点（Emoji）']
     $ui.menu({
         items: staticItems,
         handler: function (title, idx) {
@@ -1078,12 +1078,15 @@ function importMenu(params) {
             } else if (title === staticItems[2]) {
                 let listSections = $("serverEditor").data
                 linkHandler(listSections.filter(i => /^http/.test(i.url)).map(i => i.url).join('\n'), params)
+            } else if (title === staticItems[3]) {
+                let listSections = $("serverEditor").data
+                linkHandler(listSections.filter(i => /^http/.test(i.url)).map(i => i.url).join('\n'), params, true)
             }
         }
     })
 }
 
-function linkHandler(url, params) {
+function linkHandler(url, params, emoji = false) {
     let servers = {
         shadowsocks: [],
         surge: [],
@@ -1128,6 +1131,21 @@ function linkHandler(url, params) {
 
     console.log(servers)
 
+    function addEmoji(emojiSet, link) {
+        let name = link.split(/=/)[0]
+        let minIdx = 300;
+        let resEmoji = '';
+        for (let idx in emojiSet) {
+            let reg = `(${emojiSet[idx].slice(1).join('|')})`
+            let matcher = name.match(new RegExp(reg))
+            if (matcher && matcher.index < minIdx) {
+                minIdx = matcher.index
+                resEmoji = emojiSet[idx][0]
+            }
+        }
+        return minIdx !== 300 ? `${resEmoji} ${link}` : link
+    }
+
     for (let k in servers) {
         if (servers[k].length === 0) {
             continue
@@ -1155,7 +1173,20 @@ function linkHandler(url, params) {
                 urls: servers[k],
                 handler: res => {
                     $ui.loading(false)
-                    params.handler(res.servers, res.filename, res.url)
+                    let servers = res.servers
+                    if (emoji) {
+                        $http.get({
+                            url: "https://raw.githubusercontent.com/Fndroid/country_emoji/master/emoji.json" + `?t=${new Date().getTime()}`
+                        }).then(resp => {
+                            let emojiSet = resp.data
+                            servers = res.servers.map(i => addEmoji(emojiSet, i))
+                            params.handler(servers, res.filename, res.url)
+                        }).catch(error => {
+                            $ui.alert("Emoji配置获取失败")
+                        })
+                    } else {
+                        params.handler(servers, res.filename, res.url)
+                    }
                 }
             })
         } else if (k === 'vmess') {
@@ -1930,7 +1961,7 @@ function makeConf(params) {
             'onProgress' in params && params.onProgress(pgs, hint)
         }
 
-        let emptyPromise = function (done, hint='') {
+        let emptyPromise = function (done, hint = '') {
             if (done) done(hint)
             return Promise.resolve('')
         }
