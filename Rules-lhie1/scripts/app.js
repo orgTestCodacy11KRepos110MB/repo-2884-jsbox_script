@@ -2071,8 +2071,17 @@ function makeConf(params) {
                 })
             }
 
+            function ssr2ss(proxies) {
+                let proxyList = proxies.split(/\n/);
+                let res = proxyList.map(proxy => {
+                    if (!/http.+\.module/.test(proxy)) proxy += ', http://omgib13x8.bkt.clouddn.com/SSEncrypt.module'
+                    return proxy.replace(/=\s*shadowsocksr/g, '= custom').replace(/"/g, '').replace(/obfs\s*=\s*http_simple/g, 'obfs = http').replace(/obfs_param\s*=/g, 'obfs-host =')
+                })
+                return res.join('\n')
+            }
+
             prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
-            prototype = prototype.replace('Proxys', proxies)
+            prototype = prototype.replace('Proxys', isQuan ? proxies.replace(/,\s*,/g, ',') : ssr2ss(proxies).replace(/,\s*,/g, ','))
             if (rulesReplacement) {
                 prototype = prototype.replace(/\[Rule\][\s\S]*?(?:\[|$)/, `[Rule]\n${prettyInsert(customRules.add)}\n${rules}\n[`)
             } else {
