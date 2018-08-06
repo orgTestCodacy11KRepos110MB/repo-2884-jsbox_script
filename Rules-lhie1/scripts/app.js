@@ -1107,7 +1107,7 @@ function linkHandler(url, params, emoji = false) {
             servers.shadowsocks.push(item)
         } else if (/^https?:\/\//.test(item)) {
             servers.online.push(item)
-        } else if (/[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls)/.test(item)) {
+        } else if (/[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls|external)/.test(item)) {
             servers.surge.push(item)
         } else if (/^vmess:\/\//.test(item)) {
             servers.vmess.push(item)
