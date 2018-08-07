@@ -53,7 +53,7 @@ function promiseConf(url) {
                     })
                 } else if (/^ssr:\/\//.test(decodedData)) {
                     // SSR订阅
-                    let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '');
+                    let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '' && /^ssr:\/\//.test(i));
                     let res = decodeSSR(rawLinks);
                     resolve({
                         servers: res.servers.join('\n'),
@@ -61,7 +61,7 @@ function promiseConf(url) {
                     })
                 } else if (/^ss:\/\//.test(decodedData)) {
                     // SS订阅
-                    let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '');
+                    let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '' && /^ss:\/\//.test(i));
                     decodeScheme({
                         ssURL: rawLinks,
                         handler: serInfo => {
@@ -72,7 +72,7 @@ function promiseConf(url) {
                         }
                     });
                 } else if (/^vmess:\/\//.test(decodedData)) {
-                    let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '');
+                    let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '' && /^vmess:\/\//.test(i));
                     let res = decodeVmess(rawLinks);
                     resolve({
                         servers: res.servers.join('\n'),
