@@ -2075,7 +2075,7 @@ function makeConf(params) {
                 let proxyList = proxies.split(/\n/);
                 let res = proxyList.map(proxy => {
                     if (/=\s*shadowsocksr/.test(proxy)) {
-                        return proxy.replace(/=\s*shadowsocksr/g, '= custom').replace(/"/g, '').replace(/,\s*(protocol|protocol_param|obfs|obfs_param)[^,$]+/g, '')
+                        return proxy.replace(/=\s*shadowsocksr/g, '= custom').replace(/"/g, '').replace(/,\s*(protocol|protocol_param|obfs|obfs_param)[^,$]+/g, '') + ', http://omgib13x8.bkt.clouddn.com/SSEncrypt.module'
                     } else {
                         return proxy
                     }
