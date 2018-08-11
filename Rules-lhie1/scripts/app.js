@@ -1076,9 +1076,11 @@ function importMenu(params) {
                     }
                 })
             } else if (title === staticItems[2]) {
+                $("serverURL").info = false
                 let listSections = $("serverEditor").data
                 linkHandler(listSections.map(i => i.url).join('\n'), params)
             } else if (title === staticItems[3]) {
+                $("serverURL").info = true
                 let listSections = $("serverEditor").data
                 linkHandler(listSections.map(i => i.url).join('\n'), params, true)
             }
@@ -1762,6 +1764,7 @@ function saveWorkspace() {
             })
             return section
         }),
+        withEmoji: $("serverURL").info || false,
         usualData: $("usualSettings").data.map(i => {
             i.title.bgcolor = cu.isEqual(tintColor, i.title.bgcolor)
             i.title.textColor = cu.isEqual(defaultColor, i.title.textColor)
