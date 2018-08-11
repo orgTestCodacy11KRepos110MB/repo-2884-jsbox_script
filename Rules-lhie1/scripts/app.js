@@ -1700,6 +1700,7 @@ function setUpWorkspace() {
                 let workspace = file.workspace
                 $("fileName").text = workspace.fileName || ''
                 $("serverSuffixEditor").text = workspace.serverSuffix || ''
+                $("serverURL").info = workspace.withEmoji || false
                 let customProxyGroup = workspace.customProxyGroup || {}
                 let defaultGroupName = PROXY_HEADER
                 if (!(defaultGroupName in customProxyGroup)) {
