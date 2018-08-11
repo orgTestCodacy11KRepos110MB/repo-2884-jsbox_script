@@ -1077,10 +1077,10 @@ function importMenu(params) {
                 })
             } else if (title === staticItems[2]) {
                 let listSections = $("serverEditor").data
-                linkHandler(listSections.filter(i => /^http/.test(i.url)).map(i => i.url).join('\n'), params)
+                linkHandler(listSections.map(i => i.url).join('\n'), params)
             } else if (title === staticItems[3]) {
                 let listSections = $("serverEditor").data
-                linkHandler(listSections.filter(i => /^http/.test(i.url)).map(i => i.url).join('\n'), params, true)
+                linkHandler(listSections.map(i => i.url).join('\n'), params, true)
             }
         }
     })
@@ -1146,58 +1146,62 @@ function linkHandler(url, params, emoji = false) {
         return minIdx !== 300 ? `${resEmoji} ${link}` : link
     }
 
-    for (let k in servers) {
-        if (servers[k].length === 0) {
-            continue
-        }
-        if (k === 'shadowsocks') {
-            console.log(servers[k])
-            proxyUtil.proxyFromURL({
-                ssURL: servers[k],
-                handler: res => {
-                    params.handler(res.servers, res.sstag, servers[k].join('\n'))
-                }
-            })
-        } else if (k === 'surge') {
-            let urls = servers[k].map(i => i.replace(/,[\s]*udp-relay=true/, ''))
-            let result = []
-            for (let idx in urls) {
-                result[idx] = urls[idx]
+    function detailHandler(emojiSet = null) {
+        for (let k in servers) {
+            if (servers[k].length === 0) {
+                continue
             }
-            $delay(0.3, function () {
-                params.handler(result, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim(), urls.join('\n'))
-            })
-        } else if (k === 'online') {
-            $ui.loading(true)
-            proxyUtil.proxyFromConf({
-                urls: servers[k],
-                handler: res => {
-                    $ui.loading(false)
-                    let servers = res.servers
-                    if (emoji) {
-                        $http.get({
-                            url: "https://raw.githubusercontent.com/Fndroid/country_emoji/master/emoji.json" + `?t=${new Date().getTime()}`
-                        }).then(resp => {
-                            let emojiSet = resp.data
-                            servers = res.servers.map(i => addEmoji(emojiSet, i))
-                            params.handler(servers, res.filename, res.url)
-                        }).catch(error => {
-                            $ui.alert("Emoji配置获取失败")
-                        })
-                    } else {
-                        params.handler(servers, res.filename, res.url)
+            if (k === 'shadowsocks') {
+                proxyUtil.proxyFromURL({
+                    ssURL: servers[k],
+                    handler: res => {
+                        params.handler(emojiSet ? res.servers.map(i => addEmoji(emojiSet, i)) : res.servers, res.sstag, servers[k].join('\n'))
                     }
+                })
+            } else if (k === 'surge') {
+                let urls = servers[k].map(i => i.replace(/,[\s]*udp-relay=true/, ''))
+                let result = []
+                for (let idx in urls) {
+                    result[idx] = urls[idx]
                 }
-            })
-        } else if (k === 'vmess') {
-            let res = proxyUtil.proxyFromVmess(servers[k])
-            params.handler(res.servers, res.sstag, servers[k].join('\n'))
-        } else if (k === 'shadowsocksr') {
-            let res = proxyUtil.proxyFromSSR(servers[k])
-            params.handler(res.servers, res.sstag, servers[k].join('\n'))
-        } else {
-            $ui.alert('剪贴板存在无法识别的行：\n\n' + servers.ignore.join('\n') + '\n\n以上行将被丢弃！')
+                $delay(0.3, function () {
+                    params.handler(emojiSet ? result.map(i => addEmoji(emojiSet, i)) : result, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim(), urls.join('\n'))
+                })
+            } else if (k === 'online') {
+                $ui.loading(true)
+                proxyUtil.proxyFromConf({
+                    urls: servers[k],
+                    handler: res => {
+                        $ui.loading(false)
+                        params.handler(emojiSet ? res.servers.map(i => addEmoji(emojiSet, i)) : res.servers, res.filename, res.url)
+                    }
+                })
+            } else if (k === 'vmess') {
+                let res = proxyUtil.proxyFromVmess(servers[k])
+                params.handler(emojiSet ? res.servers.map(i => addEmoji(emojiSet, i)) : res.servers, res.sstag, servers[k].join('\n'))
+            } else if (k === 'shadowsocksr') {
+                let res = proxyUtil.proxyFromSSR(servers[k])
+                params.handler(emojiSet ? res.servers.map(i => addEmoji(emojiSet, i)) : res.servers, res.sstag, servers[k].join('\n'))
+            } else {
+                $ui.alert('剪贴板存在无法识别的行：\n\n' + servers.ignore.join('\n') + '\n\n以上行将被丢弃！')
+            }
         }
+    }
+
+    if (emoji) {
+        $ui.loading(true)
+        $http.get({
+            url: "https://raw.githubusercontent.com/Fndroid/country_emoji/master/emoji.json" + `?t=${new Date().getTime()}`
+        }).then(resp => {
+            $ui.loading(false)
+            let emojiSet = resp.data
+            detailHandler(emojiSet)
+        }).catch(error => {
+            $ui.loading(false)
+            $ui.alert("Emoji配置获取失败")
+        })
+    } else {
+        detailHandler(null)
     }
 }
 
