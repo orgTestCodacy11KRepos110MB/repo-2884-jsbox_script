@@ -1772,10 +1772,13 @@ function setUpWorkspace() {
                 })
                 let usualSettingsData = workspace.usualData
                 let nd = $("usualSettings").data.map(item => {
-                    let sd = usualSettingsData.find(i => i.title.text == item.title.text)
+                    let sd = usualSettingsData.find(i => i.title.text === item.title.text)
                     if (sd) {
                         item.title.bgcolor = sd.title.bgcolor ? tintColor : defaultColor
                         item.title.textColor = sd.title.textColor ? defaultColor : blackColor
+                    } else {
+                        item.title.bgcolor = defaultColor
+                        item.title.textColor = blackColor
                     }
                     return item
                 })
