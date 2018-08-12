@@ -51,7 +51,7 @@ function promiseConf(url) {
                         servers: surgeConfMatcher[1],
                         filename: filename
                     })
-                } else if (/^ssr:\/\//.test(decodedData)) {
+                } else if (/ssr:\/\//.test(decodedData)) {
                     // SSR订阅
                     let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '' && /^ssr:\/\//.test(i));
                     let res = decodeSSR(rawLinks);
@@ -59,7 +59,7 @@ function promiseConf(url) {
                         servers: res.servers.join('\n'),
                         filename: res.sstag || filename
                     })
-                } else if (/^ss:\/\//.test(decodedData)) {
+                } else if (/ss:\/\//.test(decodedData)) {
                     // SS订阅
                     let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '' && /^ss:\/\//.test(i));
                     decodeScheme({
@@ -71,7 +71,7 @@ function promiseConf(url) {
                             })
                         }
                     });
-                } else if (/^vmess:\/\//.test(decodedData)) {
+                } else if (/vmess:\/\//.test(decodedData)) {
                     let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '' && /^vmess:\/\//.test(i));
                     let res = decodeVmess(rawLinks);
                     resolve({
