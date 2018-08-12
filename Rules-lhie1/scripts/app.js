@@ -380,7 +380,7 @@ function renderUI() {
                 type: "matrix",
                 props: {
                     id: "usualSettings",
-                    columns: 3,
+                    columns: 4,
                     itemHeight: 40,
                     spacing: 5,
                     scrollEnabled: false,
@@ -388,6 +388,8 @@ function renderUI() {
                         title: { text: 'ADS', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: 'MITM', bgcolor: defaultColor, textColor: blackColor }
+                    }, {
+                        title: { text: 'Emoji', bgcolor: defaultColor, textColor: blackColor }
                     }, {
                         title: { text: '导出', bgcolor: defaultColor, textColor: blackColor }
                     }],
@@ -412,6 +414,9 @@ function renderUI() {
                 },
                 events: {
                     didSelect: (sender, indexPath, data) => {
+                        if (indexPath.row === 2) {
+                            refreshListEmoji(isEmoji())
+                        }
                         data.title.bgcolor = cu.isEqual(data.title.bgcolor, tintColor) ? defaultColor : tintColor
                         data.title.textColor = cu.isEqual(data.title.bgcolor, tintColor) ? defaultColor : blackColor
                         let uiData = $("usualSettings").data
@@ -549,6 +554,50 @@ function renderUI() {
                 }
             }]
         },]
+    })
+}
+
+function refreshListEmoji(isEmoji) {
+    function addEmoji(emojiSet, name) {
+        let minIdx = 300;
+        let resEmoji = '';
+        for (let idx in emojiSet) {
+            let reg = `(${emojiSet[idx].slice(1).join('|')})`
+            let matcher = name.match(new RegExp(reg))
+            if (matcher && matcher.index < minIdx) {
+                minIdx = matcher.index
+                resEmoji = emojiSet[idx][0]
+            }
+        }
+        return minIdx !== 300 ? `${resEmoji} ${name}` : name
+    }
+
+    function removeEmoji(emojiSet, name) {
+        let emoji = emojiSet.map(i => i[0])
+        let reg = `(${emoji.join('|')}) `
+        return name.replace(new RegExp(reg, 'g'), '')
+    }
+
+    let serverEditorData = $("serverEditor").data
+
+    $ui.loading(true)
+    $http.get({
+        url: "https://raw.githubusercontent.com/Fndroid/country_emoji/master/emoji.json" + `?t=${new Date().getTime()}`
+    }).then(resp => {
+        $ui.loading(false)
+        let emojiSet = resp.data
+        $("serverEditor").data = serverEditorData.map(sec => {
+            sec.rows = sec.rows.map(i => {
+                i.proxyLink = isEmoji ? removeEmoji(emojiSet, i.proxyLink) : addEmoji(emojiSet, i.proxyLink)
+                i.proxyName.text = i.proxyLink.split(/\s*=/)[0]
+                return i
+            })
+            return sec
+        })
+        saveWorkspace()
+    }).catch(error => {
+        $ui.loading(false)
+        $ui.alert("Emoji配置获取失败")
     })
 }
 
@@ -1062,7 +1111,7 @@ function getAutoRules(url, done, hint = '') {
 }
 
 function importMenu(params) {
-    let staticItems = ['剪贴板导入', '二维码导入', '更新节点', '更新节点（Emoji）']
+    let staticItems = ['剪贴板导入', '二维码导入', '更新节点']
     $ui.menu({
         items: staticItems,
         handler: function (title, idx) {
@@ -1076,19 +1125,26 @@ function importMenu(params) {
                     }
                 })
             } else if (title === staticItems[2]) {
-                $("serverURL").info = false
-                let listSections = $("serverEditor").data
+                let listSections = $("serverEditor").data.filter(i => /^http/.test(i.url))
                 linkHandler(listSections.map(i => i.url).join('\n'), params)
-            } else if (title === staticItems[3]) {
-                $("serverURL").info = true
-                let listSections = $("serverEditor").data
-                linkHandler(listSections.map(i => i.url).join('\n'), params, true)
             }
         }
     })
 }
 
-function linkHandler(url, params, emoji = false) {
+function isEmoji() {
+    let advanceSettings = JSON.parse($file.read(FILE).string)
+    let workspace = advanceSettings.workspace
+    let usualData = workspace.usualData
+
+    let usualValue = function (key) {
+        return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key).title.bgcolor : false
+    }
+    return usualValue('Emoji')
+}
+
+function linkHandler(url, params) {
+    let emoji = isEmoji()
     let servers = {
         shadowsocks: [],
         surge: [],
