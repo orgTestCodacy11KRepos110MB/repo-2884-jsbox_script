@@ -1,4 +1,5 @@
 const app = require('scripts/app')
+const init = require('scripts/init')
 const today = require('scripts/today')
 const extension = require('scripts/extension')
 const updateUtil = require('scripts/updateUtil')
@@ -29,6 +30,8 @@ if ($app.env === $env.today) {
 }
 
 app.setUpWorkspace()
+
+init.asyncInitialize()
 
 app.renderUI()
 

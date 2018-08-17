@@ -1,7 +1,6 @@
 const proxyUtil = require('scripts/proxyUitl')
 const updateUtil = require('scripts/updateUtil')
 const cu = require('scripts/colorUtil')
-const videoReg = require('scripts/videoReg')
 const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
 
 const FILE = 'data.js'
@@ -238,7 +237,8 @@ function renderUI() {
                     }, {
                         title: "特殊代理",
                         handler: (sender, indexPath) => {
-                            let proxyName = sender.object(indexPath).proxyName.text
+                            let proxyName = sender.object(indexPath).proxyName.text;
+                            let videoReg = require('scripts/videoReg')
                             $ui.menu({
                                 items: Object.keys(videoReg),
                                 handler: function (title, idx) {
@@ -869,6 +869,7 @@ function specialProxyGroup() {
                 $ui.alert(output.length > 0 ? output.join('\n') : "无设置特殊代理");
             }
             else {
+                let videoReg = require('scripts/videoReg')
                 $ui.menu({
                     items: Object.keys(videoReg),
                     handler: function (title, idx) {
@@ -2043,7 +2044,7 @@ function makeConf(params) {
             rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.urlrewrite, onPgs, '成功取回URL Rewrite'), // 6
             !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.urlreject, onPgs, '成功取回URL Reject'), // 7
             rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.headerrewrite, onPgs, '成功取回Header Rewrite'), // 8
-            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.hostname, onPgs, '成功取回MITM Hostname') // 9
+            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.hostname, onPgs, '成功取回MITM Hostname'), // 9
         ]
 
         Promise.all(promiseArray).then(v => {
@@ -2133,6 +2134,7 @@ function makeConf(params) {
             for (let videoType in videoProxy) {
                 let proxyName = videoProxy[videoType]
                 if (!proxyNameLegal(proxyName)) continue
+                let videoReg = require('scripts/videoReg')
                 rules.match(videoReg[videoType]).forEach(i => {
                     rules = rules.replace(i, i.replace('🍃 Proxy', proxyName))
                 })
