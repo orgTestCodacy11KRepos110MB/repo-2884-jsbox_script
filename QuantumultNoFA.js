@@ -14,7 +14,6 @@
 
 */
 
-
 $app.autoKeyboardEnabled = true
 
 const CONF = 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult.conf'
@@ -25,33 +24,31 @@ function urlsaveBase64Encode(url) {
     return $text.base64Encode(url).replace(/\-/g, '+').replace(/\\/g, '_').replace(/=+$/, '')
 }
 
-const DEFAULT = [
-    {
-        reg: { text: "选择Google的Policy，不懂就不选" },
-        rep: { text: "PROXY" }
-    }, {
-        reg: { text: "选择微软服务的Policy，不懂就选择DIRECT" },
-        rep: { text: "DIRECT" }
-    }, {
-        reg: { text: "选择PayPal的Policy，不懂就选择DIRECT" },
-        rep: { text: "DIRECT" }
-    }, {
-        reg: { text: "选择Apple的Policy，不懂就选择DIRECT" },
-        rep: { text: "DIRECT" }
-    }, {
-        reg: { text: "选择Netflix的Policy，不懂就不选" },
-        rep: { text: "PROXY" }
-    }, {
-        reg: { text: "(?:PROXY|Proxy)" },
-        rep: { text: ",PROXY" }
-    }, {
-        reg: { text: ",DIRECT" },
-        rep: { text: ",DIRECT" }
-    }, {
-        reg: { text: ",REJECT" },
-        rep: { text: ",REJECT" }
-    }
-]
+const DEFAULT = [{
+    reg: { text: "选择Google的Policy，不懂就不选" },
+    rep: { text: "PROXY" }
+}, {
+    reg: { text: "选择微软服务的Policy，不懂就选择DIRECT" },
+    rep: { text: "DIRECT" }
+}, {
+    reg: { text: "选择PayPal的Policy，不懂就选择DIRECT" },
+    rep: { text: "DIRECT" }
+}, {
+    reg: { text: "选择Apple的Policy，不懂就选择DIRECT" },
+    rep: { text: "DIRECT" }
+}, {
+    reg: { text: "选择Netflix的Policy，不懂就不选" },
+    rep: { text: "PROXY" }
+}, {
+    reg: { text: ",\s*(?:PROXY|Proxy)" },
+    rep: { text: ",PROXY" }
+}, {
+    reg: { text: ",DIRECT" },
+    rep: { text: ",DIRECT" }
+}, {
+    reg: { text: ",REJECT" },
+    rep: { text: ",REJECT" }
+}]
 
 let cacheData = $cache.get(CACHEKEY)
 
@@ -70,6 +67,7 @@ $ui.render({
         views: [{
             type: 'list',
             props: {
+                reorder: true,
                 data: cacheData || DEFAULT,
                 rowHeight: 60,
                 id: "mainList",
@@ -124,7 +122,6 @@ $ui.render({
             events: {
                 didSelect: (sender, indexPath, data) => {
                     let item = sender.object(indexPath)
-                    let newReg, newRep
                     showAlterDialog(item.reg.text, item.rep.text, (newReg, newRep) => {
                         console.log(newReg, newRep)
                         let oldData = sender.data;
@@ -135,6 +132,9 @@ $ui.render({
                         sender.data = oldData
                         $cache.set(CACHEKEY, sender.data)
                     })
+                },
+                reorderFinished: function (data) {
+                    $cache.set(CACHEKEY, data)
                 }
             }
         }, {
