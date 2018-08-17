@@ -324,8 +324,7 @@ async function startGen(pattern) {
     })
     if (success) {
         let result = await $http.startServer({})
-        console.log(result)
-        let url = result.url + 'download?path=Fndroid.conf'
+        let url = `http://127.0.0.1:${result.port}/download?path=Fndroid.conf`
         let test = await $http.get(url)
         const REJECT = 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_URL.conf'
         if (test.data) {
