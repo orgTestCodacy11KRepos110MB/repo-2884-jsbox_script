@@ -20,6 +20,8 @@
 
 #### 10. [lhie1规则生成](https://jsboxbbs.com/d/290-lhie1)
 
+#### 11. [Quantumul规则更新去Filter Action](https://jsboxbbs.com/d/474-quantumult-filter-action)
+
 ### 许可
 
 请遵守开源协议并注明作者及出处。
