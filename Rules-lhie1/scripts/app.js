@@ -190,49 +190,21 @@ function renderUI() {
                             saveWorkspace()
                         }
                     }, {
-                        title: "重命名",
+                        title: "编辑",
+                        color: $color("tint"),
                         handler: (sender, indexPath) => {
-                            $ui.menu({
-                                items: ["节点重命名", "组别重命名"],
-                                handler: function (title, idx) {
-                                    if (idx === 0) {
-                                        let titleText = sender.object(indexPath).proxyName.text
-                                        $input.text({
-                                            type: $kbType.default,
-                                            placeholder: "请输入节点名",
-                                            text: titleText == '无节点名称' ? "" : titleText,
-                                            handler: function (text) {
-                                                let obj = sender.object(indexPath)
-                                                obj.proxyName.text = text
-                                                let proxyURLNoName = obj.proxyLink.split("=")
-                                                proxyURLNoName.shift()
-                                                obj.proxyLink = `${text} =${proxyURLNoName.join("=")}`
-                                                listReplace(sender, indexPath, obj)
-                                                saveWorkspace()
-                                            }
-                                        })
-                                    } else {
-                                        let od = sender.data
-                                        $input.text({
-                                            type: $kbType.default,
-                                            placeholder: "请输入组别名称",
-                                            text: od[indexPath.section].title,
-                                            handler: function (text) {
-                                                let exist = od.find(i => i.title === text)
-                                                if (exist) {
-                                                    exist.rows = exist.rows.concat(od[indexPath.section].rows)
-                                                    od = od.filter(i => i.title != od[indexPath.section].title)
-                                                } else {
-                                                    od[indexPath.section].title = text
-                                                }
-                                                sender.data = od
-                                                saveWorkspace()
-                                            }
-                                        })
-                                    }
-                                }
+                            let od = sender.data
+                            let section = od[indexPath.section]
+                            let item = section.rows[indexPath.row]
+                            console.log(item)
+                            showAlterDialog(section.title, item.proxyLink, (newSec, newLink) => {
+                                item.proxyLink = newLink
+                                item.proxyName.text = newLink.split(/\s*=/)[0]
+                                section.rows[indexPath.row] = item
+                                section.title = newSec
+                                sender.data = od
+                                saveWorkspace()
                             })
-
                         }
                     }, {
                         title: "特殊代理",
@@ -598,6 +570,133 @@ function refreshListEmoji(isEmoji) {
     }).catch(error => {
         $ui.loading(false)
         $ui.alert("Emoji配置获取失败")
+    })
+}
+
+function showAlterDialog(reg, rep, callback) {
+    let fontSize = $text.sizeThatFits({
+        text: rep,
+        width: screenWidth - 100,
+        font: $font(16)
+    })
+    console.log(fontSize)
+    let view = {
+        type: "blur",
+        layout: $layout.fill,
+        props: {
+            id: "alertBody",
+            style: 1,
+            alpha: 0
+        },
+        views: [{
+            type: "view",
+            props: {
+                id: "alterMainView",
+                bgcolor: $color("#ccc"),
+                smoothRadius: 10
+            },
+            layout: (make, view) => {
+                make.height.equalTo(230 + fontSize.height);
+                make.width.equalTo(view.super).offset(-60);
+                make.center.equalTo(view.super)
+            },
+            events: {
+                tapped: sender => { }
+            },
+            views: [{
+                type: "label",
+                props: {
+                    text: "组别名称",
+                    font: $font("bold", 16)
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(view.super).offset(20);
+                    make.left.equalTo(view.super).offset(10);
+                }
+            }, {
+                type: "input",
+                props: {
+                    id: "alterInputSection",
+                    text: reg,
+                    autoFontSize: true
+                },
+                events: {
+                    returned: sender => {
+                        sender.blur()
+                    }
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(view.prev.bottom).offset(10);
+                    make.width.equalTo(view.super).offset(-20);
+                    make.centerX.equalTo(view.super)
+                    make.left.equalTo(view.super).offset(10);
+                    make.height.equalTo(40)
+                }
+            }, {
+                type: "label",
+                props: {
+                    text: "节点信息",
+                    font: $font("bold", 16)
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(view.prev.bottom).offset(15);
+                    make.left.equalTo(view.super).offset(10);
+                }
+            }, {
+                type: "text",
+                props: {
+                    id: "alberInputLink",
+                    text: rep,
+                    autoFontSize: true,
+                    radius: 6,
+                    font: $font(16),
+                    bgcolor: $color("#eff0f2"),
+                    insets: $insets(10, 5, 10, 5)
+                },
+                events: {
+                    returned: sender => {
+                        sender.blur()
+                    }
+                },
+                layout: (make, view) => {
+                    make.top.equalTo(view.prev.bottom).offset(10);
+                    make.width.equalTo(view.super).offset(-20);
+                    make.centerX.equalTo(view.super)
+                    make.left.equalTo(view.super).offset(10);
+                    make.height.equalTo(fontSize.height + 20)
+                }
+            }, {
+                type: 'button',
+                props: {
+                    icon: $icon("064", $color("#fff"), $size(20, 20)),
+                    id: 'confirmBtn',
+                    radius: 25
+                },
+                layout: (make, view) => {
+                    make.height.width.equalTo(50)
+                    make.bottom.equalTo(view.super).offset(-10)
+                    make.right.equalTo(view.super).offset(-10)
+                },
+                events: {
+                    tapped: sender => {
+                        callback && callback($("alterInputSection").text, $("alberInputLink").text);
+                        $("alertBody").remove();
+                    }
+                }
+            }]
+        }],
+        events: {
+            tapped: sender => {
+                sender.remove()
+            }
+        }
+    }
+    $("bodyView").add(view)
+    $ui.animate({
+        duration: 0.2,
+        animation: () => {
+            $("alertBody").alpha = 1
+        }
     })
 }
 
