@@ -3,6 +3,7 @@ const init = require('scripts/init')
 const today = require('scripts/today')
 const extension = require('scripts/extension')
 const updateUtil = require('scripts/updateUtil')
+const siri = require('scripts/siri')
 
 $app.autoKeyboardEnabled = true
 $app.rotateDisabled = true
@@ -26,6 +27,9 @@ if ($app.env === $env.today) {
     return
 } else if ($app.env === $env.action) {
     extension.collectRules()
+    return
+} else if ($app.env === $env.siri) {
+    siri.siriRun()
     return
 }
 
