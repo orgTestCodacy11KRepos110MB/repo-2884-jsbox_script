@@ -8,17 +8,17 @@ String.prototype.strictTrim = function () {
     return trimed
 }
 
-function urlsaveBase64Encode(url) {
+function urlsafeBase64Encode(url) {
     return $text.base64Encode(url).replace(/\-/g, '+').replace(/\\/g, '_').replace(/=+$/, '')
 }
 
-function urlsaveBase64Decode(base64) {
+function urlsafeBase64Decode(base64) {
     // Add removed at end '='
     base64 += Array(5 - base64.length % 4).join('=');
     base64 = base64
         .replace(/\-/g, '+') // Convert '-' to '+'
         .replace(/\_/g, '/'); // Convert '_' to '/'
-    return $text.base64Decode(base64).replace(/\u0000/, '');
+    return $text.base64Decode(base64);
 }
 
 function promiseConf(url) {
@@ -97,8 +97,9 @@ function decodeSSR(links) {
     let decodedLinks = links.map(i => {
         let rawContentMatcher = i.match(/^ssr:\/\/(.*?)$/);
         if (rawContentMatcher && rawContentMatcher[1]) {
-            let rawContent = urlsaveBase64Decode(rawContentMatcher[1]);
-            let rawContentParts = rawContent.split(/\/\?/g);
+            let rawContent = urlsafeBase64Decode(rawContentMatcher[1]);
+            let rawContentParts = rawContent.split(/\/*\?/g)
+            console.log(rawContentParts)
             let paramsMatcher = rawContentParts[0].match(/^(.*?):(.*?):(.*?):(.*?):(.*?):(.*?)$/);
             if (paramsMatcher && paramsMatcher.length === 7) {
                 let host = paramsMatcher[1];
@@ -106,17 +107,17 @@ function decodeSSR(links) {
                 let protocol = paramsMatcher[3];
                 let method = paramsMatcher[4];
                 let obfs = paramsMatcher[5];
-                let pass = urlsaveBase64Decode(paramsMatcher[6]);
+                let pass = urlsafeBase64Decode(paramsMatcher[6]);
                 let obfsparam = '';
                 let protoparam = '';
                 let group = '';
                 let remarks = '';
                 if (rawContentParts.length > 1) {
                     let target = rawContentParts[1];
-                    obfsparam = urlsaveBase64Decode(getParam('obfsparam', target));
-                    protoparam = urlsaveBase64Decode(getParam('protoparam', target));
-                    group = urlsaveBase64Decode(getParam('group', target));
-                    remarks = urlsaveBase64Decode(getParam('remarks', target));
+                    obfsparam = urlsafeBase64Decode(getParam('obfsparam', target));
+                    protoparam = urlsafeBase64Decode(getParam('protoparam', target));
+                    group = urlsafeBase64Decode(getParam('group', target));
+                    remarks = urlsafeBase64Decode(getParam('remarks', target));
                 }
                 if (tag === '' && group !== '') {
                     tag = group;
@@ -174,7 +175,7 @@ function decodeVmess(links) {
             if (contentMatcher && contentMatcher.length === 3) {
                 let encryptContent = contentMatcher[1]
                 let params = contentMatcher[2].split(/&/g).map(i => i.split(/=/))
-                let rawContent = urlsaveBase64Decode(encryptContent)
+                let rawContent = urlsafeBase64Decode(encryptContent)
                 let rawContentMatcher = rawContent.match(/^(.*?):(.*?)@(.*?):(.*?)$/)
                 let getParam = key => {
                     let target = params.find(i => i[0] === key)
