@@ -219,7 +219,6 @@ function showAlterDialog(title, content, url) {
                     bgcolor: $color("#fff"),
                     insets: $insets(10, 5, 10, 5),
                     editable: false,
-                    scrollEnabled: false
                 },
                 events: {
                     returned: sender => {
