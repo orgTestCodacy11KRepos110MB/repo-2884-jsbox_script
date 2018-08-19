@@ -2408,13 +2408,13 @@ function makeConf(params) {
                         } else {
                             console.log('sha 获取失败')
                         }
+                        params.onDone({
+                            target: exportTarget,
+                            actionSheet: isActionSheet,
+                            fileName: fn,
+                            fileData: prototype
+                        })
                     }
-                })
-                params.onDone({
-                    target: exportTarget,
-                    actionSheet: isActionSheet,
-                    fileName: fn,
-                    fileData: prototype
                 })
             }
         }).catch(e => {
