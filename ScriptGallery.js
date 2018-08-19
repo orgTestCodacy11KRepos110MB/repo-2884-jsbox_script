@@ -64,23 +64,23 @@ function render(statusHeight) {
                     }
 
                     function addOnClickHandler() {
-                        let cards = document.getElementsByClassName("card-text addin-text");
+                        let parentCard = document.getElementsByClassName("content-table-mobile")[0];
+                        parentCard.addEventListener('click', e => {
+                            let target = e.target
+                            if (target.className === 'btn btn-primary addin-btn') {
+                                $notify("hrefClick", target.href)
+                                e.stopPropagation()
+                                return false
+                            }
+                        }, true)
+                        let cards = document.getElementsByClassName("card-body item-body");
                         for (var i = 0; i < cards.length; ++i) {
                             var element = cards[i];
-                            element.onclick = event => {
-                                var source = event.target || event.srcElement
-                                $notify("cardClick", source.innerText)
+                            element.addEventListener('click', e => {
+                                var source = e.currentTarget
+                                $notify("cardClick", source.innerHTML)
                                 return false
-                            }
-                        }
-                        let btns = document.getElementsByClassName("btn btn-primary addin-btn");
-                        for (var i = 0; i < btns.length; ++i) {
-                            var element = btns[i];
-                            element.onclick = event => {
-                                var source = event.target || event.srcElement
-                                $notify("hrefClick", source.href)
-                                return false
-                            }
+                            })
                         }
                     }
 
@@ -111,9 +111,15 @@ function render(statusHeight) {
                         $app.openURL(urlMatcher[1]);
                     }
                 },
-                cardClick: text => {
-                    showAlterDialog(text)
-                    $("webView").notify('sayHi', 'shit')
+                cardClick: async html => {
+                    console.log(html)
+                    let titleMatcher = html.match(/addin-title">(.*?)<\/span/)
+                    let descMatcher = html.match(/card-text addin-text">([\s\S]*?)<\/p>/)
+                    let urlMatcher = html.match(/href="(.*?)"/)
+                    if (titleMatcher && titleMatcher[1] && descMatcher && descMatcher[1] && urlMatcher && urlMatcher[1]) {
+                        let shortenUrl = await $http.shorten(urlMatcher[1])
+                        showAlterDialog(titleMatcher[1], descMatcher[1], shortenUrl)
+                    }
                 },
                 didFinish: function (sender, navigation) {
                     $ui.animate({
@@ -128,7 +134,7 @@ function render(statusHeight) {
     });
 }
 
-function showAlterDialog(content) {
+function showAlterDialog(title, content, url) {
     let fontSize = $text.sizeThatFits({
         text: content,
         width: screenWidth - 70,
@@ -146,10 +152,11 @@ function showAlterDialog(content) {
             type: "view",
             props: {
                 bgcolor: $color("#343a40"),
-                smoothRadius: 8
+                smoothRadius: 8,
+                id: "detailShareView"
             },
             layout: (make, view) => {
-                make.height.equalTo(90 + fontSize.height);
+                make.height.equalTo(170 + fontSize.height);
                 make.width.equalTo(view.super).offset(-30);
                 make.center.equalTo(view.super)
             },
@@ -159,7 +166,7 @@ function showAlterDialog(content) {
             views: [{
                 type: "label",
                 props: {
-                    text: "脚本简介",
+                    text: `${title}`,
                     textColor: $color("white"),
                     font: $font("bold", 16)
                 },
@@ -189,7 +196,46 @@ function showAlterDialog(content) {
                     make.left.equalTo(view.super).offset(10);
                     make.height.equalTo(fontSize.height + 20)
                 }
+            }, {
+                type: 'image',
+                layout: (make, view) => {
+                    make.top.equalTo(view.prev.bottom).offset(10);
+                    make.size.equalTo($size(70, 70));
+                    make.left.equalTo(view.super).offset(10)
+                },
+                props: {
+                    smoothRadius: 5,
+                    data: $qrcode.encode(url).png
+                }
+            }, {
+                type: 'label',
+                layout: (make, view) => {
+                    make.top.equalTo(view.prev);
+                    make.height.equalTo(70)
+                    make.right.equalTo(view.super).offset(-10)
+                },
+                props: {
+                    text: "Powered by JSBox",
+                    textColor: $color("white"),
+                    font: $font("DINAlternate-Bold", 20)
+                }
             }]
+        }, {
+            type: "button",
+            props: {
+                icon: $icon("022", $color("#343a40"), $size(30, 30)),
+                bgcolor: $color("clear")
+            },
+            layout: (make, view) => {
+                make.top.equalTo(view.prev.bottom).offset(20)
+                make.centerX.equalTo(view.super)
+            },
+            events: {
+                tapped: sender => {
+                    let snapShot = $("detailShareView").snapshot
+                    $share.sheet([snapShot]);
+                }
+            }
         }],
         events: {
             tapped: sender => {
