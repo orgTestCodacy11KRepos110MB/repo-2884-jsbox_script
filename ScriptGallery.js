@@ -1,5 +1,8 @@
 const screenWidth = $device.info.screen.width
 
+const CN_MENU = ['最新', '精选', '文本', '工具', '开发者', '生活', '服务', '娱乐', '图片', 'Safari']
+const EN_MENU = ['New', 'Featured', 'Text', 'Utility', 'Developer', 'Life', 'Service', '4Fun', 'Image', 'Safari']
+
 function render(statusHeight) {
     $ui.render({
         props: {
@@ -32,7 +35,7 @@ function render(statusHeight) {
             props: {
                 id: "menuView",
                 alpha: 0,
-                items: ['最新', '精选', '文本', '工具', '开发者', '生活', '服务', '娱乐', '图片', 'Safari'],
+                items: CN_MENU,
                 bgcolor: $color("#fff")
             },
             layout: (make, view) => {
@@ -112,6 +115,10 @@ function render(statusHeight) {
                     navItems[0].parentNode.removeChild(navItems[0])
                     navItems[0].parentNode.removeChild(navItems[0])
 
+                    navItems[0].addEventListener('click', e => {
+                        $notify("switchLng", e.target.href)
+                    })
+
                 }
             },
             layout: (make, view) => {
@@ -150,6 +157,10 @@ function render(statusHeight) {
                             $("menuView").alpha = 1
                         }
                     });
+                },
+                switchLng: href => {
+                    $("menuView").items = /\/en$/.test(href) ? EN_MENU : CN_MENU
+                    $("menuView").index = 0
                 }
             }
         }]
