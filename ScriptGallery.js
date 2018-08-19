@@ -28,6 +28,28 @@ function render(statusHeight) {
                 layout: $layout.center
             }]
         }, {
+            type: "menu",
+            props: {
+                id: "menuView",
+                alpha: 0,
+                items: ['最新', '精选', '文本', '工具', '开发者', '生活', '服务', '娱乐', '图片', 'Safari'],
+                bgcolor: $color("#fff")
+            },
+            layout: (make, view) => {
+                make.bottom.equalTo(view.super);
+                make.height.equalTo(44)
+                make.width.equalTo(view.super);
+            },
+            events: {
+                changed: sender => {
+                    let items = sender.items
+                    let idx = sender.index
+                    $("webView").eval({
+                        script: `$10('${items[idx]}')`
+                    })
+                }
+            }
+        }, {
             type: "web",
             props: {
                 alpha: 0,
@@ -36,8 +58,6 @@ function render(statusHeight) {
                 bounces: false,
                 canGoForward: true,
                 url: "https://xteko.com/gallery",
-                inlineMedia: true,
-                pictureInPicture: true,
                 script: () => {
                     window.onload = function () {
                         fetch("https://xteko.com/store/meta?lang=" + $0).then(function (n) {
@@ -82,19 +102,20 @@ function render(statusHeight) {
                                 return false
                             })
                         }
+
+                        let catMenu = document.getElementById("category-menu");
+                        catMenu.style.display = "none"
+
                     }
 
                     let navItems = document.getElementsByClassName("nav-item");
                     navItems[0].parentNode.removeChild(navItems[0])
                     navItems[0].parentNode.removeChild(navItems[0])
 
-                    function sayHi(str) {
-                        alert(str)
-                    }
                 }
             },
             layout: (make, view) => {
-                make.height.equalTo(view.super).offset(-statusHeight);
+                make.height.equalTo(view.super).offset(-statusHeight - 44);
                 make.width.equalTo(view.super)
                 make.top.equalTo(view.super).offset(statusHeight)
             },
@@ -126,6 +147,7 @@ function render(statusHeight) {
                         duration: 0.3,
                         animation: function () {
                             $("webView").alpha = 1
+                            $("menuView").alpha = 1
                         }
                     });
                 }
@@ -133,6 +155,7 @@ function render(statusHeight) {
         }]
     });
 }
+
 
 function showAlterDialog(title, content, url) {
     let fontSize = $text.sizeThatFits({
@@ -158,7 +181,8 @@ function showAlterDialog(title, content, url) {
             layout: (make, view) => {
                 make.height.equalTo(170 + fontSize.height);
                 make.width.equalTo(view.super).offset(-30);
-                make.center.equalTo(view.super)
+                make.centerX.equalTo(view.super)
+                make.centerY.equalTo(view.super).offset(-25)
             },
             events: {
                 tapped: sender => { }
@@ -182,7 +206,8 @@ function showAlterDialog(title, content, url) {
                     radius: 6,
                     font: $font(16),
                     bgcolor: $color("#fff"),
-                    insets: $insets(10, 5, 10, 5)
+                    insets: $insets(10, 5, 10, 5),
+                    editable: false
                 },
                 events: {
                     returned: sender => {
