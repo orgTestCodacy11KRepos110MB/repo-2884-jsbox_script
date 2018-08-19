@@ -21,7 +21,7 @@ function render(statusHeight) {
                 type: "label",
                 props: {
                     text: "Loading...",
-                    font: $font(30),
+                    font: $font("ChalkboardSE-Light", 30),
                     color: $color("white"),
                     align: $align.center
                 },
@@ -216,8 +216,8 @@ function showAlterDialog(title, content, url) {
                 },
                 props: {
                     text: "Powered by JSBox",
-                    textColor: $color("white"),
-                    font: $font(20)
+                    textColor: $color("#ccc"),
+                    font: $font("Chalkduster", 18)
                 }
             }]
         }, {
