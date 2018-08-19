@@ -18,7 +18,7 @@ function urlsafeBase64Decode(base64) {
     base64 = base64
         .replace(/\-/g, '+') // Convert '-' to '+'
         .replace(/\_/g, '/'); // Convert '_' to '/'
-    return $text.base64Decode(base64);
+    return $text.base64Decode(base64).replace(/\u0000/, '');
 }
 
 function promiseConf(url) {
