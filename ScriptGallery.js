@@ -138,7 +138,7 @@ function showAlterDialog(title, content, url) {
     let fontSize = $text.sizeThatFits({
         text: content,
         width: screenWidth - 70,
-        font: $font("bold", 16)
+        font: $font(16)
     })
     let view = {
         type: "blur",
@@ -168,7 +168,7 @@ function showAlterDialog(title, content, url) {
                 props: {
                     text: `${title}`,
                     textColor: $color("white"),
-                    font: $font("bold", 16)
+                    font: $font("bold", 20)
                 },
                 layout: (make, view) => {
                     make.top.equalTo(view.super).offset(20);
@@ -180,7 +180,7 @@ function showAlterDialog(title, content, url) {
                     text: content,
                     autoFontSize: true,
                     radius: 6,
-                    font: $font("bold", 16),
+                    font: $font(16),
                     bgcolor: $color("#fff"),
                     insets: $insets(10, 5, 10, 5)
                 },
@@ -217,7 +217,7 @@ function showAlterDialog(title, content, url) {
                 props: {
                     text: "Powered by JSBox",
                     textColor: $color("white"),
-                    font: $font("DINAlternate-Bold", 20)
+                    font: $font(20)
                 }
             }]
         }, {
