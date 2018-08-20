@@ -169,7 +169,7 @@ function render(statusHeight) {
             type: "view",
             props: {
                 id: "emptyView",
-                bgcolor: $color("white"),
+                bgcolor: $color("#eff0f2"),
                 hidden: !isIphoneX,
                 alpha: 0
             },
