@@ -6,7 +6,7 @@ const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
 const FILE = 'data.js'
 const PROXY_HEADER = 'ProxyHeader'
 
-const settingKeys = ['generalSettings', 'proxyGroupSettings', 'customSettings', 'hostSettings', 'urlrewriteSettings', 'headerrewriteSettings', 'ssidSettings', 'hostnameSettings', 'mitmSettings']
+const settingKeys = ['widgetSettings', 'generalSettings', 'proxyGroupSettings', 'customSettings', 'hostSettings', 'urlrewriteSettings', 'headerrewriteSettings', 'hostnameSettings', 'mitmSettings']
 
 if (!$file.exists(FILE)) {
     $file.write({
@@ -1397,7 +1397,7 @@ function renderAdvanceUI() {
         })
     }
     let genControlBnts = function (idx) {
-        let titleTexts = ['常规', '代理分组', '代理规则', '本地DNS映射', 'URL重定向', 'Header修改', 'SSID', '主机名', '配置根证书']
+        let titleTexts = ['小组件流量', '常规', '代理分组', '代理规则', '本地DNS映射', 'URL重定向', 'Header修改', '主机名', '配置根证书']
         const sbgc = $color("#ffda40")
         const stc = $color("#034769")
         const dbgc = $color("#63add0")
@@ -1852,6 +1852,7 @@ function setUpWorkspace() {
         loadData: () => {
             console.log('重新加载数据')
             let file = JSON.parse($file.read(FILE).string)
+            console.log(file)
             if (file && file.workspace) {
                 let workspace = file.workspace
                 $("fileName").text = workspace.fileName || ''
@@ -2174,8 +2175,8 @@ function makeConf(params) {
 
             let seperateLines = function (content) {
                 return {
-                    add: content.split('\n').filter(i => !i.startsWith('-')).map(i => i.trim()),
-                    delete: content.split("\n").filter(i => i.startsWith('-')).map(i => i.replace('-', '').trim())
+                    add: content.split('\n').filter(i => !/^-/.test(i)).map(i => i.trim()),
+                    delete: content.split("\n").filter(i => /^-/.test(i)).map(i => i.replace(/^-/, '').trim())
                 }
             }
 
@@ -2219,7 +2220,7 @@ function makeConf(params) {
             let userHeader = seperateLines(advanceSettings.headerrewriteSettings)
             userHeader.delete.forEach(i => headerRewrite = headerRewrite.replace(i, ''))
             // 配置SSID
-            let userSSID = advanceSettings.ssidSettings
+            // let userSSID = advanceSettings.ssidSettings
             // 配置MITM的Hostname
             let userHostname = seperateLines(advanceSettings.hostnameSettings)
             userHostname.delete.forEach(i => {
@@ -2261,7 +2262,7 @@ function makeConf(params) {
             prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
             prototype = prototype.replace('# URL Rewrite', urlRewrite.replace(/307/g, surge2 ? '302' : '307') + prettyInsert(userUrl.add))
             prototype = prototype.replace('# URL REJECT', urlReject)
-            prototype = prototype.replace('# SSID', userSSID)
+            // prototype = prototype.replace('# SSID', userSSID)
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
             let finalHostNames = hostName.concat(userHostname.add.filter(i => i != '')).join(', ')
             if (finalHostNames !== '') {

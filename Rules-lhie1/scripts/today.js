@@ -96,10 +96,23 @@ function parseUsage(usageStr) {
     }
 }
 
+function widgetSettings(file) {
+    let items = file.widgetSettings.split(/[\r\n]+/g).filter(i => /^.*?=\s*http/.test(i))
+    return items.map(i => {
+        let p = i.split(/=/)
+        return {
+            name: p[0],
+            url: p.slice(1).join('=')
+        }
+    })
+}
+
 function renderTodayUI() {
-    let workspace = JSON.parse($file.read(FILE).string).workspace
-    let groupNames = workspace.serverData.map(i => i.title)
-    let groupURLs = workspace.serverData.map(i => i.url).map(i => requestHead(i))
+    let file = JSON.parse($file.read(FILE).string)
+    let workspace = file.workspace
+    let widget = widgetSettings(file);
+    let groupNames = workspace.serverData.map(i => i.title).concat(widget.map(i => i.name))
+    let groupURLs = workspace.serverData.map(i => i.url).concat(widget.map(i => i.url)).map(i => requestHead(i))
     Promise.all(groupURLs).then(res => {
         let usageData = []
         for (let idx in res) {
