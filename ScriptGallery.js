@@ -1,5 +1,7 @@
 const screenWidth = $device.info.screen.width
 
+const isIphoneX = $device.isIphoneX
+
 const CN_MENU = ['最新', '精选', '文本', '工具', '开发者', '生活', '服务', '娱乐', '图片', 'Safari']
 const EN_MENU = ['New', 'Featured', 'Text', 'Utility', 'Developer', 'Life', 'Service', '4Fun', 'Image', 'Safari']
 
@@ -39,7 +41,7 @@ function render(statusHeight) {
                 bgcolor: $color("#fff")
             },
             layout: (make, view) => {
-                make.bottom.equalTo(view.super);
+                make.bottom.equalTo(view.super).offset(-(isIphoneX ? 48 : 0));
                 make.height.equalTo(44)
                 make.width.equalTo(view.super);
             },
@@ -122,7 +124,7 @@ function render(statusHeight) {
                 }
             },
             layout: (make, view) => {
-                make.height.equalTo(view.super).offset(-statusHeight - 44);
+                make.height.equalTo(view.super).offset(-statusHeight - 44 - (isIphoneX ? 48 : 0));
                 make.width.equalTo(view.super)
                 make.top.equalTo(view.super).offset(statusHeight)
             },
@@ -140,7 +142,6 @@ function render(statusHeight) {
                     }
                 },
                 cardClick: async html => {
-                    console.log(html)
                     let titleMatcher = html.match(/addin-title">(.*?)<\/span/)
                     let descMatcher = html.match(/card-text addin-text">([\s\S]*?)<\/p>/)
                     let urlMatcher = html.match(/href="(.*?)"/)
@@ -155,6 +156,7 @@ function render(statusHeight) {
                         animation: function () {
                             $("webView").alpha = 1
                             $("menuView").alpha = 1
+                            $("emptyView").alpha = 1
                         }
                     });
                 },
@@ -162,6 +164,19 @@ function render(statusHeight) {
                     $("menuView").items = /\/en$/.test(href) ? EN_MENU : CN_MENU
                     $("menuView").index = 0
                 }
+            }
+        }, {
+            type: "view",
+            props: {
+                id: "emptyView",
+                bgcolor: $color("white"),
+                hidden: !isIphoneX,
+                alpha: 0
+            },
+            layout: (make, view) => {
+                make.height.equalTo(48);
+                make.bottom.equalTo(0);
+                make.width.equalTo(view.super);
             }
         }]
     });
