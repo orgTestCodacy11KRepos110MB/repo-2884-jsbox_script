@@ -269,13 +269,53 @@ let genProxyDefaultData = function (proxies) {
 
 function collectRules() {
     let confFile = $context.data.string
-    let reg = /\[Rule\]\n([\s\S]+)\n# Custom/
-    let matcher = confFile.match(reg)
-    if (matcher.length === 2) {
-        let rules = matcher[1]
-        saveRule(rules)
+    let surgeReg = /\[Rule\]\n([\s\S]+)\n# Custom/
+    let quanReg = /\[SERVER\]\n([\s\S]+)\n\[SOURCE\]/
+    if (surgeReg.test(confFile)) {
+        let matcher = confFile.match(surgeReg)
+        if (matcher.length === 2) {
+            let rules = matcher[1]
+            saveRule(rules)
+        }
+        $context.close()    
+    } else if (quanReg.test(confFile)) {
+        let matcher = confFile.match(quanReg);
+        let serversRaw = matcher[1]
+        let servers = serversRaw.split(/[\r\n]+/).filter(i => /.*?=/.test(i))
+        let serverDataItem = {
+            title: "Quantumult导出节点",
+            url: "",
+            rows: servers.map(server => {
+                return {
+                    proxyLink: server,
+                    proxyName: {
+                        bgcolor: false,
+                        text: server.split(/=/)[0].trim()
+                    }
+                }
+            })
+        }
+        let file = JSON.parse($file.read(FILE).string);
+        let workspace = file.workspace;
+        let serverData = workspace.serverData;
+        serverData.push(serverDataItem);
+        let success = $file.write({
+            data: $data({ "string": JSON.stringify(file) }),
+            path: FILE
+        })
+        $ui.alert({
+            title: "导入" + success ? '成功': '失败',
+            message: success ? `已经成功导入${serverDataItem.rows.length}个服务器至脚本，请重启脚本查看` : '文件格式有误',
+            actions: [{
+                title: 'OK',
+                handler: () => {
+                    $context.close()  
+                }
+            }]
+        });
+    } else {
+        $ui.alert("分享文件不合法")
     }
-    $context.close()    
 }
 
 
