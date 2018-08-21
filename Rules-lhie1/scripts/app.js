@@ -113,7 +113,7 @@ function renderUI() {
                                 let section = existsSec || { title: name, rows: [], url: url }
                                 let selectedRows = []
                                 if (existsSec) {
-                                    selectedRows = section.rows.filter(i => cu.isEqual(i.proxyName.bgcolor, selectedColor)).map(i => i.proxyName.text)
+                                    selectedRows = section.rows.filter(i => !i.proxyAuto.hidden).map(i => i.proxyName.text)
                                 }
                                 section.rows = []
                                 for (let idx in res) {
@@ -123,8 +123,9 @@ function renderUI() {
                                     }
                                     let selected = selectedRows.indexOf(res[idx].split('=')[0].trim()) > -1
                                     section.rows.push({
-                                        proxyName: { text: res[idx].split('=')[0].trim(), bgcolor: selected ? selectedColor : defaultColor },
-                                        proxyLink: res[idx]
+                                        proxyName: { text: res[idx].split('=')[0].trim()},
+                                        proxyLink: res[idx],
+                                        proxyAuto: { hidden: !selected}
                                     })
                                 }
                                 if (!existsSec) {
@@ -229,24 +230,24 @@ function renderUI() {
                             type: 'label',
                             props: {
                                 id: 'proxyName',
-                                align: $align.center,
-                                autoFontSize: true
+                                align: $align.left,
+                                line: 1
                             },
                             layout: (make, view) => {
-                                make.width.equalTo(view.super).offset(-6)
+                                make.width.equalTo(view.super).offset(-60)
                                 make.height.equalTo(view.super)
-                                make.center.equalTo(view.super)
+                                make.left.equalTo(view.super).offset(15)
                             }
                         }, {
                             type: "image",
                             props: {
                                 id: "proxyAuto",
-                                icon: $icon("214", $color("#313131"), $size(15, 15)),
+                                icon: $icon("089", $color("tint"), $size(15, 15)),
                                 bgcolor: $color("clear"),
                                 hidden: true
                             },
                             layout: (make, view) => {
-                                make.right.equalTo(view.super).offset(-10)
+                                make.right.equalTo(view.super).offset(-15)
                                 make.size.equalTo($size(15, 15))
                                 make.centerY.equalTo(view.super)
                             }
@@ -263,16 +264,16 @@ function renderUI() {
                 events: {
                     didSelect: (sender, indexPath, data) => {
                         let proxyName = data.proxyName.text
-                        let isSelected = cu.isEqual(data.proxyName.bgcolor, selectedColor)
+                        let isSelected = !data.proxyAuto.hidden
                         let controlInfo = $("serverControl").info
                         let currentGroup = controlInfo.currentProxyGroup
                         console.log(currentGroup)
                         let customProxyGroup = controlInfo.customProxyGroup || {}
                         if (isSelected) {
-                            data.proxyName.bgcolor = defaultColor
+                            data.proxyAuto.hidden = true
                             customProxyGroup[currentGroup] = customProxyGroup[currentGroup].filter(i => i !== proxyName)
                         } else {
-                            data.proxyName.bgcolor = selectedColor
+                            data.proxyAuto.hidden = false
                             customProxyGroup[currentGroup].push(proxyName)
                         }
                         let uiData = sender.data
@@ -1191,7 +1192,7 @@ function groupShortcut() {
         let listData = $("serverEditor").data || [];
         listData = listData.map(section => {
             section.rows = section.rows.map(item => {
-                item.proxyName.bgcolor = group.indexOf(item.proxyName.text) > -1 ? selectedColor : defaultColor;
+                item.proxyAuto.hidden = !(group.indexOf(item.proxyName.text) > -1)
                 return item;
             });
             return section;
@@ -1801,54 +1802,6 @@ function reverseServerGroup() {
     })
 }
 
-function autoServerGroup() {
-    let serverData = $("serverEditor").data
-    let sections = serverData.map(i => i.title)
-    if (sections.length === 1) {
-        let allSelected = serverData[0].rows.every(item => cu.isEqual(item.proxyName.bgcolor, selectedColor))
-        serverData[0].rows.map(item => {
-            item.proxyName.bgcolor = allSelected ? defaultColor : selectedColor
-            return item
-        })
-        $("serverEditor").data = serverData
-        saveWorkspace()
-        return
-    }
-    $ui.menu({
-        items: sections.concat(['全部Auto']),
-        handler: function (title, idx) {
-            if (idx === sections.length) {
-                let flatData = serverData.reduce((all, cur) => {
-                    return { rows: all.rows.concat(cur.rows) }
-                }).rows
-                let needColor = defaultColor
-                if (!flatData.every(i => cu.isEqual(i.proxyName.bgcolor, selectedColor))) {
-                    needColor = selectedColor
-                }
-                serverData.map(sec => {
-                    sec.rows.map(item => {
-                        item.proxyName.bgcolor = needColor
-                        return item
-                    })
-                    return sec
-                })
-            } else {
-                let sectionData = serverData[idx]
-                let needColor = defaultColor
-                if (!sectionData.rows.every(i => cu.isEqual(i.proxyName.bgcolor, selectedColor))) {
-                    needColor = selectedColor
-                }
-                sectionData.rows.map(item => {
-                    item.proxyName.bgcolor = needColor
-                    return item
-                })
-            }
-            $("serverEditor").data = serverData
-            saveWorkspace()
-        }
-    })
-}
-
 let filePartReg = function (name) {
     let reg = `\\[${name}\\]([\\S\\s]*?)(?:\\[General\\]|\\[Replica\\]|\\[Proxy\\]|\\[Proxy Group\\]|\\[Rule\\]|\\[Host\\]|\\[URL Rewrite\\]|\\[Header Rewrite\\]|\\[SSID Setting\\]|\\[MITM\\]|\\[URL-REJECTION\\]|\\[HOST\\]|\\[POLICY\\]|\\[REWRITE\\]|$)`
     return new RegExp(reg)
@@ -1878,14 +1831,12 @@ function setUpWorkspace() {
                 let defaultGroup = customProxyGroup[defaultGroupName]
                 $("serverEditor").data = workspace.serverData.map(section => {
                     section.rows.map(item => {
-                        // item.proxyName.bgcolor = defaultColor
-                        item.proxyName.bgcolor = defaultGroup.indexOf(item.proxyName.text) > -1 ? selectedColor : defaultColor
-                        // item.proxyName = {
-                        //     text: item.proxyName.text
-                        // }
-                        // item.proxyAuto = {
-                        //     hidden: !(defaultGroup.indexOf(item.proxyName.text) > -1)
-                        // }
+                        item.proxyName = {
+                            text: item.proxyName.text
+                        }
+                        item.proxyAuto = {
+                            hidden: !(defaultGroup.indexOf(item.proxyName.text) > -1)
+                        }
                         return item
                     })
                     return section
@@ -1936,14 +1887,7 @@ function setUpWorkspace() {
 function saveWorkspace() {
     let workspace = {
         fileName: $("fileName").text,
-        serverData: $("serverEditor").data.map(section => {
-            // 如果节点选上，则color为true
-            section.rows.map(item => {
-                item.proxyName.bgcolor = cu.isEqual(selectedColor, item.proxyName.bgcolor)
-                return item
-            })
-            return section
-        }),
+        serverData: $("serverEditor").data,
         withEmoji: $("serverURL").info || false,
         usualData: $("usualSettings").data.map(i => {
             i.title.bgcolor = cu.isEqual(tintColor, i.title.bgcolor)
