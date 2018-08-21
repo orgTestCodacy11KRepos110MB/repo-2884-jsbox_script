@@ -231,7 +231,9 @@ function renderUI() {
                             props: {
                                 id: 'proxyName',
                                 align: $align.left,
-                                line: 1
+                                line: 1,
+                                textColor: $color("tint"),
+                                font: $font(16),
                             },
                             layout: (make, view) => {
                                 make.width.equalTo(view.super).offset(-60)
