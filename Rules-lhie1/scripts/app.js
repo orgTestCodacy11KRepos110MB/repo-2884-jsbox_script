@@ -6,7 +6,7 @@ const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
 const FILE = 'data.js'
 const PROXY_HEADER = 'ProxyHeader'
 
-const settingKeys = ['widgetSettings', 'generalSettings', 'proxyGroupSettings', 'customSettings', 'hostSettings', 'urlrewriteSettings', 'headerrewriteSettings', 'hostnameSettings', 'mitmSettings']
+const settingKeys = ['widgetSettings', 'generalSettings', 'proxyGroupSettings', 'customSettings', 'hostSettings', 'urlrewriteSettings', 'ssidSettings', 'headerrewriteSettings', 'hostnameSettings', 'mitmSettings']
 
 if (!$file.exists(FILE)) {
     $file.write({
@@ -236,6 +236,19 @@ function renderUI() {
                                 make.width.equalTo(view.super).offset(-6)
                                 make.height.equalTo(view.super)
                                 make.center.equalTo(view.super)
+                            }
+                        }, {
+                            type: "image",
+                            props: {
+                                id: "proxyAuto",
+                                icon: $icon("214", $color("#313131"), $size(15, 15)),
+                                bgcolor: $color("clear"),
+                                hidden: true
+                            },
+                            layout: (make, view) => {
+                                make.right.equalTo(view.super).offset(-10)
+                                make.size.equalTo($size(15, 15))
+                                make.centerY.equalTo(view.super)
                             }
                         }]
                     },
@@ -1397,7 +1410,7 @@ function renderAdvanceUI() {
         })
     }
     let genControlBnts = function (idx) {
-        let titleTexts = ['小组件流量', '常规', '代理分组', '代理规则', '本地DNS映射', 'URL重定向', 'Header修改', '主机名', '配置根证书']
+        let titleTexts = ['小组件流量', '常规', '代理分组', '代理规则', '本地DNS映射', 'URL重定向', 'SSID', 'Header修改', '主机名', '配置根证书']
         const sbgc = $color("#ffda40")
         const stc = $color("#034769")
         const dbgc = $color("#63add0")
@@ -1421,7 +1434,7 @@ function renderAdvanceUI() {
                 interval: 0
             },
             layout: (make, view) => {
-                make.height.equalTo(view.super).dividedBy(2)
+                make.height.equalTo(view.super).dividedBy(3)
                 make.width.equalTo(view.super)
             },
             events: {
@@ -1433,7 +1446,7 @@ function renderAdvanceUI() {
         }, {
             type: "matrix",
             props: {
-                columns: 3,
+                columns: 2,
                 id: "settingsControl",
                 itemHeight: 40,
                 bgcolor: $color("#ffffff"),
@@ -1444,13 +1457,13 @@ function renderAdvanceUI() {
                     props: {
                         id: "title",
                         align: $align.center,
-                        font: $font(14)
+                        font: $font("bold", 14)
                     },
                     layout: $layout.fill
                 }]
             },
             layout: (make, view) => {
-                make.height.equalTo(130)
+                make.height.equalTo(220)
                 make.centerX.equalTo(view.super)
                 make.width.equalTo(view.super).offset(0)
                 make.top.equalTo(view.prev.bottom).offset(5)
@@ -1458,7 +1471,6 @@ function renderAdvanceUI() {
             events: {
                 didSelect: (sender, indexPath, data) => {
                     let idx = indexPath.row
-                    $("settingsControl").data = genControlBnts(idx)
                     $("inputViews").page = idx
                 }
             }
@@ -1866,7 +1878,14 @@ function setUpWorkspace() {
                 let defaultGroup = customProxyGroup[defaultGroupName]
                 $("serverEditor").data = workspace.serverData.map(section => {
                     section.rows.map(item => {
+                        // item.proxyName.bgcolor = defaultColor
                         item.proxyName.bgcolor = defaultGroup.indexOf(item.proxyName.text) > -1 ? selectedColor : defaultColor
+                        // item.proxyName = {
+                        //     text: item.proxyName.text
+                        // }
+                        // item.proxyAuto = {
+                        //     hidden: !(defaultGroup.indexOf(item.proxyName.text) > -1)
+                        // }
                         return item
                     })
                     return section
