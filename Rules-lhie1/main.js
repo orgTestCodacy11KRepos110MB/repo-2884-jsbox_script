@@ -1,3 +1,5 @@
+// $include("socketLogger");
+
 const app = require('scripts/app')
 const init = require('scripts/init')
 const today = require('scripts/today')
@@ -41,7 +43,7 @@ app.renderUI()
 
 updateUtil.getLatestVersion({
     handler: version => {
-        console.log([version, updateUtil.getCurVersion()])        
+        console.log(`latest version: ${version}\ncurrent version: ${updateUtil.getCurVersion()}`)        
         if (updateUtil.needUpdate(version, updateUtil.getCurVersion())) {
             $http.get({
                 url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/updateLog.md' + '?t=' + new Date().getTime(),

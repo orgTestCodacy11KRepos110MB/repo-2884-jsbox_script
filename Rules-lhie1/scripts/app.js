@@ -2,6 +2,7 @@ const proxyUtil = require('scripts/proxyUitl')
 const updateUtil = require('scripts/updateUtil')
 const cu = require('scripts/colorUtil')
 const ruleUpdateUtil = require('scripts/ruleUpdateUtil')
+const colorUtil = require('scripts/colorUtil')
 
 const FILE = 'data.js'
 const PROXY_HEADER = 'ProxyHeader'
@@ -34,9 +35,10 @@ if (iPhoneX) {
 }
 
 const selectedColor = $color("#c1dcf0")
-const defaultColor = $color("#ffffff")
-const tintColor = $color("#ff6666")
-const blackColor = $color("#000000")
+const btnOnFg = colorUtil.getColor("usualBtnOnFg")
+const btnOnBg = colorUtil.getColor("usualBtnOnBg")
+const btnOffFg = colorUtil.getColor("usualBtnOffFg")
+const btnOffBg = colorUtil.getColor("usualBtnOffBg")
 
 function renderUI() {
     $ui.render({
@@ -87,6 +89,7 @@ function renderUI() {
                 props: {
                     type: $btnType.contactAdd,
                     id: "serverURL",
+                    titleColor: colorUtil.getColor("importBtnText"),
                     title: " 添加、更新节点"
                 },
                 layout: (make, view) => {
@@ -232,7 +235,7 @@ function renderUI() {
                                 id: 'proxyName',
                                 align: $align.left,
                                 line: 1,
-                                textColor: $color("tint"),
+                                textColor: colorUtil.getColor("editorItemText"),
                                 font: $font(16),
                             },
                             layout: (make, view) => {
@@ -244,7 +247,7 @@ function renderUI() {
                             type: "image",
                             props: {
                                 id: "proxyAuto",
-                                icon: $icon("089", $color("tint"), $size(15, 15)),
+                                icon: $icon("089", colorUtil.getColor("editorItemIcon"), $size(15, 15)),
                                 bgcolor: $color("clear"),
                                 hidden: true
                             },
@@ -349,6 +352,7 @@ function renderUI() {
                 }, {
                     type: 'label',
                     props: {
+                        textColor: colorUtil.getColor("outputFormatText"),
                         id: 'outputFormatType',
                         text: 'Surge3',
                     },
@@ -373,13 +377,13 @@ function renderUI() {
                     spacing: 5,
                     scrollEnabled: false,
                     data: [{
-                        title: { text: 'ADS', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: 'ADS', bgcolor: btnOnFg, textColor: btnOffFg }
                     }, {
-                        title: { text: 'MITM', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: 'MITM', bgcolor: btnOnFg, textColor: btnOffFg }
                     }, {
-                        title: { text: 'Emoji', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: 'Emoji', bgcolor: btnOnFg, textColor: btnOffFg }
                     }, {
-                        title: { text: '导出', bgcolor: defaultColor, textColor: blackColor }
+                        title: { text: '导出', bgcolor: btnOnFg, textColor: btnOffFg }
                     }],
                     template: [{
                         type: "label",
@@ -388,7 +392,7 @@ function renderUI() {
                             align: $align.center,
                             font: $font(14),
                             radius: 5,
-                            borderColor: tintColor,
+                            borderColor: btnOnBg,
                             borderWidth: 0.3,
                         },
                         layout: $layout.fill
@@ -405,8 +409,8 @@ function renderUI() {
                         if (indexPath.row === 2) {
                             refreshListEmoji(isEmoji())
                         }
-                        data.title.bgcolor = cu.isEqual(data.title.bgcolor, tintColor) ? defaultColor : tintColor
-                        data.title.textColor = cu.isEqual(data.title.bgcolor, tintColor) ? defaultColor : blackColor
+                        data.title.bgcolor = cu.isEqual(data.title.bgcolor, btnOnBg) ? btnOffBg : btnOnBg
+                        data.title.textColor = cu.isEqual(data.title.bgcolor, btnOnFg) ? btnOffFg : btnOnFg
                         let uiData = $("usualSettings").data
                         uiData[indexPath.row] = data
                         $("usualSettings").data = uiData
@@ -418,8 +422,9 @@ function renderUI() {
             type: "button",
             props: {
                 id: "advanceBtn",
+                titleColor: colorUtil.getColor("advanceBtnFg"),
                 title: "进阶设置",
-                bgcolor: $color("#808080")
+                bgcolor: colorUtil.getColor("advanceBtnBg")
             },
             layout: (make, view) => {
                 make.width.equalTo((screenWidth / 2 - 15) * 0.686 - 10)
@@ -436,8 +441,9 @@ function renderUI() {
             type: "button",
             props: {
                 id: "aboutBtn",
+                titleColor: colorUtil.getColor("aboutBtnFg"),
                 title: "关于",
-                bgcolor: $color("#808080")
+                bgcolor: colorUtil.getColor("aboutBtnBg")
             },
             layout: (make, view) => {
                 make.height.equalTo(40)
@@ -454,6 +460,8 @@ function renderUI() {
             type: "button",
             props: {
                 id: "genBtn",
+                titleColor: colorUtil.getColor("genBtnFg"),
+                bgcolor: colorUtil.getColor("genBtnBg"),
                 title: "生成配置"
             },
             layout: (make, view) => {
@@ -1414,10 +1422,10 @@ function renderAdvanceUI() {
     }
     let genControlBnts = function (idx) {
         let titleTexts = ['小组件流量', '常规', '代理分组', '代理规则', '本地DNS映射', 'URL重定向', 'SSID', 'Header修改', '主机名', '配置根证书']
-        const sbgc = $color("#ffda40")
-        const stc = $color("#034769")
-        const dbgc = $color("#63add0")
-        const dtc = $color("#ffffff")
+        const sbgc = colorUtil.getColor("advanceGridOnBg")
+        const stc = colorUtil.getColor("advanceGridOnFg")
+        const dbgc = colorUtil.getColor("advanceGridOffBg")
+        const dtc = colorUtil.getColor("advanceGridOffFg")
         return titleTexts.map((item, i) => {
             return {
                 title: { text: item, bgcolor: i === idx ? sbgc : dbgc, radius: 5, color: i == idx ? stc : dtc }
@@ -1819,7 +1827,7 @@ function setUpWorkspace() {
         loadData: () => {
             console.log('重新加载数据')
             let file = JSON.parse($file.read(FILE).string)
-            console.log(file)
+            console.log("用户数据文件：", file)
             if (file && file.workspace) {
                 let workspace = file.workspace
                 $("fileName").text = workspace.fileName || ''
@@ -1847,11 +1855,11 @@ function setUpWorkspace() {
                 let nd = $("usualSettings").data.map(item => {
                     let sd = usualSettingsData.find(i => i.title.text === item.title.text)
                     if (sd) {
-                        item.title.bgcolor = sd.title.bgcolor ? tintColor : defaultColor
-                        item.title.textColor = sd.title.textColor ? defaultColor : blackColor
+                        item.title.bgcolor = sd.title.bgcolor ? btnOnBg : btnOffBg
+                        item.title.textColor = sd.title.textColor ? btnOnFg : btnOffFg
                     } else {
-                        item.title.bgcolor = defaultColor
-                        item.title.textColor = blackColor
+                        item.title.bgcolor = btnOffFg
+                        item.title.textColor = btnOffFg
                     }
                     return item
                 })
@@ -1892,8 +1900,8 @@ function saveWorkspace() {
         serverData: $("serverEditor").data,
         withEmoji: $("serverURL").info || false,
         usualData: $("usualSettings").data.map(i => {
-            i.title.bgcolor = cu.isEqual(tintColor, i.title.bgcolor)
-            i.title.textColor = cu.isEqual(defaultColor, i.title.textColor)
+            i.title.bgcolor = cu.isEqual(btnOnBg, i.title.bgcolor)
+            i.title.textColor = cu.isEqual(btnOnFg, i.title.textColor)
             return i
         }),
         outputFormat: $("outputFormatType").text,
@@ -2371,6 +2379,7 @@ function makeConf(params) {
                     handler: sha => {
                         if (sha) {
                             ruleUpdateUtil.setFilesSha(sha)
+                            console.log('sha 更新成功')
                         } else {
                             console.log('sha 获取失败')
                         }

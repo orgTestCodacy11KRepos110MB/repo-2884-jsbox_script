@@ -114,6 +114,7 @@ function renderTodayUI() {
     let groupNames = workspace.serverData.map(i => i.title).concat(widget.map(i => i.name))
     let groupURLs = workspace.serverData.map(i => i.url).concat(widget.map(i => i.url)).map(i => requestHead(i))
     Promise.all(groupURLs).then(res => {
+        console.log(res)
         let usageData = []
         for (let idx in res) {
             if (res[idx] === '') continue
@@ -402,10 +403,11 @@ function renderTodayUI() {
                 data: [],
                 rowHeight: 50,
                 alwaysBounceVertical: false,
+                bgcolor: $color("clear"),
                 separatorHidden: true,
                 template: {
                     props: {
-
+                        bgcolor: $color("clear")
                     },
                     views: [{
                         type: "progress",
