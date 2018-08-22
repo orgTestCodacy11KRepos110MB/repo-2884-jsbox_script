@@ -31,13 +31,15 @@ const DEFAULT = {
     advanceGridOffFg: "#ffffff", // 进阶设置网格默认前景色
 }
 
+const customColor = $file.exists("_custom/color.js") ? require('_custom/color.js') : {}
+console.log(customColor)
+
 function isEqual(color1, color2) {
     return color1.runtimeValue().invoke('isEqual', color2)
 }
 
 function getColor(name) {
-    let resColor = "red"
-    let customColor = $file.exists("_custom/color.js") ? require('_custom/color.js') : {}
+    let resColor = "tint"
     if (name in customColor) {
         resColor = customColor[name]
     } else if (name in DEFAULT) {
