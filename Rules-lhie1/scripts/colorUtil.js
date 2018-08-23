@@ -11,7 +11,13 @@ module.exports = {
 */
 
 const DEFAULT = {
+    statusBar: "#000000", // 状态栏文字颜色，#ffffff为白色，其他为黑色
+    navBar: "#ffffff", // 导航栏颜色
+    navTitleText: "tint", // 标题栏文字颜色
+    navIconLeft: "tint", // 标题栏红包按钮文字颜色
+    navIconRight: "tint", // 标题栏备份按钮文字颜色
     importBtnText: "tint", // 导入按钮文字颜色 
+    controlBtnText: "#000000", // 操作栏文字颜色
     editorItemText: "tint", // 服务器列表文字颜色
     editorItemIcon: "tint", // 服务器列表图标颜色
     outputFormatText: "tint", // 输出格式文字颜色
@@ -38,14 +44,14 @@ function isEqual(color1, color2) {
     return color1.runtimeValue().invoke('isEqual', color2)
 }
 
-function getColor(name) {
+function getColor(name, hex = false) {
     let resColor = "tint"
     if (name in customColor) {
         resColor = customColor[name]
     } else if (name in DEFAULT) {
         resColor = DEFAULT[name]
     }
-    return $color(resColor)
+    return hex ? resColor : $color(resColor)
 }
 
 module.exports = {

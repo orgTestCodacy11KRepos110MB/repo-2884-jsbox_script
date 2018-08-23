@@ -34,6 +34,9 @@ if (iPhoneX) {
     screenHeight -= 48
 }
 
+const statusBarHeight = iPhoneX ? 88 : 20
+const navBarHeight = 45
+
 const selectedColor = $color("#c1dcf0")
 const btnOnFg = colorUtil.getColor("usualBtnOnFg")
 const btnOnBg = colorUtil.getColor("usualBtnOnBg")
@@ -44,26 +47,76 @@ function renderUI() {
     $ui.render({
         props: {
             title: "lhie1规则",
+            navBarHidden: true,
+            statusBarStyle: colorUtil.getColor("statusBar", true) === '#ffffff' ? 1 : 0,
             id: "bodyView",
-            navButtons: [{
-                title: '备份',
-                handler: () => {
-                    archivesHandler()
-                }
-            }, {
-                title: '红包',
-                handler: () => {
-                    $clipboard.text = '支付宝发红包啦！即日起还有机会额外获得余额宝消费红包！长按复制此消息，打开最新版支付宝就能领取！mlCOiX84s7'
-                    $app.openURL("alipay://")
-                }
-            }]
         },
         views: [{
             type: "view",
             props: {
+                id: "navBar",
+                bgcolor: colorUtil.getColor("navBar")
+            },
+            layout: (make, view) => {
+                make.height.equalTo(navBarHeight + statusBarHeight)
+                make.width.equalTo(view.super)
+            },
+            views: [{
+                type: "label",
+                props: {
+                    text: "lhie1规则",
+                    textColor: colorUtil.getColor("navTitleText"),
+                    font: $font("bold", 25)
+                },
+                layout: (make, view) => {
+                    make.height.equalTo(navBarHeight)
+                    make.top.equalTo(statusBarHeight)
+                    make.left.equalTo(15)
+                }
+            }, {
+                type: "image",
+                props: {
+                    icon: $icon("204", colorUtil.getColor("navIconRight"), $size(25, 25)),
+                    bgcolor: $color("clear")
+                },
+                layout: (make, view) => {
+                    make.right.equalTo(view.super).offset(-15)
+                    make.height.width.equalTo(25)
+                    make.bottom.equalTo(view.super).offset(-10)
+                },
+                events: {
+                    tapped: sender => {
+                        archivesHandler()
+                    }
+                }
+            }, {
+                type: "image",
+                props: {
+                    icon: $icon("074", colorUtil.getColor("navIconLeft"), $size(25, 25)),
+                    bgcolor: $color("clear")
+                },
+                layout: (make, view) => {
+                    make.right.equalTo(view.prev.left).offset(-15)
+                    make.height.width.equalTo(25)
+                    make.bottom.equalTo(view.super).offset(-10)
+                },
+                events: {
+                    tapped: sender => {
+                        $clipboard.text = 'GxsAtS84U7'
+                        $app.openURL("alipay://")
+                    }
+                }
+            }]
+        }, {
+            type: "view",
+            props: {
                 id: "mainView"
             },
-            layout: $layout.fill,
+            layout: (make, view) => {
+                make.height.equalTo(view.super).offset(navBarHeight + statusBarHeight);
+                make.width.equalTo(view.super)
+                make.top.equalTo(navBarHeight + statusBarHeight)
+            },
             views: [{
                 type: "input",
                 props: {
@@ -126,9 +179,9 @@ function renderUI() {
                                     }
                                     let selected = selectedRows.indexOf(res[idx].split('=')[0].trim()) > -1
                                     section.rows.push({
-                                        proxyName: { text: res[idx].split('=')[0].trim()},
+                                        proxyName: { text: res[idx].split('=')[0].trim() },
                                         proxyLink: res[idx],
-                                        proxyAuto: { hidden: !selected}
+                                        proxyAuto: { hidden: !selected }
                                     })
                                 }
                                 if (!existsSec) {
@@ -155,6 +208,7 @@ function renderUI() {
                             id: "title",
                             align: $align.center,
                             font: $font(14),
+                            textColor: colorUtil.getColor("controlBtnText"),
                             autoFontSize: true
                         },
                         layout: $layout.fill
