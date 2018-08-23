@@ -34,7 +34,7 @@ if (iPhoneX) {
     screenHeight -= 48
 }
 
-const statusBarHeight = iPhoneX ? 88 : 20
+const statusBarHeight = iPhoneX ? 44 : 20
 const navBarHeight = 45
 
 const selectedColor = $color("#c1dcf0")
