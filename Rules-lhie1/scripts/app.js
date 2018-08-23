@@ -952,7 +952,8 @@ function archivesHandler() {
                 }]
             },
             layout: (make, view) => {
-                make.height.width.equalTo(view.super).dividedBy(12 / 9)
+                make.height.equalTo(view.super).dividedBy(12 / 7)
+                make.width.equalTo(view.super).dividedBy(12 / 9)
                 make.center.equalTo(view.super)
             },
             events: {
@@ -1188,7 +1189,8 @@ function groupShortcut() {
                 }]
             },
             layout: (make, view) => {
-                make.height.width.equalTo(view.super).dividedBy(12 / 9)
+                make.height.equalTo(view.super).dividedBy(12 / 7)
+                make.width.equalTo(view.super).dividedBy(12 / 9)
                 make.center.equalTo(view.super)
             },
             events: {

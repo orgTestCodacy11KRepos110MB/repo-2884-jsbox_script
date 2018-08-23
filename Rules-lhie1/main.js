@@ -1,4 +1,8 @@
-require("socketLogger").init('192.168.50.229', '44555', true, false)
+try {
+    require("socketLogger").init('192.168.50.229', '44555', true, false)
+} catch(e) {
+    
+}
 
 const app = require('scripts/app')
 const init = require('scripts/init')
