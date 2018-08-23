@@ -48,6 +48,7 @@ function renderUI() {
         props: {
             title: "lhie1规则",
             navBarHidden: true,
+            statusBarHidden: colorUtil.getColor("statusBar", true) === 'clear' ? true : false,
             statusBarStyle: colorUtil.getColor("statusBar", true) === '#ffffff' ? 1 : 0,
             id: "bodyView",
         },

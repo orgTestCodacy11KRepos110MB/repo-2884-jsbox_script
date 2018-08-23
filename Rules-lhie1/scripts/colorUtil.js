@@ -11,7 +11,7 @@ module.exports = {
 */
 
 const DEFAULT = {
-    statusBar: "#000000", // 状态栏文字颜色，#ffffff为白色，其他为黑色
+    statusBar: "#000000", // 状态栏文字颜色，#ffffff为白色，clear隐藏，其他为黑色
     navBar: "#ffffff", // 导航栏颜色
     navTitleText: "tint", // 标题栏文字颜色
     navIconLeft: "tint", // 标题栏红包按钮文字颜色
