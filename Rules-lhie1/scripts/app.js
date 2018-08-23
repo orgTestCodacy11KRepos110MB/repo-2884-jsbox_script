@@ -52,6 +52,12 @@ function renderUI() {
             statusBarStyle: colorUtil.getColor("statusBar", true) === '#ffffff' ? 1 : 0,
             id: "bodyView",
         },
+        events: {
+            appeared: function (sender) {
+                $("bodyView").runtimeValue().$viewController().$navigationController().$interactivePopGestureRecognizer().$delegate()
+                $("bodyView").runtimeValue().$viewController().$navigationController().$interactivePopGestureRecognizer().$setDelegate(null)
+            }
+        },
         views: [{
             type: "view",
             props: {
@@ -1492,18 +1498,63 @@ function renderAdvanceUI() {
     $ui.push({
         type: "scroll",
         props: {
-            title: "进阶设置"
+            title: "进阶设置",
+            navBarHidden: true,
+            statusBarHidden: colorUtil.getColor("statusBar", true) === 'clear' ? true : false,
+            statusBarStyle: colorUtil.getColor("statusBar", true) === '#ffffff' ? 1 : 0,
         },
         views: [{
+            type: "view",
+            props: {
+                id: "navBar",
+                bgcolor: colorUtil.getColor("navBar")
+            },
+            layout: (make, view) => {
+                make.height.equalTo(navBarHeight + statusBarHeight)
+                make.width.equalTo(view.super)
+            },
+            views: [{
+                type: "label",
+                props: {
+                    text: "进阶设置",
+                    textColor: colorUtil.getColor("navTitleText"),
+                    font: $font("bold", 25)
+                },
+                layout: (make, view) => {
+                    make.height.equalTo(navBarHeight)
+                    make.top.equalTo(statusBarHeight)
+                    make.left.equalTo(15)
+                }
+            }, {
+                type: "image",
+                props: {
+                    icon: $icon("064", colorUtil.getColor("navIconRight"), $size(25, 25)),
+                    bgcolor: $color("clear")
+                },
+                layout: (make, view) => {
+                    make.right.equalTo(view.super).offset(-15)
+                    make.height.width.equalTo(25)
+                    make.bottom.equalTo(view.super).offset(-10)
+                },
+                events: {
+                    tapped: sender => {
+                        $ui.pop()
+                    }
+                }
+            }]
+        }, {
             type: "gallery",
             props: {
                 id: "inputViews",
                 items: inputViewData,
-                interval: 0
+                interval: 0,
+                smoothRadius: 10,
             },
             layout: (make, view) => {
-                make.height.equalTo(view.super).dividedBy(3)
-                make.width.equalTo(view.super)
+                make.height.equalTo(screenHeight - 315 - statusBarHeight - navBarHeight)
+                make.width.equalTo(view.super).offset(-20)
+                make.centerX.equalTo(view.super)
+                make.top.equalTo(navBarHeight + statusBarHeight)
             },
             events: {
                 changed: sender => {
@@ -1533,7 +1584,7 @@ function renderAdvanceUI() {
             layout: (make, view) => {
                 make.height.equalTo(220)
                 make.centerX.equalTo(view.super)
-                make.width.equalTo(view.super).offset(0)
+                make.width.equalTo(view.super).offset(-13)
                 make.top.equalTo(view.prev.bottom).offset(5)
             },
             events: {
@@ -1617,15 +1668,62 @@ function renderAboutUI() {
 
     $ui.push({
         props: {
-            title: "关于"
+            title: "关于",
+            id: "aboutMainView",
+            navBarHidden: true,
+            statusBarHidden: colorUtil.getColor("statusBar", true) === 'clear' ? true : false,
+            statusBarStyle: colorUtil.getColor("statusBar", true) === '#ffffff' ? 1 : 0,
         },
         views: [{
+            type: "view",
+            props: {
+                id: "navBar",
+                bgcolor: colorUtil.getColor("navBar")
+            },
+            layout: (make, view) => {
+                make.height.equalTo(navBarHeight + statusBarHeight)
+                make.width.equalTo(view.super)
+            },
+            views: [{
+                type: "label",
+                props: {
+                    text: "脚本相关",
+                    textColor: colorUtil.getColor("navTitleText"),
+                    font: $font("bold", 25)
+                },
+                layout: (make, view) => {
+                    make.height.equalTo(navBarHeight)
+                    make.top.equalTo(statusBarHeight)
+                    make.left.equalTo(15)
+                }
+            }, {
+                type: "image",
+                props: {
+                    icon: $icon("064", colorUtil.getColor("navIconRight"), $size(25, 25)),
+                    bgcolor: $color("clear")
+                },
+                layout: (make, view) => {
+                    make.right.equalTo(view.super).offset(-15)
+                    make.height.width.equalTo(25)
+                    make.bottom.equalTo(view.super).offset(-10)
+                },
+                events: {
+                    tapped: sender => {
+                        $ui.pop()
+                    }
+                }
+            }]
+        }, {
             type: "scroll",
             props: {
                 id: "mainAboutView",
-                contentSize: $size(0, 855)
+                contentSize: $size(0, 1000)
             },
-            layout: $layout.fill,
+            layout: (make, view) => {
+                make.top.equalTo(navBarHeight + statusBarHeight);
+                make.width.equalTo(view.super)
+                make.height.equalTo(view.super).offset(navBarHeight + statusBarHeight)
+            },
             views: [{
                 type: "label",
                 props: {
