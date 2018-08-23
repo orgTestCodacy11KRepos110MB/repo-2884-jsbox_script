@@ -150,7 +150,6 @@ function decodeSSR(links) {
 function getServersFromConfFile(params) {
     let promiseArray = params.urls.map(i => promiseConf(i))
     Promise.all(promiseArray).then(confs => {
-        $ui.loading(false);
         for (let idx in confs) {
             let res = confs[idx]
             let filename = res ? res.filename : '';

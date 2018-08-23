@@ -113,6 +113,20 @@ function renderUI() {
                         $app.openURL("alipay://")
                     }
                 }
+            }, {
+                type: "image",
+                props: {
+                    id: "navLoadingIcon",
+                    hidden: true,
+                    icon: $icon("218", colorUtil.getColor("navIconLoading"), $size(25, 25)),
+                    bgcolor: $color("clear"),
+                    info: false
+                },
+                layout: (make, view) => {
+                    make.right.equalTo(view.prev.left).offset(-15)
+                    make.height.width.equalTo(25)
+                    make.bottom.equalTo(view.super).offset(-10)
+                }
             }]
         }, {
             type: "view",
@@ -163,7 +177,7 @@ function renderUI() {
                         importMenu({
                             handler: (res, name, url) => {
                                 // 如果是托管，url不为undefined
-                                console.log([res, name, url])
+                                // console.log([res, name, url])
                                 let listData = $("serverEditor").data || []
                                 let existsSec = listData.find(item => item.url === url)
                                 if (!res || res.length === 0) {
@@ -614,6 +628,19 @@ function renderUI() {
     })
 }
 
+function loading(on) {
+    let iconView = $("navLoadingIcon")
+    if (on) {
+        $delay(0.3, () => {
+            iconView.hidden = false
+            iconView.animator.rotateZ(-72000).animate(100)
+        })
+    } else {
+        iconView.hidden = true
+        iconView.animator.rotateZ(0).animate(0)
+    }
+}
+
 function refreshListEmoji(isEmoji) {
     function addEmoji(emojiSet, name) {
         let minIdx = 300;
@@ -637,11 +664,11 @@ function refreshListEmoji(isEmoji) {
 
     let serverEditorData = $("serverEditor").data
 
-    $ui.loading(true)
+    loading(true)
     $http.get({
         url: "https://raw.githubusercontent.com/Fndroid/country_emoji/master/emoji.json" + `?t=${new Date().getTime()}`
     }).then(resp => {
-        $ui.loading(false)
+        loading(false)
         let emojiSet = resp.data
         $("serverEditor").data = serverEditorData.map(sec => {
             sec.rows = sec.rows.map(i => {
@@ -653,7 +680,7 @@ function refreshListEmoji(isEmoji) {
         })
         saveWorkspace()
     }).catch(error => {
-        $ui.loading(false)
+        loading(false)
         $ui.alert("Emoji配置获取失败")
     })
 }
@@ -1413,11 +1440,11 @@ function linkHandler(url, params) {
                     params.handler(emojiSet ? result.map(i => addEmoji(emojiSet, i)) : result, urls.length > 1 ? `批量Surge链接（${urls.length}）` : result[0].split('=')[0].trim(), urls.join('\n'))
                 })
             } else if (k === 'online') {
-                $ui.loading(true)
+                loading(true)
                 proxyUtil.proxyFromConf({
                     urls: servers[k],
                     handler: res => {
-                        $ui.loading(false)
+                        loading(false)
                         params.handler(emojiSet ? res.servers.map(i => addEmoji(emojiSet, i)) : res.servers, res.filename, res.url)
                     }
                 })
@@ -1434,15 +1461,15 @@ function linkHandler(url, params) {
     }
 
     if (emoji) {
-        $ui.loading(true)
+        loading(true)
         $http.get({
             url: "https://raw.githubusercontent.com/Fndroid/country_emoji/master/emoji.json" + `?t=${new Date().getTime()}`
         }).then(resp => {
-            $ui.loading(false)
+            loading(false)
             let emojiSet = resp.data
             detailHandler(emojiSet)
         }).catch(error => {
-            $ui.loading(false)
+            loading(false)
             $ui.alert("Emoji配置获取失败")
         })
     } else {
@@ -1528,7 +1555,7 @@ function renderAdvanceUI() {
             }, {
                 type: "image",
                 props: {
-                    icon: $icon("064", colorUtil.getColor("navIconRight"), $size(25, 25)),
+                    icon: $icon("225", colorUtil.getColor("navIconRight"), $size(25, 25)),
                     bgcolor: $color("clear")
                 },
                 layout: (make, view) => {
@@ -1699,7 +1726,7 @@ function renderAboutUI() {
             }, {
                 type: "image",
                 props: {
-                    icon: $icon("064", colorUtil.getColor("navIconRight"), $size(25, 25)),
+                    icon: $icon("225", colorUtil.getColor("navIconRight"), $size(25, 25)),
                     bgcolor: $color("clear")
                 },
                 layout: (make, view) => {

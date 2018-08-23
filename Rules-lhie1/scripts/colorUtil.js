@@ -14,6 +14,7 @@ const DEFAULT = {
     statusBar: "#000000", // 状态栏文字颜色，#ffffff为白色，clear隐藏，其他为黑色
     navBar: "#ffffff", // 导航栏颜色
     navTitleText: "tint", // 标题栏文字颜色
+    navIconLoading: "tint", // 加载图标颜色
     navIconLeft: "tint", // 标题栏红包按钮文字颜色
     navIconRight: "tint", // 标题栏备份按钮文字颜色
     importBtnText: "tint", // 导入按钮文字颜色 
