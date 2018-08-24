@@ -628,16 +628,19 @@ function renderUI() {
     })
 }
 
+let iconViewAnimator = null
+
 function loading(on) {
     let iconView = $("navLoadingIcon")
+    if (iconViewAnimator === null) iconViewAnimator = iconView.animator
     if (on) {
-        $delay(0.3, () => {
+        if (iconView.hidden) {
             iconView.hidden = false
-            iconView.animator.rotateZ(-72000).animate(100)
-        })
+            iconViewAnimator.rotateZ(-42000).animate(100)
+        }
     } else {
         iconView.hidden = true
-        iconView.animator.rotateZ(0).animate(0)
+        iconViewAnimator.stop()
     }
 }
 
@@ -1873,7 +1876,7 @@ function renderAboutUI() {
                                 }]
                             })
                         } else {
-                            $clipboard.text = '支付宝发红包啦！即日起还有机会额外获得余额宝消费红包！长按复制此消息，打开最新版支付宝就能领取！mlCOiX84s7'
+                            $clipboard.text = 'GxsAtS84U7'
                             $app.openURL("alipay://")
                         }
                     }
