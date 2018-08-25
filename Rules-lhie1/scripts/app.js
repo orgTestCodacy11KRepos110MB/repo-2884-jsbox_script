@@ -881,7 +881,7 @@ function renderOutputFormatMenu(superView) {
         velocity: 0.3,
         animation: () => {
             $("outputFormatSelectorView").alpha = 1
-            $("outputFormatSelectorItems").frame = $rect(80, screenHeight - 380, screenWidth - 90, 200)
+            $("outputFormatSelectorItems").frame = $rect(80, screenHeight - 380 + navBarHeight + statusBarHeight, screenWidth - 90, 200)
         }
     })
 
@@ -2009,10 +2009,13 @@ function setUpWorkspace() {
                 name: 'loadData'
             })
         },
+        resume: () => {
+            iconViewAnimator =  $("navLoadingIcon").animator
+        },
         loadData: () => {
             console.log('重新加载数据')
             let file = JSON.parse($file.read(FILE).string)
-            console.log("用户数据文件：", file)
+            // console.log("用户数据文件：", file)
             if (file && file.workspace) {
                 let workspace = file.workspace
                 $("fileName").text = workspace.fileName || ''

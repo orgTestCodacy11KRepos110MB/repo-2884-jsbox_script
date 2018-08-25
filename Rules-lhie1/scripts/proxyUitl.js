@@ -99,7 +99,6 @@ function decodeSSR(links) {
         if (rawContentMatcher && rawContentMatcher[1]) {
             let rawContent = urlsafeBase64Decode(rawContentMatcher[1]);
             let rawContentParts = rawContent.split(/\/*\?/g)
-            console.log(rawContentParts)
             let paramsMatcher = rawContentParts[0].match(/^(.*?):(.*?):(.*?):(.*?):(.*?):(.*?)$/);
             if (paramsMatcher && paramsMatcher.length === 7) {
                 let host = paramsMatcher[1];
