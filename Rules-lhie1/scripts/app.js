@@ -846,7 +846,7 @@ function renderOutputFormatMenu(superView) {
                 rowHeight: 50,
                 alwaysBounceVertical: false,
                 data: ['Surge3', 'Surge2', 'Quantumult'],
-                frame: superView.frame,
+                frame: resetFrame(superView.frame),
                 header: {
                     type: "label",
                     props: {
@@ -880,6 +880,7 @@ function renderOutputFormatMenu(superView) {
         damping: 0.8,
         velocity: 0.3,
         animation: () => {
+            superView.scale(1.2)
             $("outputFormatSelectorView").alpha = 1
             $("outputFormatSelectorItems").frame = $rect(80, screenHeight - 380 + navBarHeight + statusBarHeight, screenWidth - 90, 200)
         }
@@ -890,14 +891,19 @@ function renderOutputFormatMenu(superView) {
             duration: 0.2,
             velocity: 0.5,
             animation: () => {
+                superView.scale(1)
                 $("outputFormatSelectorView").alpha = 0;
-                $("outputFormatSelectorItems").frame = superView.frame;
+                $("outputFormatSelectorItems").frame = resetFrame(superView.frame);
             },
             completion: () => {
                 sender.super.remove();
             }
         });
     }
+}
+
+function resetFrame(frame) {
+    return $rect(frame.x, frame.y + navBarHeight + statusBarHeight, frame.width, frame.height)
 }
 
 function archivesHandler() {
@@ -1151,7 +1157,7 @@ function groupShortcut() {
                         duration: 0.2,
                         animation: () => {
                             $("placeholderView").alpha = 0
-                            $("placeholderList").frame = $("serverEditor").frame
+                            $("placeholderList").frame = resetFrame($("serverEditor").frame)
                         },
                         completion: () => {
                             sender.super.remove()
@@ -2010,7 +2016,7 @@ function setUpWorkspace() {
             })
         },
         resume: () => {
-            iconViewAnimator =  $("navLoadingIcon").animator
+            iconViewAnimator = $("navLoadingIcon").animator
         },
         loadData: () => {
             console.log('重新加载数据')
