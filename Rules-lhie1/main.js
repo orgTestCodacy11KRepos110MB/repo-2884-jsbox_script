@@ -1,4 +1,6 @@
-require("scripts/socketLogger").init('192.168.50.229', '44555', true, false)
+try {
+    require("scripts/socketLogger").init('192.168.50.229', '44555', true, false)
+}catch(e ) {}
 
 console.log('设备信息', $device.info)
 
