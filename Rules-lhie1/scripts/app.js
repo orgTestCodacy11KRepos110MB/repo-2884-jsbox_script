@@ -2548,6 +2548,7 @@ function makeConf(params) {
                     widgetProxies = widgetProxies.filter(i => proxyNameLegal(i))
                     prototype += genQuanPart('BACKUP-SERVER', widgetProxies.join('\n'))
                 }
+                prototype = prototype.replace(/\[SSID Setting\]/, "[SUSPEND-SSID]").replace(/\ssuspend=true/g, '')
             }
 
             if (rename && rename[1]) {
