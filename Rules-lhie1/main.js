@@ -1,4 +1,6 @@
-require("scripts/socketLogger").init('192.168.50.229', '44555', true, true)
+require("scripts/socketLogger").init('192.168.50.229', '44555', true, false)
+
+console.log('设备信息', $device.info)
 
 const app = require('scripts/app')
 const init = require('scripts/init')
@@ -12,7 +14,6 @@ $app.rotateDisabled = true
 $app.keyboardToolbarEnabled = true
 
 let query = $context.query
-
 
 $objc('notification').invoke('objectForKey')
 
