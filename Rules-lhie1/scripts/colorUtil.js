@@ -39,7 +39,6 @@ const DEFAULT = {
 }
 
 const customColor = $file.exists("_custom/color.js") ? require('_custom/color.js') : {}
-console.log(customColor)
 
 function isEqual(color1, color2) {
     return color1.runtimeValue().invoke('isEqual', color2)

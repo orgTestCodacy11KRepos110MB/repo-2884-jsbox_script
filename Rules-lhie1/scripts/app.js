@@ -275,7 +275,6 @@ function renderUI() {
                             let od = sender.data
                             let section = od[indexPath.section]
                             let item = section.rows[indexPath.row]
-                            console.log(item)
                             showAlterDialog(section.title, item.proxyLink, (newSec, newLink) => {
                                 item.proxyLink = newLink
                                 item.proxyName.text = newLink.split(/\s*=/)[0]
@@ -347,7 +346,6 @@ function renderUI() {
                         let isSelected = !data.proxyAuto.hidden
                         let controlInfo = $("serverControl").info
                         let currentGroup = controlInfo.currentProxyGroup
-                        console.log(currentGroup)
                         let customProxyGroup = controlInfo.customProxyGroup || {}
                         if (isSelected) {
                             data.proxyAuto.hidden = true
@@ -694,7 +692,6 @@ function showAlterDialog(reg, rep, callback) {
         width: screenWidth - 100,
         font: $font(16)
     })
-    console.log(fontSize)
     let view = {
         type: "blur",
         layout: $layout.fill,
@@ -1399,6 +1396,8 @@ function linkHandler(url, params) {
         }
     })
 
+    console.log("识别结果", servers);
+
     let updateHint = ''
     updateHint += servers.shadowsocks.length > 0 ? `\nShadowsocks链接${servers.shadowsocks.length}个\n` : ''
     updateHint += servers.shadowsocksr.length > 0 ? `\nShadowsocksR链接${servers.shadowsocksr.length}个\n` : ''
@@ -1410,7 +1409,7 @@ function linkHandler(url, params) {
     //     message: updateHint
     // })
 
-    console.log(servers)
+    
 
     function addEmoji(emojiSet, link) {
         let name = link.split(/=/)[0]
@@ -2019,9 +2018,8 @@ function setUpWorkspace() {
             iconViewAnimator = $("navLoadingIcon").animator
         },
         loadData: () => {
-            console.log('重新加载数据')
             let file = JSON.parse($file.read(FILE).string)
-            // console.log("用户数据文件：", file)
+            console.log('重新加载成功，用户数据', file);
             if (file && file.workspace) {
                 let workspace = file.workspace
                 $("fileName").text = workspace.fileName || ''
