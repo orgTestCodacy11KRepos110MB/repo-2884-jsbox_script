@@ -1,4 +1,4 @@
-const socketLogger = require('ddd')
+const socketLogger = require('socketLogger')
 'init' in socketLogger && socketLogger.init('192.168.50.229')
 
 const screenWidth = $device.info.screen.width
