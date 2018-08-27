@@ -1,3 +1,6 @@
+const socketLogger = require('ddd')
+'init' in socketLogger && socketLogger.init('192.168.50.229')
+
 const screenWidth = $device.info.screen.width
 
 const isIphoneX = $device.isIphoneX
@@ -130,13 +133,14 @@ function render(statusHeight) {
             },
             events: {
                 hrefClick: async href => {
+                    console.log('href', href);
                     let resp = await $http.get({
                         url: href,
                         header: {
                             "USER-AGENT": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
                         }
                     });
-                    let urlMatcher = resp.data.match(/(jsbox:\/\/install.*?)'/)
+                    let urlMatcher = resp.data.match(/(jsbox:\/\/.*?)'/)
                     if (urlMatcher && urlMatcher[1]) {
                         $app.openURL(urlMatcher[1]);
                     }
