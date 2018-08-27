@@ -1,11 +1,11 @@
 {
   "info": {
     "name": "Rules-lhie1",
-    "url": "",
-    "version": "1.0.6",
-    "author": "",
-    "website": "",
-    "types": 0
+    "url": "https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/.output/Rules-lhie1.box",
+    "version": "1.8.1",
+    "author": "Fndroid",
+    "website": "https://github.com/Fndroid/jsbox_script/tree/master/Rules-lhie1",
+    "types": 15
   },
   "settings": {
     "minSDKVer": "1.0.0",
