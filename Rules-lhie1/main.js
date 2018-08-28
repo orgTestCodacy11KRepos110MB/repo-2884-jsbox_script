@@ -1,7 +1,5 @@
 let socketLogger = require("socketLogger")
-'init' in socketLogger && socketLogger.init('192.168.50.229')
-
-console.log('设备信息', $device.info)
+'init' in socketLogger && socketLogger.init('192.168.50.229', 44555, false)
 
 const app = require('scripts/app')
 const init = require('scripts/init')
