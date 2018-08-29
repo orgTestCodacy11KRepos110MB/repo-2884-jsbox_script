@@ -1,5 +1,11 @@
 let socketLogger = require("socketLogger")
-'init' in socketLogger && socketLogger.init('192.168.50.229', 44555, false)
+'init' in socketLogger && socketLogger.init('192.168.50.229', 44555, true)
+
+$app.listen({
+    exit: () => {
+        'destroy' in socketLogger && socketLogger.destroy()
+    }
+})
 
 const app = require('scripts/app')
 const init = require('scripts/init')
@@ -18,7 +24,7 @@ $objc('notification').invoke('objectForKey')
 
 if (query.auto == 1) {
     app.autoGen()
-    return 
+    return
 }
 
 if ($app.env === $env.today) {
@@ -43,15 +49,15 @@ app.renderUI()
 
 updateUtil.getLatestVersion({
     handler: version => {
-        console.log(`latest version: ${version}\ncurrent version: ${updateUtil.getCurVersion()}`)        
+        console.log(`latest version: ${version}\ncurrent version: ${updateUtil.getCurVersion()}`)
         if (updateUtil.needUpdate(version, updateUtil.getCurVersion())) {
             $http.get({
                 url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/updateLog.md' + '?t=' + new Date().getTime(),
-                handler: resp=> {
+                handler: resp => {
                     updateUtil.updateScript(version)
                 }
             })
-            
+
         }
     }
 })
