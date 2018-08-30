@@ -1586,10 +1586,10 @@ function renderAdvanceUI() {
                 smoothRadius: 10,
             },
             layout: (make, view) => {
-                make.height.equalTo(screenHeight - 315 - statusBarHeight - navBarHeight)
+                make.height.equalTo(screenHeight - 325 - statusBarHeight - navBarHeight)
                 make.width.equalTo(view.super).offset(-20)
                 make.centerX.equalTo(view.super)
-                make.top.equalTo(navBarHeight + statusBarHeight)
+                make.top.equalTo(navBarHeight + statusBarHeight + 10)
             },
             events: {
                 changed: sender => {
