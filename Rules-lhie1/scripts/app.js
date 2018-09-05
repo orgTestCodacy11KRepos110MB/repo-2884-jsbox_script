@@ -998,6 +998,9 @@ function archivesHandler() {
             events: {
                 didSelect: (sender, indexPath, data) => {
                     if (/\..*?\.icloud/.test(data)) {
+                        $ui.alert(`备份文件不在本地，请先进入iCloud下载，路径为：文件 -> JSBox -> ${$addin.current.name} -> archivesFiles`)
+                        return
+                    }
                     let success = $file.write({
                         data: $drive.read(ARCHIVES + '/' + data),
                         path: "data.js"
@@ -1409,8 +1412,6 @@ function linkHandler(url, params) {
     //     title: '更新概况',
     //     message: updateHint
     // })
-
-    
 
     function addEmoji(emojiSet, link) {
         let name = link.split(/=/)[0]
@@ -2115,9 +2116,9 @@ function saveWorkspace() {
 function setDefaultSettings() {
     let previewData = JSON.parse($file.read(FILE).string)
     for (let idx in settingKeys) {
-        if (!(settingKeys[idx] in previewData) || previewData[settingKeys[idx]] == "") {
+        if (typeof previewData[settingKeys[idx]] === 'undefined' || previewData[settingKeys[idx]] == "") {
             let defaultValue = $file.read(`defaultConf/${settingKeys[idx]}`).string
-            previewData[settingKeys[idx]] = defaultValue
+            previewData[settingKeys[idx]] = defaultValue || ' '
         }
     }
     $file.write({
