@@ -997,6 +997,7 @@ function archivesHandler() {
             },
             events: {
                 didSelect: (sender, indexPath, data) => {
+                    if (/\..*?\.icloud/.test(data)) {
                     let success = $file.write({
                         data: $drive.read(ARCHIVES + '/' + data),
                         path: "data.js"

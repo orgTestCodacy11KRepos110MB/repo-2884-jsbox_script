@@ -1,11 +1,5 @@
-let socketLogger = require("socketLogger")
-'init' in socketLogger && socketLogger.init('192.168.50.229', 44555, true)
-
-$app.listen({
-    exit: () => {
-        'destroy' in socketLogger && socketLogger.destroy()
-    }
-})
+console.clear()
+console.log('设备信息', $device.info)
 
 const app = require('scripts/app')
 const init = require('scripts/init')
@@ -37,7 +31,7 @@ if ($app.env === $env.today) {
     extension.collectRules()
     return
 } else if ($app.env === $env.siri) {
-    siri.siriRun()
+    siri.renderSiriUI()
     return
 }
 
