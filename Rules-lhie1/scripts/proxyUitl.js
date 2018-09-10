@@ -44,14 +44,13 @@ function promiseConf(url) {
                     noPaddingData += '='
                 }
                 let decodedData = $text.base64Decode(data) || $text.base64Decode(noPaddingData)
-                let surgeConfMatcher = data.match(/\[Proxy\]([\s\S]*?)\[Proxy Group\]/)
-                if (surgeConfMatcher && surgeConfMatcher[1]) {
+                if (/\[Proxy\]([\s\S]*?)\[Proxy Group\]/.test(data)) {
                     // Surge托管
                     resolve({
-                        servers: surgeConfMatcher[1],
+                        servers: RegExp.$1,
                         filename: filename
                     })
-                } else if (/ssr:\/\//.test(decodedData)) {
+                } else if (/^ssr:\/\//.test(decodedData)) {
                     // SSR订阅
                     let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '' && /^ssr:\/\//.test(i));
                     let res = decodeSSR(rawLinks);
@@ -59,7 +58,7 @@ function promiseConf(url) {
                         servers: res.servers.join('\n'),
                         filename: res.sstag || filename
                     })
-                } else if (/ss:\/\//.test(decodedData)) {
+                } else if (/^ss:\/\//.test(decodedData)) {
                     // SS订阅
                     let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '' && /^ss:\/\//.test(i));
                     decodeScheme({
@@ -71,9 +70,11 @@ function promiseConf(url) {
                             })
                         }
                     });
-                } else if (/vmess:\/\//.test(decodedData)) {
+                } else if (/^vmess:\/\//.test(decodedData)) {
                     let rawLinks = decodedData.split(/[\n\r\|\s]+/g).filter(i => i !== '' && /^vmess:\/\//.test(i));
+                    console.log('rawLinks', typeof rawLinks);
                     let res = decodeVmess(rawLinks);
+                    console.log('res', res);
                     resolve({
                         servers: res.servers.join('\n'),
                         filename: res.sstag || filename
@@ -153,6 +154,7 @@ function getServersFromConfFile(params) {
             let res = confs[idx]
             let filename = res ? res.filename : '';
             let servers = res ? res.servers.split(/[\n\r]+/).filter(item => item !== '').map(i => i.strictTrim()) : [];
+            console.log('{ servers: servers, filename: filename, url: params.urls[idx] }', { servers: servers, filename: filename, url: params.urls[idx] });
             params.handler({ servers: servers, filename: filename, url: params.urls[idx] })
         }
     }).catch(reason => {
@@ -161,50 +163,42 @@ function getServersFromConfFile(params) {
     })
 }
 
+function isJson(str) {
+    try {
+        JSON.parse(str)
+    } catch(e) {
+        return false
+    }
+    return true
+}
+
 function decodeVmess(links) {
     let result = []
-    let tag
+    let tag = ''
 
     for (let idx in links) {
         let link = links[idx]
-        let isV2RayNV2 = /^vmess:\/\/\S+\?/.test(link)
-        if (isV2RayNV2) {
-            let contentMatcher = link.match(/^vmess:\/\/(.*?)\?(.*?)$/)
-            if (contentMatcher && contentMatcher.length === 3) {
-                let encryptContent = contentMatcher[1]
-                let params = contentMatcher[2].split(/&/g).map(i => i.split(/=/))
-                let rawContent = urlsafeBase64Decode(encryptContent)
-                let rawContentMatcher = rawContent.match(/^(.*?):(.*?)@(.*?):(.*?)$/)
-                let getParam = key => {
-                    let target = params.find(i => i[0] === key)
-                    if (target && target[1]) {
-                        return target[1]
-                    }
-                    return ''
+
+        if (/^vmess:\/\/(.*?)$/.test(link)) {
+            let content = urlsafeBase64Decode(RegExp.$1)
+            if (isJson(content)) {
+                // v2rayN style
+                let jsonConf = JSON.parse(content)
+                let group = ''
+                const ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/16A5366a'
+                let obfs = `,obfs=${jsonConf.net === 'ws' ? 'ws' : 'http'},obfs-path="${jsonConf.path || '/'}",obfs-header="Host:${jsonConf.host || jsonConf.add}[Rr][Nn]User-Agent:${ua}"`
+                let quanVmess = `${jsonConf.ps} = vmess,${jsonConf.add},${jsonConf.port},none,"${jsonConf.id}",group=${group},over-tls=${jsonConf.tls === 'tls' ? 'true' : 'false'},certificate=1${jsonConf.type === 'none' && jsonConf.net !== 'ws' ? '' : obfs}`
+                result.push(quanVmess)
+            } else {
+                // Quantumult style
+                if (/group=(.*?),/.test(content)) {
+                    tag = RegExp.$1
                 }
-                if (rawContentMatcher && rawContentMatcher.length === 5) {
-                    let remark = getParam('remark') || getParam('remarks') || ''
-                    let finalName = decodeURI(remark) === '' ? `${rawContentMatcher[3]}:${rawContentMatcher[4]}` : decodeURI(remark)
-                    let res = `${finalName} = vmess, ${rawContentMatcher[3]}, ${rawContentMatcher[4]}, aes-128-cfb, "${rawContentMatcher[2]}", over-tls=${getParam('tls') === '1' ? 'true' : 'false'}, certificate=${getParam('allowInsecure') === '1' ? '0' : '1'}`
-                    result.push(res)
-                    tag = finalName
-                }
-            }
-        } else {
-            let contentMatcher = link.match(/^vmess:\/\/(.*?)$/)
-            if (contentMatcher && contentMatcher[1]) {
-                let encryptContent = contentMatcher[1]
-                let rawContent = JSON.parse($text.base64Decode(encryptContent))
-                let res = `${rawContent.ps} = vmess, ${rawContent.add}, ${rawContent.port}, aes-128-cfb, "${rawContent.id}", over-tls=${rawContent.tls === 'tls' ? 'true' : 'false'}, certificate=1`
-                if (rawContent.type === 'http') {
-                    res += `, obfs=http, obfs-path=${rawContent.path}, obfs-header="Host: ${rawContent.host}"`
-                }
-                result.push(res)
-                tag = rawContent.ps
+                result.push(content)
             }
         }
     }
-    return { servers: result, sstag: result.length > 1 ? `批量V2Ray节点（${result.length}）` : tag }
+    return { servers: result, sstag: tag || `批量V2Ray节点（${result.length}）`}
 }
 
 function decodeScheme(params) {

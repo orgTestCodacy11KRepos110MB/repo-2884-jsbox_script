@@ -1,5 +1,8 @@
 **如打赏名单有遗漏，请TG联系我加一下**
 
+#### 2018.09.10
+1. 支持导入v2订阅（Quantumult和v2rayN），去除对Shadowrocket和Kitsunebi的vmess格式支持 -v1.9.1
+
 #### 2018.08.30
 1. 修复bug -v1.8.4
 
