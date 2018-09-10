@@ -2,6 +2,7 @@
 
 #### 2018.09.10
 1. 支持导入v2订阅（Quantumult和v2rayN），去除对Shadowrocket和Kitsunebi的vmess格式支持 -v1.9.1
+2. v2rayN的vmess默认加密方式改为chacha20-ietf-poly1305 -1.9.2
 
 #### 2018.08.30
 1. 修复bug -v1.8.4

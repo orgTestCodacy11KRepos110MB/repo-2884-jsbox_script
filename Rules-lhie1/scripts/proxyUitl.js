@@ -187,7 +187,7 @@ function decodeVmess(links) {
                 let group = ''
                 const ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/16A5366a'
                 let obfs = `,obfs=${jsonConf.net === 'ws' ? 'ws' : 'http'},obfs-path="${jsonConf.path || '/'}",obfs-header="Host:${jsonConf.host || jsonConf.add}[Rr][Nn]User-Agent:${ua}"`
-                let quanVmess = `${jsonConf.ps} = vmess,${jsonConf.add},${jsonConf.port},none,"${jsonConf.id}",group=${group},over-tls=${jsonConf.tls === 'tls' ? 'true' : 'false'},certificate=1${jsonConf.type === 'none' && jsonConf.net !== 'ws' ? '' : obfs}`
+                let quanVmess = `${jsonConf.ps} = vmess,${jsonConf.add},${jsonConf.port},chacha20-ietf-poly1305,"${jsonConf.id}",group=${group},over-tls=${jsonConf.tls === 'tls' ? 'true' : 'false'},certificate=1${jsonConf.type === 'none' && jsonConf.net !== 'ws' ? '' : obfs}`
                 result.push(quanVmess)
             } else {
                 // Quantumult style
