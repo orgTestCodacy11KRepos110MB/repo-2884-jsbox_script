@@ -2536,7 +2536,7 @@ function makeConf(params) {
                     sourceType = `${type & 4 ? 'true' : 'false'}, ${type & 2 ? 'true' : 'false'}, ${type & 1 ? 'true' : 'false'}`
                 }
                 prototype += genQuanPart('SOURCE', serverEditorData.filter(i => {
-                    let isSSR = i.rows.find(l => /^.*?=\s*shadowsocksr/.test(l.proxyLink))
+                    let isSSR = i.rows.find(l => /^.*?=\s*(?:shadowsocksr|vmess)/.test(l.proxyLink))
                     return isSSR !== undefined
                 }).map(i => {
                     return `${i.title}, server, ${i.url}, ${sourceType}, ${i.title}`
@@ -2591,6 +2591,7 @@ function makeConf(params) {
             console.error(e.stack)
         })
     } catch (e) {
+        console.error(e.stack)
         'onError' in params && params.onError(e)
     }
 
