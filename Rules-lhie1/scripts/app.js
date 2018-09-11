@@ -206,7 +206,7 @@ function renderUI() {
                                     })
                                 }
                                 if (!existsSec) {
-                                    listData.push(section)
+                                    listData.unshift(section)
                                 }
                                 $("serverEditor").data = listData
                                 saveWorkspace()
