@@ -298,7 +298,7 @@ function collectRules() {
         let file = JSON.parse($file.read(FILE).string);
         let workspace = file.workspace;
         let serverData = workspace.serverData;
-        serverData.push(serverDataItem);
+        serverData.unshift(serverDataItem);
         let success = $file.write({
             data: $data({ "string": JSON.stringify(file) }),
             path: FILE

@@ -1,5 +1,9 @@
 **如打赏名单有遗漏，请TG联系我加一下**
 
+#### 2018.09.11
+1. 新添加节点显示在最顶部 -v1.9.3
+2. 修复v2ray订阅不生成问题 -v1.9.3
+
 #### 2018.09.10
 1. 支持导入v2订阅（Quantumult和v2rayN），去除对Shadowrocket和Kitsunebi的vmess格式支持 -v1.9.1
 2. v2rayN的vmess默认加密方式改为chacha20-ietf-poly1305 -1.9.2
