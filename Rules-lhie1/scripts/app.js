@@ -280,7 +280,7 @@ function renderUI() {
                                 item.proxyName.text = newLink.split(/\s*=/)[0]
                                 section.rows[indexPath.row] = item
                                 section.title = newSec
-                                sender.data = od
+                                sender.data = formatListData(od)
                                 saveWorkspace()
                             })
                         }
@@ -361,8 +361,13 @@ function renderUI() {
                         saveWorkspace()
                     },
                     reorderFinished: data => {
-                        $("serverEditor").data = data
-                        saveWorkspace()
+                        $thread.background({
+                            delay: 0,
+                            handler: function() {
+                                $("serverEditor").data = formatListData(data)
+                                saveWorkspace()
+                            }
+                          })
                     }
                 }
             }, {
@@ -624,6 +629,25 @@ function renderUI() {
             }]
         },]
     })
+}
+
+function formatListData(data) {
+    if (!data || data.length === 0) {
+        return []
+    }
+    let noGroup = []
+    data = data.map(i => {
+        if (i.title === '' || i.rows.length === 0) {
+            noGroup = noGroup.concat(i.rows)
+            return null
+        }
+        return i
+    }).filter(i => i !== null)
+    if (noGroup.length > 0) {
+        data.unshift({ title: "", rows: noGroup })
+    }
+    console.log('data', data);
+    return data
 }
 
 let iconViewAnimator = null
@@ -1357,14 +1381,18 @@ function importMenu(params) {
 }
 
 function isEmoji() {
-    let advanceSettings = JSON.parse($file.read(FILE).string)
-    let workspace = advanceSettings.workspace
-    let usualData = workspace.usualData
-
-    let usualValue = function (key) {
-        return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key).title.bgcolor : false
-    }
-    return usualValue('Emoji')
+    try {
+        let advanceSettings = JSON.parse($file.read(FILE).string)
+        let workspace = advanceSettings.workspace
+        let usualData = workspace.usualData
+    
+        let usualValue = function (key) {
+            return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key).title.bgcolor : false
+        }
+        return usualValue('Emoji')
+    } catch (e) {
+        return false
+    }    
 }
 
 function linkHandler(url, params) {
@@ -1947,7 +1975,12 @@ function renderAboutUI() {
 
 function deleteServerGroup() {
     let serverData = $("serverEditor").data
-    let sections = serverData.map(i => i.title)
+    let sections = serverData.map(i => {
+        if (i.title === '') {
+            return '无分组节点'
+        }
+        return i.title
+    })
     $ui.menu({
         items: sections.concat(['全部删除', '关键字删除']),
         handler: function (title, idx) {
@@ -2242,6 +2275,7 @@ function makeConf(params) {
             serverEditorData = serverEditorData.map(i => {
                 let rows = i.rows.map(s => {
                     let containsOP = /obfs_param/.test(s.proxyLink)
+                    s.proxyLink = s.proxyLink.replace(/,\s*group\s*=[^,]*/, '')
                     if (containsOP) {
                         s.proxyLink = s.proxyLink.replace(/obfs_param/, `group=${i.title}, obfs_param`)
                     } else {
