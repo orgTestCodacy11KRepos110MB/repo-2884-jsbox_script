@@ -1,14 +1,20 @@
 const screenUtil = require('scripts/utils/screen')
 
+const v2raySubView = require('scripts/v2raySubView/view')
+
 function render() {
     let screenInfo = screenUtil.screenInfo()
-    console.log($device.info)
-    console.log('screenInfo', screenInfo);
-    console.log($file.read('assets/test.webp'))
     $ui.render({
         props: {
+            id: "bodyView",
             navBarHidden: true,
             bgcolor: $color("#2d2d2d")
+        },
+        events: {
+            appeared: function (sender) {
+                $("bodyView").runtimeValue().$viewController().$navigationController().$interactivePopGestureRecognizer().$delegate()
+                $("bodyView").runtimeValue().$viewController().$navigationController().$interactivePopGestureRecognizer().$setDelegate(null)
+            }
         },
         views: [{
             type: "view",
@@ -29,12 +35,6 @@ function render() {
                     make.centerY.equalTo(view.super)
                     make.left.equalTo(view.super).offset(screenInfo.padding)
                 }
-            }, {
-                type: "image",
-                props: {
-                    data: $file.read('assets/test.webp').image.png
-                },
-                layout: $layout.center
             }]
         }, {
             type: "view",
@@ -52,7 +52,7 @@ function render() {
                     rowHeight: 70,
                     data: [{
                         itemTitle: { text: "订阅转换" },
-                        itemDesc: { text: "识别V2RayNG格式订阅" }
+                        itemDesc: { text: "识别v2rayN格式订阅" }
                     }, {
                         itemTitle: { text: "规则更新" },
                         itemDesc: { text: "更新分流规则和链接阻止" }
@@ -91,7 +91,7 @@ function render() {
                 layout: $layout.fill,
                 events: {
                     didSelect: (sender, indexPath, data) => {
-                        console.log(data)
+                        v2raySubView.push()
                     }
                 }
             }]
