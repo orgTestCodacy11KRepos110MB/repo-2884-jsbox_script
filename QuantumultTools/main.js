@@ -1,5 +1,7 @@
 let socketLogger = require("socketLogger")
-typeof socketLogger.init === 'function' && socketLogger.init('127.0.0.1')
+typeof socketLogger.init === 'function' && socketLogger.init('192.168.50.229')
 // SocketLogger Auto Generation Code
 
-console.log($device.info)
+const homeView = require('scripts/homeView/view')
+
+homeView.render()
