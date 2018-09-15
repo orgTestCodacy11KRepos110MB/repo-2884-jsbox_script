@@ -3,8 +3,6 @@ console.clear()
 $app.autoKeyboardEnabled = true
 $app.keyboardToolbarEnabled = true
 
-updateCheck()
-
 let db = $sqlite.open('user.db')
 db.update("CREATE TABLE IF NOT EXISTS subInfo(title TEXT, method TEXT, url TEXT)")
 
@@ -98,6 +96,7 @@ let render = () => {
             layout: $layout.fill,
             events: {
                 didSelect: async (sender, indexPath, data) => {
+                    $ui.loading(true)
                     let url = data.raw.url
                     let rawLinks = null
                     if (/^http/.test(url)) {
@@ -116,6 +115,7 @@ let render = () => {
                     }
                     let links = decodeVmess(rawLinks, data.raw.title, data.raw.method);
                     $clipboard.text = links.map(i => `vmess://${urlsafeBase64Encode(i)}`).join('\n')
+                    $ui.loading(false)
                     $ui.alert({
                         title: "识别完成",
                         message: `共计识别到${links.length}个V2Ray链接，已复制至剪贴板，请在Quantumult中通过URI导入`,
@@ -156,10 +156,10 @@ let render = () => {
                                 view.remove()
                                 $("mainList").data = loadDBData()
                             } else {
-                                $ui.alert('Something happened, please try again.')
+                                $ui.alert('数据保存失败，请重试！')
                             }
                         } else {
-                            $ui.alert('URL is required!')
+                            $ui.alert('链接不能为空！')
                         }
                     })
                 }
@@ -185,9 +185,9 @@ function loadDBData() {
         }
         let itemData = {
             raw: values,
-            group: { text: `Group：${values.title}` },
-            method: { text: `Method：${values.method}` },
-            url: { text: `URL：${domain}` }
+            group: { text: `分组：${values.title}` },
+            method: { text: `加密：${values.method}` },
+            url: { text: `链接：${domain}` }
         };
         listData.push(itemData);
     }
@@ -406,24 +406,6 @@ let screenInfo = () => {
         statusBarHeight: statusBarHeight,
         navBarHeight: navBarHeight,
         padding: 10
-    }
-}
-
-async function updateCheck() {
-    let resp = await $http.get('https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Quantumult%20V2Ray.js')
-    let jsContentMD5 = $text.MD5(resp.data)
-    let curContentMD5 = $text.MD5($addin.current.data.string)
-    if (jsContentMD5 !== curContentMD5) {
-        $addin.save({
-            name: $addin.current.name,
-            data: $data({string: resp.data}),
-            handler: success => {
-                if (success) {
-                    $ui.toast('更新完毕，重启生效')
-                    // $addin.restart()
-                }
-            }
-        })
     }
 }
 
