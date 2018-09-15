@@ -1,11 +1,9 @@
-let socketLogger = require("socketLogger")
-typeof socketLogger.init === 'function' && socketLogger.init('192.168.50.229')
-// SocketLogger Auto Generation Code
-
 console.clear()
 
 $app.autoKeyboardEnabled = true
 $app.keyboardToolbarEnabled = true
+
+updateCheck()
 
 let db = $sqlite.open('user.db')
 db.update("CREATE TABLE IF NOT EXISTS subInfo(title TEXT, method TEXT, url TEXT)")
@@ -408,6 +406,24 @@ let screenInfo = () => {
         statusBarHeight: statusBarHeight,
         navBarHeight: navBarHeight,
         padding: 10
+    }
+}
+
+async function updateCheck() {
+    let resp = await $http.get('https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Quantumult%20V2Ray.js')
+    let jsContentMD5 = $text.MD5(resp.data)
+    let curContentMD5 = $text.MD5($addin.current.data.string)
+    if (jsContentMD5 !== curContentMD5) {
+        $addin.save({
+            name: $addin.current.name,
+            data: $data({string: resp.data}),
+            handler: success => {
+                if (success) {
+                    $ui.toast('更新完毕，重启生效')
+                    // $addin.restart()
+                }
+            }
+        })
     }
 }
 
