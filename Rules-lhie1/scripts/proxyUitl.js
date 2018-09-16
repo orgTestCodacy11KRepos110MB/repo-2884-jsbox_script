@@ -237,11 +237,21 @@ function decodeScheme(params) {
             }
         } else {
             let mdps = url.match(/ss:\/\/(.*?)#/)[1]
-            let padding = 4 - mdps.length % 4
-            if (padding < 4) {
-                mdps += Array(padding + 1).join('=')
+            console.log('mdps', mdps);
+            if (/^(.*?)@(.*?):(.*?)$/.test(mdps)) {
+                hostname = RegExp.$2
+                port = RegExp.$3
+                let methodAndPass = $text.base64Decode(RegExp.$1)
+                if (/^(.*?):(.*?)$/.test(methodAndPass)) {
+                    method = RegExp.$1
+                    password = RegExp.$2
+                }
             }
-            [_, method, password, hostname, port] = $text.base64Decode(mdps).match(/^(.*?):(.*?)@(.*?):(.*?)$/)
+            // let padding = 4 - mdps.length % 4
+            // if (padding < 4) {
+            //     mdps += Array(padding + 1).join('=')
+            // }
+            // [_, method, password, hostname, port] = $text.base64Decode(mdps).match(/^(.*?):(.*?)@(.*?):(.*?)$/)
         }
         let proxy = `${tag} = custom, ${hostname}, ${port}, ${method}, ${password}, http://omgib13x8.bkt.clouddn.com/SSEncrypt.module`
         if (plugin != undefined) {
