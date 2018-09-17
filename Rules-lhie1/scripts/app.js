@@ -363,11 +363,11 @@ function renderUI() {
                     reorderFinished: data => {
                         $thread.background({
                             delay: 0,
-                            handler: function() {
+                            handler: function () {
                                 $("serverEditor").data = formatListData(data)
                                 saveWorkspace()
                             }
-                          })
+                        })
                     }
                 }
             }, {
@@ -936,7 +936,12 @@ function archivesHandler() {
         return $drive.list(ARCHIVES).map(i => {
             let path = i.runtimeValue().invoke('pathComponents').rawValue()
             let absPath = i.runtimeValue().invoke('absoluteString').rawValue()
-            return path[path.length - 1]
+            return {
+                archiveName: { 
+                    text: path[path.length - 1] ,
+                    textColor: path[path.length - 1] === $cache.get('currentArchive') ? $color("red") : $color("black")
+                }
+            }
         })
     }
     $("bodyView").add({
@@ -985,11 +990,29 @@ function archivesHandler() {
                         align: $align.center
                     }
                 },
+                template: {
+                    props: {
+                        bgcolor: $color("clear")
+                    },
+                    views: [
+                        {
+                            type: "label",
+                            props: {
+                                id: "archiveName"
+                            },
+                            layout: (make, view) => {
+                                make.width.equalTo(view.super).offset(-20)
+                                make.left.equalTo(view.super).offset(10)
+                                make.height.equalTo(view.super)
+                            }
+                        }
+                    ]
+                },
                 actions: [{
                     title: "删除",
                     color: $color('red'),
                     handler: (sender, indexPath) => {
-                        let fileName = sender.object(indexPath)
+                        let fileName = sender.object(indexPath).archiveName.text
                         let success = $drive.delete(ARCHIVES + '/' + fileName)
                         if (success) {
                             sender.data = getFiles()
@@ -998,14 +1021,14 @@ function archivesHandler() {
                 }, {
                     title: "导出",
                     handler: (sender, indexPath) => {
-                        let fileName = sender.object(indexPath)
+                        let fileName = sender.object(indexPath).archiveName.text
                         $share.sheet(['data.js', $drive.read(ARCHIVES + "/" + fileName)])
                     }
                 }, {
                     title: "覆盖",
                     color: $color("tint"),
                     handler: (sender, indexPath) => {
-                        let filename = sender.object(indexPath)
+                        let filename = sender.object(indexPath).archiveName.text
                         let success = $drive.write({
                             data: $file.read('data.js'),
                             path: ARCHIVES + '/' + filename
@@ -1020,7 +1043,8 @@ function archivesHandler() {
                 make.center.equalTo(view.super)
             },
             events: {
-                didSelect: (sender, indexPath, data) => {
+                didSelect: (sender, indexPath, item) => {
+                    let data = item.archiveName.text
                     if (/\..*?\.icloud/.test(data)) {
                         $ui.alert(`备份文件不在本地，请先进入iCloud下载，路径为：文件 -> JSBox -> ${$addin.current.name} -> archivesFiles`)
                         return
@@ -1030,6 +1054,7 @@ function archivesHandler() {
                         path: "data.js"
                     })
                     if (success) {
+                        $cache.set('currentArchive', data)
                         $app.notify({
                             name: 'loadData'
                         })
@@ -1385,14 +1410,14 @@ function isEmoji() {
         let advanceSettings = JSON.parse($file.read(FILE).string)
         let workspace = advanceSettings.workspace
         let usualData = workspace.usualData
-    
+
         let usualValue = function (key) {
             return usualData.find(i => i.title.text == key) ? usualData.find(i => i.title.text == key).title.bgcolor : false
         }
         return usualValue('Emoji')
     } catch (e) {
         return false
-    }    
+    }
 }
 
 function linkHandler(url, params) {
@@ -2251,7 +2276,10 @@ function makeConf(params) {
             headerrewrite: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Header%20Rewrite.conf',
             hostname: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Hostname.conf',
             mitm: 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge/MITM.conf',
-            quanreject: 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult.conf'
+            quanretcp: 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult.conf',
+            quanextra: 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_Extra.conf',
+            quanrejection: 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_URL.conf',
+            localhost: 'http://127.0.0.1/fndroid'
         }
         let advanceSettings = JSON.parse($file.read(FILE).string)
         let workspace = advanceSettings.workspace
@@ -2337,13 +2365,13 @@ function makeConf(params) {
 
         let promiseArray = [
             getAutoRules(pu.prototype, onPgs, '成功取回配置模板'), // 0
-            rulesReplacement ? getAutoRules(rulesReplacement, onPgs, '成功取回替换配置') : getAutoRules(pu.apple, onPgs, '成功取回APPLE规则'), // 1
-            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.quanreject : pu.reject, onPgs, '成功取回Reject规则'),  // 2
-            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.proxy, onPgs, '成功取回Proxy规则'), // 3
-            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.direct, onPgs, '成功取回Direct规则'), // 4
-            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.host, onPgs, '成功取回Proxy规则'), // 5
+            rulesReplacement ? getAutoRules(rulesReplacement, onPgs, '成功取回替换配置') : getAutoRules(isQuan ? pu.localhost : pu.apple, onPgs, '成功取回APPLE规则'), // 1
+            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.localhost : pu.reject, onPgs, '成功取回Reject规则'),  // 2
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.quanretcp : pu.proxy, onPgs, '成功取回Proxy规则'), // 3
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.localhost : pu.direct, onPgs, '成功取回Direct规则'), // 4
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.host, onPgs, '成功取回Host'), // 5
             rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.urlrewrite, onPgs, '成功取回URL Rewrite'), // 6
-            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.urlreject, onPgs, '成功取回URL Reject'), // 7
+            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.quanrejection : pu.urlreject, onPgs, '成功取回URL Reject'), // 7
             rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.headerrewrite, onPgs, '成功取回Header Rewrite'), // 8
             !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.hostname, onPgs, '成功取回MITM Hostname'), // 9
         ]
@@ -2363,8 +2391,26 @@ function makeConf(params) {
                 repHostName && repHostName[1] && (v[9] = repHostName[1])
             }
 
-            if (isQuan) {
-                v[2] = v[2].split(/[\n\r]+/g).filter(i => /^.*?,\s*REJECT\s*$/.test(i)).join('\n')
+            if (isQuan && /\[TCP\]([\s\S]*)\/\/ Detect local network/.test(v[3])) {
+                let tcpRules = RegExp.$1.split(/[\n\r]+/g)
+                if (!ads) {
+                    tcpRules = tcpRules.filter(i => !/^.*?,\s*REJECT\s*$/.test(i))
+                }
+                tcpRules = tcpRules.map(r => {
+                    r = r.replace(/(^.*?,.*?,\s*)选择Google的Policy，不懂就不选(.*$)/, '$1🍃 Proxy$2')
+                    r = r.replace(/(^.*?,.*?,\s*)选择微软服务的Policy，不懂就选择DIRECT(.*$)/, '$1🍂 Domestic$2')
+                    r = r.replace(/(^.*?,.*?,\s*)选择PayPal的Policy，不懂就选择DIRECT(.*$)/, '$1🍂 Domestic$2')
+                    r = r.replace(/(^.*?,.*?,\s*)选择Apple的Policy，不懂就选择DIRECT(.*$)/, '$1🍂 Domestic$2')
+                    r = r.replace(/(^.*?,.*?,\s*)选择Netflix的Policy，不懂就不选(.*$)/, '$1🍃 Proxy$2')
+                    r = r.replace(/(^.*?,.*?,\s*)DIRECT(.*$)/i, '$1🍂 Domestic$2')
+                    r = r.replace(/(^.*?,.*?,\s*)PROXY(.*$)/i, '$1🍃 Proxy$2')
+                    return r
+                })
+                v[1] = tcpRules.join('\n')
+                v[2] = ''
+                v[3] = ''
+                v[4] = ''
+                v[7] = v[7].replace(/hostname = /, '# hostname = ')
             }
 
             rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 || isQuan ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
