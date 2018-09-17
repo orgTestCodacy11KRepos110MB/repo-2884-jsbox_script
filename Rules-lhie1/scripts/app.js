@@ -2400,7 +2400,7 @@ function makeConf(params) {
                     r = r.replace(/(^.*?,.*?,\s*)选择Google的Policy，不懂就不选(.*$)/, '$1🍃 Proxy$2')
                     r = r.replace(/(^.*?,.*?,\s*)选择微软服务的Policy，不懂就选择DIRECT(.*$)/, '$1🍂 Domestic$2')
                     r = r.replace(/(^.*?,.*?,\s*)选择PayPal的Policy，不懂就选择DIRECT(.*$)/, '$1🍂 Domestic$2')
-                    r = r.replace(/(^.*?,.*?,\s*)选择Apple的Policy，不懂就选择DIRECT(.*$)/, '$1🍂 Domestic$2')
+                    r = r.replace(/(^.*?,.*?,\s*)选择Apple的Policy，不懂就选择DIRECT(.*$)/, '$1🍎 Only$2')
                     r = r.replace(/(^.*?,.*?,\s*)选择Netflix的Policy，不懂就不选(.*$)/, '$1🍃 Proxy$2')
                     r = r.replace(/(^.*?,.*?,\s*)DIRECT(.*$)/i, '$1🍂 Domestic$2')
                     r = r.replace(/(^.*?,.*?,\s*)PROXY(.*$)/i, '$1🍃 Proxy$2')
