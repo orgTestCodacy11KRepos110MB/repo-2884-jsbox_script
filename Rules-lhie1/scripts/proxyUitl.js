@@ -236,22 +236,29 @@ function decodeScheme(params) {
                 plugin = `obfs=${obfs}, obfs-host=${obfsHost}`
             }
         } else {
-            let mdps = url.match(/ss:\/\/(.*?)#/)[1]
-            console.log('mdps', mdps);
-            if (/^(.*?)@(.*?):(.*?)$/.test(mdps)) {
-                hostname = RegExp.$2
-                port = RegExp.$3
-                let methodAndPass = $text.base64Decode(RegExp.$1)
-                if (/^(.*?):(.*?)$/.test(methodAndPass)) {
-                    method = RegExp.$1
-                    password = RegExp.$2
+            if (/ss:\/\/([^#]*)/.test(url)) {
+                let mdps = RegExp.$1
+                if (/^(.*?)@(.*?):(.*?)$/.test(mdps)) {
+                    hostname = RegExp.$2
+                    port = RegExp.$3
+                    let methodAndPass = $text.base64Decode(RegExp.$1)
+                    if (/^(.*?):(.*?)$/.test(methodAndPass)) {
+                        method = RegExp.$1
+                        password = RegExp.$2
+                    }
+                } else {
+                    let padding = 4 - mdps.length % 4
+                    if (padding < 4) {
+                        mdps += Array(padding + 1).join('=')
+                    }
+                    if (/^(.*?):(.*?)@(.*?):(.*?)$/.test($text.base64Decode(mdps))) {
+                        method = RegExp.$1
+                        password = RegExp.$2
+                        hostname = RegExp.$3
+                        port = RegExp.$4
+                    }
                 }
-            }
-            // let padding = 4 - mdps.length % 4
-            // if (padding < 4) {
-            //     mdps += Array(padding + 1).join('=')
-            // }
-            // [_, method, password, hostname, port] = $text.base64Decode(mdps).match(/^(.*?):(.*?)@(.*?):(.*?)$/)
+            }      
         }
         let proxy = `${tag} = custom, ${hostname}, ${port}, ${method}, ${password}, http://omgib13x8.bkt.clouddn.com/SSEncrypt.module`
         if (plugin != undefined) {
