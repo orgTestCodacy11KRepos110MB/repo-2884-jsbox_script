@@ -937,8 +937,8 @@ function archivesHandler() {
             let path = i.runtimeValue().invoke('pathComponents').rawValue()
             let absPath = i.runtimeValue().invoke('absoluteString').rawValue()
             return {
-                archiveName: { 
-                    text: path[path.length - 1] ,
+                archiveName: {
+                    text: path[path.length - 1],
                     textColor: path[path.length - 1] === $cache.get('currentArchive') ? $color("red") : $color("black")
                 }
             }
@@ -2368,7 +2368,7 @@ function makeConf(params) {
             rulesReplacement ? getAutoRules(rulesReplacement, onPgs, '成功取回替换配置') : getAutoRules(isQuan ? pu.localhost : pu.apple, onPgs, '成功取回APPLE规则'), // 1
             !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.localhost : pu.reject, onPgs, '成功取回Reject规则'),  // 2
             rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.quanretcp : pu.proxy, onPgs, '成功取回Proxy规则'), // 3
-            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.localhost : pu.direct, onPgs, '成功取回Direct规则'), // 4
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.quanextra : pu.direct, onPgs, '成功取回Direct规则'), // 4
             rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.host, onPgs, '成功取回Host'), // 5
             rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.urlrewrite, onPgs, '成功取回URL Rewrite'), // 6
             !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.quanrejection : pu.urlreject, onPgs, '成功取回URL Reject'), // 7
@@ -2392,11 +2392,17 @@ function makeConf(params) {
             }
 
             if (isQuan && /\[TCP\]([\s\S]*)\/\/ Detect local network/.test(v[3])) {
-                let tcpRules = RegExp.$1.split(/[\n\r]+/g)
+                let tcpRules = `${v[4]}\n${RegExp.$1}`.split(/[\n\r]+/g)
                 if (!ads) {
                     tcpRules = tcpRules.filter(i => !/^.*?,\s*REJECT\s*$/.test(i))
                 }
                 tcpRules = tcpRules.map(r => {
+                    r = r.replace(/(^.*?,.*?,\s*)选择YouTube Music的Policy(.*$)/, '$1🍃 Proxy$2')
+                    r = r.replace(/(^.*?,.*?,\s*)选择TVB\/Viu的Policy(.*$)/, '$1🍃 Proxy$2')
+                    r = r.replace(/(^.*?,.*?,\s*)选择BBC的Policy(.*$)/, '$1🍃 Proxy$2')
+                    r = r.replace(/(^.*?,.*?,\s*)选择Vidol的Policy(.*$)/, '$1🍃 Proxy$2')
+                    r = r.replace(/(^.*?,.*?,\s*)选择Hulu的Policy(.*$)/, '$1🍃 Proxy$2')
+                    r = r.replace(/(^.*?,.*?,\s*)选择Spotify的Policy(.*$)/, '$1🍃 Proxy$2')
                     r = r.replace(/(^.*?,.*?,\s*)选择Google的Policy，不懂就不选(.*$)/, '$1🍃 Proxy$2')
                     r = r.replace(/(^.*?,.*?,\s*)选择微软服务的Policy，不懂就选择DIRECT(.*$)/, '$1🍂 Domestic$2')
                     r = r.replace(/(^.*?,.*?,\s*)选择PayPal的Policy，不懂就选择DIRECT(.*$)/, '$1🍂 Domestic$2')
@@ -2404,6 +2410,7 @@ function makeConf(params) {
                     r = r.replace(/(^.*?,.*?,\s*)选择Netflix的Policy，不懂就不选(.*$)/, '$1🍃 Proxy$2')
                     r = r.replace(/(^.*?,.*?,\s*)DIRECT(.*$)/i, '$1🍂 Domestic$2')
                     r = r.replace(/(^.*?,.*?,\s*)PROXY(.*$)/i, '$1🍃 Proxy$2')
+                    r = r.replace(/^DOMAIN(.*?)🍃 Proxy\s*$/, 'DOMAIN$1🍃 Proxy,force-remote-dns')
                     return r
                 })
                 v[1] = tcpRules.join('\n')
@@ -2499,7 +2506,11 @@ function makeConf(params) {
                 return res.join('\n')
             }
 
-            prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
+            if (isQuan) {
+                prototype = prototype.replace(/FINAL,/, `${prettyInsert(customRules.add)}\nFINAL,`)
+            } else {
+                prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
+            }
             prototype = prototype.replace('Proxys', isQuan ? proxies : ssr2ss(proxies))
             if (rulesReplacement) {
                 prototype = prototype.replace(/\[Rule\][\s\S]*?(?:\[|$)/, `[Rule]\n${prettyInsert(customRules.add)}\n${rules}\n[`)
