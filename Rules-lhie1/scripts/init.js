@@ -4,7 +4,6 @@ function asyncInitialize() {
 
 function updateSpecialReg() {
     $http.download({
-        timeout: 2,
         showsProgress: false,
         url: "https://raw.githubusercontent.com/Fndroid/specialReg/master/specialReg.js?t=" + new Date().getTime()
     }).then(resp => {

@@ -2492,7 +2492,7 @@ function makeConf(params) {
                 if (!proxyNameLegal(proxyName)) continue
                 let videoReg = require('scripts/videoReg')
                 rules.match(videoReg[videoType]).forEach(i => {
-                    rules = rules.replace(i, i.replace('🍃 Proxy', proxyName))
+                    rules = rules.replace(i, i.replace(/(^.*?,.*?,)[^,]*(.*$)/, `$1${proxyName}$2`))
                 })
             }
 
