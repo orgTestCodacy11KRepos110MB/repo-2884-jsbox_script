@@ -309,15 +309,12 @@ function showAlterDialog(group, method, url, callback) {
                 props: {
                     id: "alberInputMethod",
                     text: method,
-                    placeholder: "",
+                    placeholder: "chacha20-ietf-poly1305",
                     autoFontSize: true
                 },
                 events: {
                     returned: sender => {
                         sender.blur()
-                    },
-                    tapped: sender => {
-
                     }
                 },
                 layout: (make, view) => {
@@ -376,38 +373,6 @@ function showAlterDialog(group, method, url, callback) {
                     }
                 }
             }]
-        }, {
-            type: "view",
-            props: {
-                bgcolor: $color("#a6a5a4")
-            },
-            views: [{
-                type: "picker",
-                props: {
-                    items: [['none', 'aes-128-cfb', 'aes-128-gcm', 'chacha20-ietf-poly1305']]
-                },
-                layout: (make, view) => {
-                    make.height.equalTo(view.super).offset(-
-                        )
-                    make.width.equalTo(view.super)
-                    make.top.equalTo(view.super).offset(40)
-                }
-            }, {
-                type: "label",
-                props: {
-                    text: "  Done  ",
-                    font: $font("bold", 18),
-                    color: $color('white')
-                },
-                layout: (make, view) => {
-                    make.top.equalTo(view.super).offset(10)
-                    make.right.equalTo(view.super).offset(-5)
-                }
-            }],
-            layout: (make, view) => {
-                make.bottom.left.width.equalTo(view.super)
-                make.height.equalTo(240)
-            }
         }],
         events: {
             tapped: sender => {

@@ -109,9 +109,8 @@ function renderUI() {
                 },
                 events: {
                     tapped: sender => {
-                        // $clipboard.text = 'GxsAtS84U7'
-                        // $app.openURL("alipay://")
-                        $app.openURL("https://qr.alipay.com/c1x047207ryk0wiaj6m6ye3")
+                        $clipboard.text = 'GxsAtS84U7'
+                        $app.openURL("alipay://")
                     }
                 }
             }, {
@@ -1937,9 +1936,8 @@ function renderAboutUI() {
                                 }]
                             })
                         } else {
-                            // $clipboard.text = 'GxsAtS84U7'
-                            // $app.openURL("alipay://")
-                            $app.openURL("https://qr.alipay.com/c1x047207ryk0wiaj6m6ye3")
+                            $clipboard.text = 'GxsAtS84U7'
+                            $app.openURL("alipay://")
                         }
                     }
                 }
