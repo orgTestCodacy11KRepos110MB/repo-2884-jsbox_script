@@ -1,4 +1,10 @@
+let socketLogger = require("socketLogger")
+typeof socketLogger.init === 'function' && socketLogger.init('192.168.50.229')
+// SocketLogger Auto Generation Code
+
 console.clear()
+
+console.log("Start logging...");
 
 $app.autoKeyboardEnabled = true
 $app.keyboardToolbarEnabled = true
@@ -129,7 +135,7 @@ let render = () => {
                             }
                         }]
                     })
-                    
+
                 }
             }
         }, {
@@ -313,8 +319,8 @@ function showAlterDialog(group, method, url, callback) {
                     autoFontSize: true
                 },
                 events: {
-                    returned: sender => {
-                        sender.blur()
+                    tapped: sender => {
+                      $("methodView").hidden = false
                     }
                 },
                 layout: (make, view) => {
@@ -372,7 +378,46 @@ function showAlterDialog(group, method, url, callback) {
                         $("alertBody").remove();
                     }
                 }
-            }]
+            }, {
+              type: "view",
+              props: {
+                id: "methodView",
+                hidden: true,
+                bgcolor: $color("#dcdcdc")
+              },
+              views: [{
+                type: "label",
+                props: {
+                  text: "确认",
+                  font: $font("bold", 16)
+                },
+                layout: (make, view) => {
+                  make.bottom.equalTo(view.super).offset(-10)
+                  make.right.equalTo(view.super).offset(-20)
+                  make.height.equalTo(40)
+                },
+                events: {
+                  tapped: sender => {
+                    const methods = ['none', 'aes-128-cfb', 'aes-128-gcm', 'chacha20-ietf-poly1305']
+                    let selectedRows = $("methodPicker").selectedRows[0]
+                    $("alberInputMethod").text = methods[selectedRows]
+                    $("methodView").hidden = true
+                  }
+                }
+              }, {
+                type: "picker",
+                props: {
+                  id: "methodPicker",
+                  items: [['none', 'aes-128-cfb', 'aes-128-gcm', 'chacha20-ietf-poly1305']]
+                },
+                layout: (make, view) => {
+                  make.bottom.equalTo(view.prev.top)
+                  make.height.equalTo(view.super).offset(-50)
+                  make.width.equalTo(view.super)
+                }
+              }],
+              layout: $layout.fill
+            }],
         }],
         events: {
             tapped: sender => {
