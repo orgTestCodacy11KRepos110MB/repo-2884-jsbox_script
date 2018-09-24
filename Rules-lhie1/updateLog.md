@@ -1,5 +1,8 @@
 **如打赏名单有遗漏，请TG联系我加一下**
 
+#### 2018.09.24
+1. 调整列表样式 -v1.9.12
+
 #### 2018.09.20
 1. 修复特殊代理设置无效问题 -v1.9.11
 
@@ -349,7 +352,7 @@
     ![](https://github.com/Fndroid/jsbox_script/blob/master/imgs/Rules-lhie1_pre2.jpg?raw=true)
 2. 修复进阶设置Gallery切换按钮不联动的问题
 3. 增加关于页面
-    
+
  感谢**Mornwind、几位匿名赞赏者**的咖啡
 
 #### 2018.05.04

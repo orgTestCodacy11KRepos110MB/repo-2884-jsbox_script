@@ -322,7 +322,7 @@ function renderUI() {
                             type: "image",
                             props: {
                                 id: "proxyAuto",
-                                icon: $icon("089", colorUtil.getColor("editorItemIcon"), $size(15, 15)),
+                                icon: $icon("062", colorUtil.getColor("editorItemIcon"), $size(15, 15)),
                                 bgcolor: $color("clear"),
                                 hidden: true
                             },
@@ -369,6 +369,13 @@ function renderUI() {
                                 saveWorkspace()
                             }
                         })
+                    },
+                    forEachItem: (view, indexPath) => {
+                        if (indexPath.row % 2 === 1) {
+                            view.bgcolor = $color("#f8f8f8")
+                        } else {
+                            view.bgcolor = $color("white")
+                        }
                     }
                 }
             }, {
