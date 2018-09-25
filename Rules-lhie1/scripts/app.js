@@ -372,7 +372,7 @@ function renderUI() {
                     },
                     forEachItem: (view, indexPath) => {
                         if (indexPath.row % 2 === 1) {
-                            view.bgcolor = $color("#f8f8f8")
+                            view.bgcolor = $color("#f1f8ff")
                         } else {
                             view.bgcolor = $color("white")
                         }
