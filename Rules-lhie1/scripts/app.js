@@ -2184,8 +2184,11 @@ function setDefaultSettings() {
     let previewData = JSON.parse($file.read(FILE).string)
     for (let idx in settingKeys) {
         if (typeof previewData[settingKeys[idx]] === 'undefined' || previewData[settingKeys[idx]] == "") {
-            let defaultValue = $file.read(`defaultConf/${settingKeys[idx]}`).string
-            previewData[settingKeys[idx]] = defaultValue || ' '
+            let defaultValue = ' '
+            if ($file.exists(`defaultConf/${settingKeys[idx]}`)) {
+                defaultValue = $file.read(`defaultConf/${settingKeys[idx]}`).string
+            }
+            previewData[settingKeys[idx]] = defaultValue
         }
     }
     $file.write({
