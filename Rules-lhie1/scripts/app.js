@@ -2494,12 +2494,14 @@ function makeConf(params) {
 
             // 视频代理处理
             let videoProxy = workspace.videoProxy
+            let videoReg = require('scripts/videoReg')
             for (let videoType in videoProxy) {
                 let proxyName = videoProxy[videoType]
                 if (!proxyNameLegal(proxyName)) continue
-                let videoReg = require('scripts/videoReg')
-                rules.match(videoReg[videoType]).forEach(i => {
-                    rules = rules.replace(i, i.replace(/(^.*?,.*?,)[^,]*(.*$)/, `$1${proxyName}$2`))
+                (rules.match(videoReg[videoType]) || []).forEach(i => {
+                    if (/(^.*?,.*?,)[^,]*(.*$)/.test(i)) {
+                        rules = rules.replace(i, `${RegExp.$1}${proxyName}${RegExp.$2}`)
+                    }
                 })
             }
 
