@@ -394,7 +394,9 @@ function showAlterDialog(group, method, url, callback) {
                 events: {
                     tapped: async sender => {
                         let qr = await $qrcode.scan({})
-                        $("alberInputURL").text = qr
+                        if (qr) {
+                            $("alberInputURL").text = qr
+                        }
                     }
                 }
             }, {
