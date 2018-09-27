@@ -2606,9 +2606,11 @@ function makeConf(params) {
 
             function genQuanRewrite(content) {
                 let items = content.split(/[\n\r]+/).filter(i => i !== '' && /^(?!\/\/|#)/.test(i)).map(i => {
-                    let part = i.split(/\s+/)
-                    let isHeader = part[2].contains('header')
-                    return `${part[0]} url ${isHeader ? 'modify' : part[2]} ${part[1]}`
+                    if (/^(.*?)\s+(.*?)\s+(.*?)\s*$/.test(i)) {
+                        let type = RegExp.$3
+                        return `${RegExp.$1} url ${type === 'header' ? 'modify' : type} ${RegExp.$2}`
+                    }
+                    return ''
                 }).join('\n')
                 return items
             }
@@ -2626,9 +2628,9 @@ function makeConf(params) {
                 }
                 userUrl.add.forEach(i => {
                     if (/reject\s*$/.test(i)) {
-                        urlReject += `${i}\n`
+                        urlReject += `\n${i}\n`
                     } else {
-                        urlRewrite += `${i}\n`
+                        urlRewrite += `\n${i}\n`
                     }
                 })
                 prototype += genQuanPart('URL-REJECTION', urlReject)
