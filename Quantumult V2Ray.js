@@ -141,8 +141,9 @@ let render = () => {
         }, {
             type: "button",
             props: {
-                icon: $icon("104", $color("black"), $size(50, 50)),
-                bgcolor: $color("clear")
+                icon: $icon("104", $color("white"), $size(20, 20)),
+                bgcolor: $color("tint"),
+                radius: 25
             },
             layout: (make, view) => {
                 make.height.width.equalTo(50)
@@ -376,6 +377,24 @@ function showAlterDialog(group, method, url, callback) {
                     tapped: sender => {
                         callback && callback($("alertBody"), $("alterInputGroup").text, $("alberInputMethod").text, $("alberInputURL").text);
                         $("alertBody").remove();
+                    }
+                }
+            }, {
+                type: "button",
+                props: {
+                    icon: $icon("018", $color("#fff"), $size(20, 20)),
+                    id: 'cameraBtn',
+                    radius: 25
+                },
+                layout: (make, view) => {
+                    make.height.width.equalTo(50)
+                    make.bottom.equalTo(view.super).offset(-15)
+                    make.left.equalTo(view.super).offset(15)
+                },
+                events: {
+                    tapped: async sender => {
+                        let qr = await $qrcode.scan({})
+                        $("alberInputURL").text = qr
                     }
                 }
             }, {
