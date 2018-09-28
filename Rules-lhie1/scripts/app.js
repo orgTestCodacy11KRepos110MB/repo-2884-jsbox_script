@@ -2571,7 +2571,7 @@ function makeConf(params) {
                         let pNodes = RegExp.$3
                         let data = pNodes.split(/,/g)
                         if (/url-test/.test(pType) || /fallback/.test(pType)) {
-                            let v = data.filter(i => !/url\s*=\s*/.test(i) && !/interval\s*=\s*/.test(i))
+                            let v = data.filter(i => !/(?:url|interval|tolerance|timeout)\s*=\s*/.test(i))
                             return {
                                 name: pName,
                                 sta: ' auto',
