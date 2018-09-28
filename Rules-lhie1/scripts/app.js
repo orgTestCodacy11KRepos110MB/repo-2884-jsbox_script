@@ -2565,24 +2565,27 @@ function makeConf(params) {
             function genQuanPolices(content) {
                 let items = content.split(/[\n\r]+/).filter(i => i !== '' && !/^\/\//.test(i)).map(sta => {
                     let matcher = sta.match(/^(.*?)=(.*?),(.*?)$/);
-                    if (matcher.length === 4) {
-                        let data = matcher[3].split(/,/g)
-                        if (matcher[2].contains('url-test') || matcher[2].contains('fallback')) {
+                    if (/^(.*?)=(.*?),(.*?)$/.test(sta)) {
+                        let pName = RegExp.$1
+                        let pType = RegExp.$2
+                        let pNodes = RegExp.$3
+                        let data = pNodes.split(/,/g)
+                        if (/url-test/.test(pType) || /fallback/.test(pType)) {
                             let v = data.filter(i => !/url\s*=\s*/.test(i) && !/interval\s*=\s*/.test(i))
                             return {
-                                name: matcher[1],
+                                name: pName,
                                 sta: ' auto',
                                 data: v
                             }
-                        } else if (matcher[2].contains('select')) {
+                        } else if (/select/.test(pType)) {
                             return {
-                                name: matcher[1],
-                                sta: matcher[2].replace(/select/, 'static'),
+                                name: pName,
+                                sta: pType.replace(/select/, 'static'),
                                 data: data
                             }
                         } else {
                             return {
-                                name: matcher[1],
+                                name: pType,
                                 sta: '',
                                 data: data
                             }
@@ -2590,7 +2593,7 @@ function makeConf(params) {
                     } else {
                         return null
                     }
-                })
+                }).filter(i => i !== null)
                 items.push({
                     name: '🚀 Direct',
                     sta: 'static',
