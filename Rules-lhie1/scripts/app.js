@@ -2534,7 +2534,7 @@ function makeConf(params) {
             prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
             prototype = prototype.replace('# URL Rewrite', urlRewrite.replace(/307/g, surge2 ? '302' : '307') + prettyInsert(userUrl.add))
             prototype = prototype.replace('# URL REJECT', urlReject)
-            prototype = prototype.replace('# SSID', userSSID)
+            prototype = prototype.replace('# SSID', '[SSID Setting]\n' + userSSID)
             prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
             let finalHostNames = hostName.concat(userHostname.add.filter(i => i != '')).join(', ')
             if (finalHostNames !== '') {
