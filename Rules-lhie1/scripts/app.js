@@ -2531,7 +2531,7 @@ function makeConf(params) {
             } else {
                 prototype = prototype.replace('# All Rules', rules)
             }
-            prototype = prototype.replace('# Host', host + prettyInsert(userHost.add))
+            prototype = prototype.replace('# Host', "[Host]\n" + host + prettyInsert(userHost.add))
             prototype = prototype.replace('# URL Rewrite', urlRewrite.replace(/307/g, surge2 ? '302' : '307') + prettyInsert(userUrl.add))
             prototype = prototype.replace('# URL REJECT', urlReject)
             prototype = prototype.replace('# SSID', '[SSID Setting]\n' + userSSID)
