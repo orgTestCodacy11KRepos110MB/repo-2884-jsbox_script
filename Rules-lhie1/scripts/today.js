@@ -129,7 +129,7 @@ function renderTodayUI() {
                 },
                 usageDetail: {
                     text: `↑ ${(usage.upload / GB).toFixed(2)}GB   ↓ ${(usage.download / GB).toFixed(2)}GB   ≡ ${(usage.total / GB).toFixed(2)}GB`
-                }, 
+                },
                 usageDetail2: {
                     text: `${groupNames[idx]}`
                 }
@@ -147,8 +147,8 @@ function renderTodayUI() {
         }
     }
     let outputFormat = workspace.outputFormat
-    let surge2 = outputFormat === 'Surge2'
-    let isQuan = outputFormat === 'Quan'
+    let surge2 = outputFormat === 'Surge 2'
+    let isQuan = outputFormat === 'Quantumult'
     let isLauncher = $app.widgetIndex < 0 || $app.widgetIndex > 2
     let checks = [pm(ruleUpdateUtil.getGitHubFilesSha), pm(updateUtil.getLatestVersion)]
     let vStatus = vpnStatus()
