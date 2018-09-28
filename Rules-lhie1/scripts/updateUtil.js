@@ -3,6 +3,12 @@ function getCurVersion() {
     return version
 }
 
+function needRestart() {
+    return $http.get({
+        url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/restart.fndroid'
+    })
+}
+
 function getLatestVersion(params) {
     $http.get({
         url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/version.fndroid' + '?t=' + new Date().getTime(),
@@ -15,22 +21,29 @@ function getLatestVersion(params) {
 function updateScript(version) {
     let url = 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/.output/Rules-lhie1.box' + '?t=' + new Date().getTime()
     const scriptName = $addin.current.name
-    $http.download({
-        url: url,
-        handler: resp => {
-            let box = resp.data
-            $addin.save({
-                name: scriptName,
-                data: box,
-                handler: (success) => {
-                    if (success) {
-                        let donateList = $file.read("donate.md").string
-                        let names = donateList.split(/[\r\n]+/).filter(i => i!== '')
-                        $ui.toast(`静默更新完成，感谢${names.length - 3}位老板`)
+    let downloadBox = $http.download({
+        url: url
+    })
+    Promise.all([downloadBox, needRestart()]).then(res => {
+        let box = res[0].data
+        let restart = /true/.test(res[1].data)
+        console.log(restart);
+        $addin.save({
+            name: scriptName,
+            data: box,
+            handler: (success) => {
+                if (success) {
+                    let donateList = $file.read("donate.md").string
+                    let names = donateList.split(/[\r\n]+/).filter(i => i!== '')
+                    $ui.toast(`静默更新完成，感谢${names.length - 3}位老板`)
+                    if (restart) {
+                        $delay(0.3, () => {
+                            $addin.run(scriptName)
+                        })
                     }
                 }
-            })
-        }
+            }
+        })
     })
 }
 
