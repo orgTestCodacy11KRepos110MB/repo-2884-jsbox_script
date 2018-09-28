@@ -435,8 +435,8 @@ function renderUI() {
                     },
                     layout: (make, view) => {
                         make.left.equalTo(view.super).offset(5)
-                        make.height.width.equalTo(view.super.height).offset(-10)
-                        make.centerY.equalTo(view.super)
+                        make.height.width.equalTo(view.super.height).offset(-15)
+                        make.centerY.equalTo(view.super).offset(1)
                     }
                 }, {
                     type: 'label',
@@ -450,7 +450,7 @@ function renderUI() {
                     },
                     layout: (make, view) => {
                         make.height.equalTo(view.super)
-                        make.width.equalTo(view.super).offset(-50)
+                        make.width.equalTo(view.super).offset(-45)
                         make.left.equalTo(view.prev.right)
                         make.top.equalTo(view.super)
                     }
@@ -2139,9 +2139,9 @@ function setUpWorkspace() {
                 }
                 let outputFormat = workspace.outputFormat || 'Surge3'
                 let type = 'surge'
-                if (outputFormat === 'Quan') {
+                if (outputFormat === 'Quantumult') {
                     type = 'quan'
-                } else if (outputFormat === 'Surge2') {
+                } else if (outputFormat === 'Surge 2') {
                     type = 'surge2'
                 }
                 $("outputFormatType").text = outputFormat
