@@ -147,7 +147,7 @@ function renderUI() {
                     placeholder: "配置名（lhie1)"
                 },
                 layout: (make, view) => {
-                    make.width.equalTo(screenWidth / 2 - 15)
+                    make.width.equalTo(view.super).offset(-120)
                     make.height.equalTo(40)
                     make.left.top.equalTo(10)
                 },
@@ -165,10 +165,10 @@ function renderUI() {
                     type: $btnType.contactAdd,
                     id: "serverURL",
                     titleColor: colorUtil.getColor("importBtnText"),
-                    title: " 添加、更新节点"
+                    title: " 导入节点",
                 },
                 layout: (make, view) => {
-                    make.width.equalTo(screenWidth / 2 - 15)
+                    make.width.equalTo(100)
                     make.height.equalTo(40)
                     make.right.equalTo(-10)
                     make.top.equalTo(10)
@@ -382,14 +382,14 @@ function renderUI() {
                 type: "input",
                 props: {
                     id: "serverSuffixEditor",
-                    placeholder: ',udp-relay=true,tfo=true（节点后缀）',
+                    placeholder: '节点后缀',
                     text: '',
                     font: $font(18),
                     type: $kbType.ascii
                 },
                 layout: (make, view) => {
                     make.top.equalTo(view.prev.bottom).offset(10)
-                    make.width.equalTo(view.prev).offset(-110)
+                    make.width.equalTo(view.prev).offset(-125)
                     make.height.equalTo(45)
                     make.left.equalTo(view.prev.left)
                 },
@@ -405,22 +405,25 @@ function renderUI() {
                 type: "view",
                 props: {
                     id: "outputFormatLabel",
+                    bgcolor: $color("#f1f1f1"),
+                    radius: 6
                 },
                 layout: (make, view) => {
                     make.right.equalTo(view.super.right).offset(-10)
                     make.top.equalTo(view.prev)
                     make.height.equalTo(view.prev)
-                    make.width.equalTo(100)
+                    make.width.equalTo(120)
                 },
                 views: [{
                     type: "image",
                     props: {
                         data: $file.read('assets/menu_icon.png'),
-                        bgcolor: $color("clear")
+                        bgcolor: $color("clear"),
+                        hidden: true
                     },
                     layout: (make, view) => {
-                        make.left.equalTo(view.super)
-                        make.height.width.equalTo(view.super.height).offset(-35)
+                        make.left.equalTo(view.super).offset(10)
+                        make.height.width.equalTo(view.super.height).offset(-25)
                         make.centerY.equalTo(view.super)
                     }
                 }, {
@@ -431,8 +434,8 @@ function renderUI() {
                         bgcolor: $color("clear")
                     },
                     layout: (make, view) => {
-                        make.left.equalTo(view.prev.right)
-                        make.height.width.equalTo(view.super.height).offset(-15)
+                        make.left.equalTo(view.super).offset(5)
+                        make.height.width.equalTo(view.super.height).offset(-10)
                         make.centerY.equalTo(view.super)
                     }
                 }, {
@@ -440,11 +443,14 @@ function renderUI() {
                     props: {
                         textColor: colorUtil.getColor("outputFormatText"),
                         id: 'outputFormatType',
-                        text: 'Surge3',
+                        text: 'Surge3 Pro',
+                        align: $align.center,
+                        font: $font("bold", 16),
+                        autoFontSize: true,
                     },
                     layout: (make, view) => {
                         make.height.equalTo(view.super)
-                        make.width.equalTo(view.super)
+                        make.width.equalTo(view.super).offset(-50)
                         make.left.equalTo(view.prev.right)
                         make.top.equalTo(view.super)
                     }
@@ -874,7 +880,7 @@ function renderOutputFormatMenu(superView) {
                 radius: 15,
                 rowHeight: 50,
                 alwaysBounceVertical: false,
-                data: ['Surge3', 'Surge2', 'Quantumult'],
+                data: ['Surge 3 TF', 'Surge 3 Pro', 'Surge 2', 'Quantumult'],
                 frame: resetFrame(superView.frame),
                 header: {
                     type: "label",
@@ -892,10 +898,10 @@ function renderOutputFormatMenu(superView) {
                     let type = 'surge'
                     if (data === 'Quantumult') {
                         type = 'quan'
-                    } else if (data === 'Surge2') {
+                    } else if (data === 'Surge 2') {
                         type = 'surge2'
                     }
-                    $("outputFormatType").text = data === 'Quantumult' ? 'Quan' : data
+                    $("outputFormatType").text = data
                     $("outputFormatIcon").data = $file.read(`assets/today_${type}.png`)
                     saveWorkspace()
                     hideView(sender)
@@ -911,7 +917,7 @@ function renderOutputFormatMenu(superView) {
         animation: () => {
             superView.scale(1.2)
             $("outputFormatSelectorView").alpha = 1
-            $("outputFormatSelectorItems").frame = $rect(80, screenHeight - 380 + navBarHeight + statusBarHeight, screenWidth - 90, 200)
+            $("outputFormatSelectorItems").frame = $rect(80, screenHeight - 430 + navBarHeight + statusBarHeight, screenWidth - 90, 250)
         }
     })
 
@@ -2307,8 +2313,9 @@ function makeConf(params) {
         let isActionSheet = usualValue('导出')
 
         let outputFormat = workspace.outputFormat
-        let surge2 = outputFormat === 'Surge2'
-        let isQuan = outputFormat === 'Quan'
+        let surge2 = outputFormat === 'Surge 2'
+        let isQuan = outputFormat === 'Quantumult'
+        let testflight = outputFormat === 'Surge 3 TF'
 
         let serverEditorData = workspace.serverData
         if (isQuan) {
@@ -2377,10 +2384,10 @@ function makeConf(params) {
 
         let promiseArray = [
             getAutoRules(pu.prototype, onPgs, '成功取回配置模板'), // 0
-            rulesReplacement ? getAutoRules(rulesReplacement, onPgs, '成功取回替换配置') : getAutoRules(isQuan ? pu.localhost : pu.apple, onPgs, '成功取回APPLE规则'), // 1
-            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.localhost : pu.reject, onPgs, '成功取回Reject规则'),  // 2
-            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.quanretcp : pu.proxy, onPgs, '成功取回Proxy规则'), // 3
-            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.quanextra : pu.direct, onPgs, '成功取回Direct规则'), // 4
+            rulesReplacement ? getAutoRules(rulesReplacement, onPgs, '成功取回替换配置') : getAutoRules(isQuan || testflight ? pu.localhost : pu.apple, onPgs, '成功取回APPLE规则'), // 1
+            !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan || testflight ? pu.localhost : pu.reject, onPgs, '成功取回Reject规则'),  // 2
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan || testflight ? pu.quanretcp : pu.proxy, onPgs, '成功取回Proxy规则'), // 3
+            rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan || testflight ? pu.quanextra : pu.direct, onPgs, '成功取回Direct规则'), // 4
             rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.host, onPgs, '成功取回Host'), // 5
             rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.urlrewrite, onPgs, '成功取回URL Rewrite'), // 6
             !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan ? pu.quanrejection : pu.urlreject, onPgs, '成功取回URL Reject'), // 7
@@ -2430,6 +2437,14 @@ function makeConf(params) {
                 v[3] = ''
                 v[4] = ''
                 v[7] = v[7].replace(/hostname = /, '# hostname = ')
+            }
+
+            if (testflight) {
+                let autoNewPrefix = 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto_New'
+                v[1] = `RULE-SET,SYSTEM,DIRECT\nRULE-SET,${autoNewPrefix}/apple.list,🍎 Only`
+                v[2] = ads ? `RULE-SET,${autoNewPrefix}/reject.list,REJECT` : ''
+                v[3] = `RULE-SET,${autoNewPrefix}/proxy.list,🍃 Proxy\nRULE-SET,${autoNewPrefix}/media.list,🍃 Proxy`
+                v[4] = `RULE-SET,${autoNewPrefix}/domestic.list,🍂 Domestic`
             }
 
             rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 || isQuan ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
