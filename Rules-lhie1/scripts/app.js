@@ -2665,7 +2665,7 @@ function makeConf(params) {
                     return isSSR !== undefined
                 }).map(i => {
                     return `${i.title}, server, ${i.url}, ${sourceType}, ${i.title}`
-                }).join('\n'))
+                }).join('\n') + (rulesReplacement ? "" : "lhie1, filter, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult.conf, true\nlhie1_extra, filter, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_Extra.conf, true\nlhie1, blacklist, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_URL.conf, true\n"))
                 let customDNS = prototype.match(/dns-server\s*=\s*(.*?)(?:\n|\r|$)/)
                 if (customDNS && customDNS[1]) {
                     prototype += genQuanPart('DNS', customDNS[1])
