@@ -176,42 +176,7 @@ function renderUI() {
                 events: {
                     tapped: sender => {
                         importMenu({
-                            handler: (res, name, url) => {
-                                // 如果是托管，url不为undefined
-                                // console.log([res, name, url])
-                                let listData = $("serverEditor").data || []
-                                let existsSec = listData.find(item => item.url === url)
-                                if (!res || res.length === 0) {
-                                    $ui.alert({
-                                        title: `${existsSec ? '更新' : '获取'}失败`,
-                                        message: `${existsSec ? existsSec.title : url}`
-                                    })
-                                    return
-                                }
-                                let section = existsSec || { title: name, rows: [], url: url }
-                                let selectedRows = []
-                                if (existsSec) {
-                                    selectedRows = section.rows.filter(i => !i.proxyAuto.hidden).map(i => i.proxyName.text)
-                                }
-                                section.rows = []
-                                for (let idx in res) {
-                                    if (res[idx].split("=")[1].trim() == 'direct') {
-                                        // 过滤直连
-                                        continue
-                                    }
-                                    let selected = selectedRows.indexOf(res[idx].split('=')[0].trim()) > -1
-                                    section.rows.push({
-                                        proxyName: { text: res[idx].split('=')[0].trim() },
-                                        proxyLink: res[idx],
-                                        proxyAuto: { hidden: !selected }
-                                    })
-                                }
-                                if (!existsSec) {
-                                    listData.unshift(section)
-                                }
-                                $("serverEditor").data = listData
-                                saveWorkspace()
-                            }
+                            handler: nodeImportHandler
                         })
                     }
                 }
@@ -376,6 +341,15 @@ function renderUI() {
                         } else {
                             view.bgcolor = $color("white")
                         }
+                    },
+                    pulled: sender => {
+                        let listSections = $("serverEditor").data.filter(i => /^http/.test(i.url))
+                        linkHandler(listSections.map(i => i.url).join('\n'), {
+                            handler: (res, name, url) => {
+                                sender.endRefreshing()
+                                nodeImportHandler(res, name, url)
+                            }
+                        })
                     }
                 }
             }, {
@@ -643,6 +617,43 @@ function renderUI() {
             }]
         },]
     })
+}
+
+let nodeImportHandler = (res, name, url) => {
+    // 如果是托管，url不为undefined
+    // console.log([res, name, url])
+    let listData = $("serverEditor").data || []
+    let existsSec = listData.find(item => item.url === url)
+    if (!res || res.length === 0) {
+        $ui.alert({
+            title: `${existsSec ? '更新' : '获取'}失败`,
+            message: `${existsSec ? existsSec.title : url}`
+        })
+        return
+    }
+    let section = existsSec || { title: name, rows: [], url: url }
+    let selectedRows = []
+    if (existsSec) {
+        selectedRows = section.rows.filter(i => !i.proxyAuto.hidden).map(i => i.proxyName.text)
+    }
+    section.rows = []
+    for (let idx in res) {
+        if (res[idx].split("=")[1].trim() == 'direct') {
+            // 过滤直连
+            continue
+        }
+        let selected = selectedRows.indexOf(res[idx].split('=')[0].trim()) > -1
+        section.rows.push({
+            proxyName: { text: res[idx].split('=')[0].trim() },
+            proxyLink: res[idx],
+            proxyAuto: { hidden: !selected }
+        })
+    }
+    if (!existsSec) {
+        listData.unshift(section)
+    }
+    $("serverEditor").data = listData
+    saveWorkspace()
 }
 
 function formatListData(data) {
@@ -2661,11 +2672,11 @@ function makeConf(params) {
                     sourceType = `${type & 4 ? 'true' : 'false'}, ${type & 2 ? 'true' : 'false'}, ${type & 1 ? 'true' : 'false'}`
                 }
                 prototype += genQuanPart('SOURCE', serverEditorData.filter(i => {
-                    let isSSR = i.rows.find(l => /^.*?=\s*(?:shadowsocksr|vmess)/.test(l.proxyLink))
+                    let isSSR = i.rows.find(l => /^.*?=\s*(?=shadowsocksr|vmess)/.test(l.proxyLink))
                     return isSSR !== undefined
                 }).map(i => {
                     return `${i.title}, server, ${i.url}, ${sourceType}, ${i.title}`
-                }).join('\n') + (rulesReplacement ? "" : "lhie1, filter, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult.conf, true\nlhie1_extra, filter, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_Extra.conf, true\nlhie1, blacklist, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_URL.conf, true\n"))
+                }).join('\n') + (rulesReplacement ? "" : "\nlhie1, filter, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult.conf, true\nlhie1_extra, filter, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_Extra.conf, true\nlhie1, blacklist, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_URL.conf, true\n"))
                 let customDNS = prototype.match(/dns-server\s*=\s*(.*?)(?:\n|\r|$)/)
                 if (customDNS && customDNS[1]) {
                     prototype += genQuanPart('DNS', customDNS[1])
