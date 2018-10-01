@@ -3,6 +3,7 @@
 #### 2018.10.01
 1. 调整RULE-SET中的URL，添加时间戳强制刷新 -v1.9.24
 2. 支持添加类型为round-robin的策略组，配置如select，对应Quantumult轮询 -v1.9.24
+3. 修复规则替换问题 -v1.9.25
 
 #### 2018.09.29
 1. 生成Quantumult规则时，自动生成对应的favorite -v1.9.22

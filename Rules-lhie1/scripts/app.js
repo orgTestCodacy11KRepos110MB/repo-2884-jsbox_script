@@ -2416,8 +2416,8 @@ function makeConf(params) {
                 let repHostName = v[1].match(/hostname\s*=\s*(.*?)[\n\r]/)
                 repRules && repRules[1] && (v[1] = repRules[1])
                 repHost && repHost[1] && (v[5] = repHost[1])
-                repUrlRewrite && repUrlRewrite[1] && (v[6] = repUrlRewrite[1])
-                repHeaderRewrite && repHeaderRewrite[1] && (v[8] = repHeaderRewrite[1])
+                repUrlRewrite && repUrlRewrite[1] && (v[6] = '[URL Rewrite]\n' + repUrlRewrite[1])
+                repHeaderRewrite && repHeaderRewrite[1] && (v[8] = '[Header Rewrite]\n' + repHeaderRewrite[1])
                 repHostName && repHostName[1] && (v[9] = repHostName[1])
             }
 
@@ -2560,7 +2560,7 @@ function makeConf(params) {
             }
             prototype = prototype.replace('Proxys', isQuan ? proxies : ssr2ss(proxies))
             if (rulesReplacement) {
-                prototype = prototype.replace(/\[Rule\][\s\S]*?(?:\[|$)/, `[Rule]\n${prettyInsert(customRules.add)}\n${rules}\n[`)
+                prototype = prototype.replace(/\[Rule\][\s\S]*FINAL\s*,[^\r\n]+/, `[Rule]\n${prettyInsert(customRules.add)}\n${rules}\n`)
             } else {
                 prototype = prototype.replace('# All Rules', rules)
             }
