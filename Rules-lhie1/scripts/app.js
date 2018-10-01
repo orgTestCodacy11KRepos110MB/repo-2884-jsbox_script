@@ -2452,10 +2452,11 @@ function makeConf(params) {
 
             if (testflight) {
                 let autoNewPrefix = 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto_New'
-                v[1] = `RULE-SET,SYSTEM,DIRECT\nRULE-SET,${autoNewPrefix}/apple.list,🍎 Only`
-                v[2] = ads ? `RULE-SET,${autoNewPrefix}/reject.list,REJECT` : ''
-                v[3] = `RULE-SET,${autoNewPrefix}/proxy.list,🍃 Proxy\nRULE-SET,${autoNewPrefix}/media.list,🍃 Proxy`
-                v[4] = `RULE-SET,${autoNewPrefix}/domestic.list,🍂 Domestic`
+                let timestamp = `?t=${new Date().getTime()}`
+                v[1] = `RULE-SET,SYSTEM,DIRECT\nRULE-SET,${autoNewPrefix}/apple.list${timestamp},🍎 Only`
+                v[2] = ads ? `RULE-SET,${autoNewPrefix}/reject.list${timestamp},REJECT` : ''
+                v[3] = `RULE-SET,${autoNewPrefix}/proxy.list${timestamp},🍃 Proxy\nRULE-SET,${autoNewPrefix}/media.list${timestamp},🍃 Proxy`
+                v[4] = `RULE-SET,${autoNewPrefix}/domestic.list${timestamp},🍂 Domestic`
             }
 
             rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 || isQuan ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
@@ -2498,6 +2499,12 @@ function makeConf(params) {
             }
             // 配置自定义规则
             let customRules = seperateLines(advanceSettings.customSettings)
+            customRules.add = customRules.add.map(i => {
+                if (/RULE-SET\s*,\s*(http.*?\.list)\s*,(.*?)$/.test(i)) {
+                    return `RULE-SET, ${RegExp.$1}?t=${new Date().getTime()}, ${RegExp.$2}`
+                }
+                return i
+            })
             customRules.delete.forEach(i => rules = rules.replace(i, ''))
             // 配置本地DNS映射
             let userHost = seperateLines(advanceSettings.hostSettings)
@@ -2594,6 +2601,12 @@ function makeConf(params) {
                                 sta: pType.replace(/select/, 'static'),
                                 data: data
                             }
+                        } else if (/round-robin/.test(pType)) {
+                            return {
+                                name: pName,
+                                sta: 'balance, round-robin',
+                                data: data
+                            }
                         } else {
                             return {
                                 name: pType,
@@ -2611,7 +2624,7 @@ function makeConf(params) {
                     data: ["DIRECT"]
                 })
                 let policies = items.map(i => {
-                    if (i.sta.contains('auto')) {
+                    if (i.sta.contains('auto') || i.sta.contains('balance, round-robin')) {
                         return `${i.name} : ${i.sta}\n${i.data.join('\n')}`
                     } else if (i.sta.contains('static')) {
                         return `${i.name} : ${i.sta}, ${i.data[0]}\n${i.data.join('\n')}`
