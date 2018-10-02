@@ -632,17 +632,14 @@ let nodeImportHandler = (res, name, url) => {
         return
     }
     let section = existsSec || { title: name, rows: [], url: url }
-    let selectedRows = []
-    if (existsSec) {
-        selectedRows = section.rows.filter(i => !i.proxyAuto.hidden).map(i => i.proxyName.text)
-    }
     section.rows = []
+    let controlInfo = $("serverControl").info
     for (let idx in res) {
         if (res[idx].split("=")[1].trim() == 'direct') {
             // 过滤直连
             continue
         }
-        let selected = selectedRows.indexOf(res[idx].split('=')[0].trim()) > -1
+        let selected = controlInfo.customProxyGroup[controlInfo.currentProxyGroup].indexOf(res[idx].split('=')[0].trim()) > -1
         section.rows.push({
             proxyName: { text: res[idx].split('=')[0].trim() },
             proxyLink: res[idx],
@@ -1228,16 +1225,7 @@ function groupShortcut() {
             layout: $layout.fill,
             events: {
                 tapped: sender => {
-                    $ui.animate({
-                        duration: 0.2,
-                        animation: () => {
-                            $("placeholderView").alpha = 0
-                            $("placeholderList").frame = resetFrame($("serverEditor").frame)
-                        },
-                        completion: () => {
-                            sender.super.remove()
-                        }
-                    })
+                    removeAnimation()
                 }
             }
         }, {
@@ -1270,38 +1258,27 @@ function groupShortcut() {
                         $("placeholderList").data = Object.keys(customProxyGroup).sort()
                     }
                 }, {
-                    title: "重命名",
-                    handler: (sender, indexPath) => {
-                        let title = sender.object(indexPath)
-                        if ([PROXY_HEADER, 'Proxy Header'].indexOf(title) > -1) {
-                            $ui.error("此占位符无法重命名")
-                            return
-                        }
-                        $input.text({
-                            type: $kbType.default,
-                            placeholder: title,
-                            handler: function (text) {
-                                if (sender.data.indexOf(text) > -1) {
-                                    $ui.error("此名称已被占用")
-                                } else {
-                                    customProxyGroup[text] = customProxyGroup[title]
-                                    delete customProxyGroup[title]
-                                    if ($("serverControl").info.currentProxyGroup === title) {
-                                        switchToGroup(text)
-                                    }
-                                    $("serverControl").info = controlInfo
-                                    saveWorkspace()
-                                    sender.data = Object.keys(customProxyGroup).sort()
-                                }
-                            }
-                        })
-                    }
-                }, {
                     title: "复制",
                     handler: (sender, indexPath) => {
                         let title = sender.object(indexPath)
                         $clipboard.text = title
                         $ui.toast("已复制到剪贴板")
+                    }
+                }, {
+                    title: "删除节点",
+                    color: $color('tint'),
+                    handler: (sender, indexPath) => {
+                        let title = sender.object(indexPath)
+                        let headers = customProxyGroup[title]
+                        let editorData = $("serverEditor").data
+                        editorData.map(section => {
+                            section.rows = section.rows.filter(item => headers.every(k => !(new RegExp(k, 'g')).test(item.proxyName.text)))
+                            return section
+                        })
+                        $("serverEditor").data = editorData
+                        saveWorkspace()
+                        $ui.toast("已删除占位符对应节点")
+                        removeAnimation()
                     }
                 }]
             },
@@ -1314,16 +1291,7 @@ function groupShortcut() {
                 didSelect: (sender, indexPath, data) => {
                     $ui.toast(`当前占位符为：${data}`)
                     switchToGroup(data)
-                    $ui.animate({
-                        duration: 0.2,
-                        animation: () => {
-                            $("placeholderView").alpha = 0
-                            $("placeholderList").frame = $("serverEditor").frame
-                        },
-                        completion: () => {
-                            sender.super.remove()
-                        }
-                    })
+                    removeAnimation()
                 }
             }
         }, {
@@ -1357,6 +1325,19 @@ function groupShortcut() {
             }
         }]
     })
+
+    function removeAnimation() {
+        $ui.animate({
+            duration: 0.2,
+            animation: () => {
+                $("placeholderView").alpha = 0
+                $("placeholderList").frame = resetFrame($("serverEditor").frame)
+            },
+            completion: () => {
+                $("placeholderView").remove()
+            }
+        })
+    }
 
     $ui.animate({
         duration: .3,
