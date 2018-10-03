@@ -1272,7 +1272,7 @@ function groupShortcut() {
                         let headers = customProxyGroup[title]
                         let editorData = $("serverEditor").data
                         editorData.map(section => {
-                            section.rows = section.rows.filter(item => headers.every(k => !(new RegExp(k, 'g')).test(item.proxyName.text)))
+                            section.rows = section.rows.filter(item => headers.every(k => item.proxyName.text.indexOf(k) === -1))
                             return section
                         })
                         $("serverEditor").data = editorData
@@ -2590,8 +2590,8 @@ function makeConf(params) {
                             }
                         } else {
                             return {
-                                name: pType,
-                                sta: '',
+                                name: pName,
+                                sta: 'ssid',
                                 data: data
                             }
                         }
@@ -2609,7 +2609,7 @@ function makeConf(params) {
                         return `${i.name} : ${i.sta}\n${i.data.join('\n')}`
                     } else if (i.sta.contains('static')) {
                         return `${i.name} : ${i.sta}, ${i.data[0]}\n${i.data.join('\n')}`
-                    } else if (i.sta === '') {
+                    } else if (i.sta === 'ssid') {
                         let wifi = i.data.find(i => /default\s*=/.test(i))
                         let cellular = i.data.find(i => /cellular\s*=/.test(i)) || 'cellular = DIRECT'
                         let left = i.data.filter(i => i !== wifi && i !== cellular).map(i => {
