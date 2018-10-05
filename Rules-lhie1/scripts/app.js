@@ -56,6 +56,9 @@ function renderUI() {
             appeared: function (sender) {
                 $("bodyView").runtimeValue().$viewController().$navigationController().$interactivePopGestureRecognizer().$delegate()
                 $("bodyView").runtimeValue().$viewController().$navigationController().$interactivePopGestureRecognizer().$setDelegate(null)
+                if (typeof $ui.window.next !== 'undefined') {
+                    console.error('警告：正在调试模式运行，界面可能会被遮挡，请从JSBox主界面运行此脚本！')
+                }
             }
         },
         views: [{
@@ -303,7 +306,7 @@ function renderUI() {
                 layout: (make, view) => {
                     make.width.equalTo(view.super).offset(-20)
                     make.centerX.equalTo(view.super)
-                    make.height.equalTo(screenHeight - 330)
+                    make.height.equalTo(screenHeight - 330 - (typeof $ui.window.next !== 'undefined' ? 45 : 0))
                     make.top.equalTo($("serverControl").bottom)
                 },
                 events: {
@@ -668,7 +671,6 @@ function formatListData(data) {
     if (noGroup.length > 0) {
         data.unshift({ title: "", rows: noGroup })
     }
-    console.log('data', data);
     return data
 }
 
@@ -1459,8 +1461,6 @@ function linkHandler(url, params) {
         }
     })
 
-    console.log("识别结果", servers);
-
     let updateHint = ''
     updateHint += servers.shadowsocks.length > 0 ? `\nShadowsocks链接${servers.shadowsocks.length}个\n` : ''
     updateHint += servers.shadowsocksr.length > 0 ? `\nShadowsocksR链接${servers.shadowsocksr.length}个\n` : ''
@@ -2086,7 +2086,6 @@ function setUpWorkspace() {
         },
         loadData: () => {
             let file = JSON.parse($file.read(FILE).string)
-            console.log('重新加载成功，用户数据', file);
             if (file && file.workspace) {
                 let workspace = file.workspace
                 $("fileName").text = workspace.fileName || ''
@@ -2704,9 +2703,6 @@ function makeConf(params) {
                     handler: sha => {
                         if (sha) {
                             ruleUpdateUtil.setFilesSha(sha)
-                            console.log('sha 更新成功')
-                        } else {
-                            console.log('sha 获取失败')
                         }
                         params.onDone({
                             target: exportTarget,

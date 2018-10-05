@@ -12,7 +12,6 @@ function updateSpecialReg() {
                 data: resp.data,
                 path: "scripts/videoReg.js"
             });
-            console.log(`特殊代理列表更新${success ? '成功' : '失败'}`)
         }
     })
 }

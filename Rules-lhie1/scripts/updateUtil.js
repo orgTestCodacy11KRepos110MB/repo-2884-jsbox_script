@@ -27,7 +27,6 @@ function updateScript(version) {
     Promise.all([downloadBox, needRestart()]).then(res => {
         let box = res[0].data
         let restart = /true/.test(res[1].data)
-        console.log(restart);
         $addin.save({
             name: scriptName,
             data: box,

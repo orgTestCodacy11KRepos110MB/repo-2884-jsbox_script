@@ -1,5 +1,4 @@
 console.clear()
-console.log('设备信息', $device.info)
 
 const app = require('scripts/app')
 const init = require('scripts/init')
@@ -43,7 +42,6 @@ app.renderUI()
 
 updateUtil.getLatestVersion({
     handler: version => {
-        console.log(`latest version: ${version}\ncurrent version: ${updateUtil.getCurVersion()}`)
         if (updateUtil.needUpdate(version, updateUtil.getCurVersion())) {
             $http.get({
                 url: 'https://raw.githubusercontent.com/Fndroid/jsbox_script/master/Rules-lhie1/updateLog.md' + '?t=' + new Date().getTime(),
