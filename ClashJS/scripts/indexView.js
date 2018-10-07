@@ -60,9 +60,7 @@ module.exports.render = async () => {
                 separatorHidden: true,
                 rowHeight: 50,
                 radius: 7,
-                data: [{
-                    proxyName: { text: 'hello' }
-                }],
+                data: [],
                 template: {
                     props: {
 
