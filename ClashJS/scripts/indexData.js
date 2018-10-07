@@ -1,0 +1,79 @@
+module.exports.getProxiesInfo = async (address) => {
+    let url = `http://${address}/proxies`
+    let resp = await $http.get(url)
+    if ('proxies' in resp.data) {
+        return genListData(resp.data.proxies)
+    } 
+    return null
+}
+
+let genListData = (proxies) => {
+    let pName = Object.keys(proxies)
+    let res = []
+    pName.forEach(pn => {
+        let proxy = proxies[pn]
+        if (proxy.type === 'Selector') {
+            res.push({
+                title: pn,
+                rows: proxy.all.map(pan => {
+                    return {
+                        proxyName: { text: pan },
+                        checkedIcon: { icon: pan === proxy.now ? $icon("136", $color("tint"), $size(20, 20)) : null },
+                    }
+                })
+            })
+        } else if (proxy.type === 'URLTest') {
+            res.push({
+                title: pn,
+                rows: [{
+                    proxyName: { text: proxy.now },
+                    checkedIcon: { icon: $icon("089", $color("tint"), $size(20, 20)) }
+                }]
+            })
+        }
+    })
+    return res
+}
+
+module.exports.switchProxy = async (address, group, proxy) => {
+    let url = `http://${address}/proxies/${encodeURI(group)}`
+    let resp = await $http.request({
+        url: url,
+        method: 'PUT',
+        body: {
+            name: proxy
+        }
+    })
+    console.log(resp)
+}
+
+module.exports.getConfig = async (address) => {
+    let url = `http://${address}/configs`
+    let resp = await $http.get(url)
+    return resp.data
+}
+
+module.exports.switchMode = async (address, mode) => {
+    let url = `http://${address}/configs`
+    let resp = await $http.request({
+        url: url,
+        method: 'PUT',
+        body: {
+            mode: mode
+        }
+    })
+    console.log(resp)
+}
+
+module.exports.latencyTest = async (address, nodes) => {
+    let res = await Promise.all(nodes.map(node => {
+        let url = `http://${address}/proxies/${encodeURI(node)}/delay?timeout=5000&url=${encodeURI('http://www.gstatic.com/generate_204')}`
+        return $http.get(url)
+    }))
+    return nodes.map((node, idx) => {
+        return {
+            name: node,
+            delay: res[idx].data.delay
+        }
+    })
+}
