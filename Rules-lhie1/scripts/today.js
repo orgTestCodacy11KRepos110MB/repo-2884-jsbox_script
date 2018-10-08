@@ -122,16 +122,16 @@ function renderTodayUI() {
             const GB = Math.pow(1024, 3)
             usageData.push({
                 groupName: {
-                    text: groupNames[idx]
+                    text: `${groupNames[idx]}`
                 },
                 usageProgress: {
                     value: usage.download / usage.total
                 },
                 usageDetail: {
-                    text: `↑ ${(usage.upload / GB).toFixed(2)}GB   ↓ ${(usage.download / GB).toFixed(2)}GB   ≡ ${(usage.total / GB).toFixed(2)}GB`
+                    text: `↑ ${(usage.upload / GB).toFixed(2)}GB   ↓ ${(usage.download / GB).toFixed(2)}GB   ≡ ${((usage.total - usage.download) / GB).toFixed(2)}GB`
                 },
                 usageDetail2: {
-                    text: `${groupNames[idx]}`
+                    text: `${groupNames[idx]} ( ${(usage.total / GB).toFixed(2)}GB )`
                 }
             })
         }
