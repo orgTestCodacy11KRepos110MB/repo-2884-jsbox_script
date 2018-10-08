@@ -3,7 +3,7 @@ module.exports.getProxiesInfo = async (address) => {
     let resp = await $http.get(url)
     if ('proxies' in resp.data) {
         return genListData(resp.data.proxies)
-    } 
+    }
     return null
 }
 
@@ -76,4 +76,19 @@ module.exports.latencyTest = async (address, nodes) => {
             delay: res[idx].data.delay
         }
     })
+}
+
+module.exports.sniffAddress = async () => {
+    let addr = $device.wlanAddress
+    let arr = Array.from(new Array(255), (val, idx) => idx + 1)
+    let res = await Promise.all(arr.map(i => {
+        let url = `http://${addr.replace(/.(\d*?)$/, `.${i}`)}:8080/proxies`
+        return $http.request({
+            url: url,
+            method: "HEAD",
+            timeout: 2
+        })
+    }))
+    let idx = res.findIndex(i => i.response)
+    return addr.replace(/.(\d*?)$/, `.${idx + 1}`) + ':8080'
 }

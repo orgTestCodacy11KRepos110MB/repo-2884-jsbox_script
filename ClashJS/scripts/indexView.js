@@ -6,13 +6,13 @@ module.exports.render = async () => {
         props: {
             title: "Clash面板",
             bgcolor: $color("tint"),
-            // navButtons: [{
-            //     title: "Title",
-            //     icon: "121",
-            //     handler: () => {
-            //         _logView.render($("urlInputView").text)
-            //     }
-            // }]
+            navButtons: [{
+                title: "Title",
+                icon: "121",
+                handler: async () => {
+
+                }
+            }]
         },
         views: [{
             type: 'button',
@@ -149,6 +149,7 @@ module.exports.render = async () => {
             }
         },]
     })
+    $("urlInputView").text === '' && guessAddress()
     await loadData()
 }
 
@@ -169,6 +170,26 @@ let loadData = async () => {
     $('proxyWayBtn').title = config.mode
 }
 
+let guessAddress = async () => {
+    let address = await _data.sniffAddress()
+    $ui.alert({
+        title: "提示",
+        message: `嗅探到当前网络下Clash的目标地址可能为 ${address} ，是否直接使用？`,
+        actions: [{
+            title: "取消",
+            handler: () => {
+
+            }
+        }, {
+            title: "好的",
+            handler: async () => {
+                $("urlInputView").text = address
+                $cache.set('address', address)
+                await loadData()
+            }
+        }]
+    })
+}
 
 
 
