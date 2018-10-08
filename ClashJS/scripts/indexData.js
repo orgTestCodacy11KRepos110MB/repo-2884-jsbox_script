@@ -79,17 +79,22 @@ module.exports.latencyTest = async (address, nodes) => {
 }
 
 module.exports.sniffAddress = async () => {
-    if ($device.networkType !== 1) return
-    let addr = $device.wlanAddress
-    let arr = Array.from(new Array(255), (val, idx) => idx + 1)
-    let res = await Promise.all(arr.map(i => {
-        let url = `http://${addr.replace(/.(\d*?)$/, `.${i}`)}:8080/proxies`
-        return $http.request({
-            url: url,
-            method: "HEAD",
-            timeout: 2
-        })
-    }))
-    let idx = res.findIndex(i => i.response)
-    return addr.replace(/.(\d*?)$/, `.${idx + 1}`) + ':8080'
+    try {
+        if ($device.networkType !== 1) return
+        let addr = $device.wlanAddress
+        let arr = Array.from(new Array(255), (val, idx) => idx + 1)
+        let res = await Promise.all(arr.map(i => {
+            let url = `http://${addr.replace(/.(\d*?)$/, `.${i}`)}:8080/`
+            return $http.request({
+                url: url,
+                method: "HEAD",
+                timeout: 2
+            })
+        }))
+        console.log('嗅探完毕')
+        let idx = res.findIndex(i => i.response)
+        return idx === -1 ? '' : addr.replace(/.(\d*?)$/, `.${idx + 1}`) + ':8080'
+    } catch (e) {
+        console.error(e.stack)
+    }
 }

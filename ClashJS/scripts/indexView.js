@@ -172,24 +172,26 @@ let loadData = async () => {
 
 let guessAddress = async () => {
     let address = await _data.sniffAddress()
-    $device.taptic(1)
-    $ui.alert({
-        title: "提示",
-        message: `嗅探到当前网络下Clash的目标地址可能为 ${address} ，是否直接使用？`,
-        actions: [{
-            title: "取消",
-            handler: () => {
-
-            }
-        }, {
-            title: "好的",
-            handler: async () => {
-                $("urlInputView").text = address
-                $cache.set('address', address)
-                await loadData()
-            }
-        }]
-    })
+    if (address) {
+        $device.taptic(1)
+        $ui.alert({
+            title: "提示",
+            message: `嗅探到当前网络下Clash的目标地址可能为 ${address} ，是否直接使用？`,
+            actions: [{
+                title: "取消",
+                handler: () => {
+    
+                }
+            }, {
+                title: "好的",
+                handler: async () => {
+                    $("urlInputView").text = address
+                    $cache.set('address', address)
+                    await loadData()
+                }
+            }]
+        })
+    }
 }
 
 
