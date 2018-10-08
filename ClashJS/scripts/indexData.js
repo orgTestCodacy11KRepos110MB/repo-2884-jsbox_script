@@ -79,6 +79,7 @@ module.exports.latencyTest = async (address, nodes) => {
 }
 
 module.exports.sniffAddress = async () => {
+    if ($device.networkType !== 1) return
     let addr = $device.wlanAddress
     let arr = Array.from(new Array(255), (val, idx) => idx + 1)
     let res = await Promise.all(arr.map(i => {

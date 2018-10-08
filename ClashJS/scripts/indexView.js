@@ -1,5 +1,5 @@
-const _data = require('scripts/indexData')
-const _logView = require('scripts/logView')
+const _data = require('./indexData')
+const _logView = require('./logView')
 
 module.exports.render = async () => {
     $ui.render({
@@ -10,7 +10,7 @@ module.exports.render = async () => {
                 title: "Title",
                 icon: "121",
                 handler: async () => {
-
+                    _logView.render($("urlInputView").text)
                 }
             }]
         },
@@ -113,16 +113,18 @@ module.exports.render = async () => {
             },
             events: {
                 didSelect: async (sender, indexPath, data) => {
-                    console.log('data', data);
                     if (data.checkedIcon.icon === null) {
                         let sec = sender.data[indexPath.section].title
                         await _data.switchProxy($("urlInputView").text, sec, data.proxyName.text)
                         await loadData()
                     }
                 },
+                forEachItem: (view, indexPath) => {
+                    view.borderWidth = 0.5
+                    view.borderColor = $rgba(40, 40, 40, 0.1)
+                },
                 pulled: async sender => {
                     let listData = $("mainProxyList").data
-                    console.log('listData', listData);
                     let nodeNames = []
                     listData.forEach(sec => {
                         sec.rows.forEach(node => {
@@ -164,14 +166,13 @@ let modeMenu = async () => {
 let loadData = async () => {
     let address = $("urlInputView").text
     let [listData, config] = await Promise.all([_data.getProxiesInfo(address), _data.getConfig(address)])
-    console.log('config', config);
-    console.log('listData', listData)
     $('mainProxyList').data = listData
     $('proxyWayBtn').title = config.mode
 }
 
 let guessAddress = async () => {
     let address = await _data.sniffAddress()
+    $device.taptic(1)
     $ui.alert({
         title: "提示",
         message: `嗅探到当前网络下Clash的目标地址可能为 ${address} ，是否直接使用？`,
