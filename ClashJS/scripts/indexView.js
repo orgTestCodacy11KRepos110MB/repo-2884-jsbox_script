@@ -53,6 +53,17 @@ module.exports.render = async () => {
                     await loadData()
                 }
             }
+        },{
+            type: 'view',
+            props: {
+                bgcolor: $color("white")
+            },
+            layout: (make, view) => {
+                make.width.equalTo(view.super).offset(-20)
+                make.top.equalTo(view.prev.bottom).offset(30)
+                make.left.equalTo(view.super).offset(10)
+                make.height.equalTo(60)
+            }
         }, {
             type: 'menu',
             props: {
@@ -62,7 +73,7 @@ module.exports.render = async () => {
             layout: (make, view) => {
                 make.height.equalTo(40)
                 make.width.equalTo(view.super).offset(-20)
-                make.top.equalTo(view.prev.bottom).offset(10)
+                make.top.equalTo(view.prev.prev.bottom).offset(10)
                 make.left.equalTo(view.super).offset(10)
             },
             events: {
@@ -118,7 +129,6 @@ module.exports.render = async () => {
                         type: 'label',
                         props: {
                             id: 'latencyText',
-                            text: '-- ms',
                             font: $font("bold", 14),
                             textColor: $color("tint")
                         },
@@ -132,10 +142,10 @@ module.exports.render = async () => {
                 }
             },
             layout: (make, view) => {
-                make.top.equalTo(view.prev.bottom).offset(10)
+                make.top.equalTo(view.prev.bottom).offset(0)
                 make.width.equalTo(view.super).offset(-20)
                 make.centerX.equalTo(view.super)
-                make.height.equalTo(view.super).offset(-120 - ($device.isIphoneX ? 40 : 0))
+                make.height.equalTo(view.super).offset(-110 - ($device.isIphoneX ? 40 : 0))
             },
             events: {
                 didSelect: async (sender, indexPath, data) => {
@@ -192,9 +202,23 @@ let modeMenu = async () => {
 let loadData = async () => {
     let address = $("urlInputView").text
     let [listData, config] = await Promise.all([_data.getProxiesInfo(address), _data.getConfig(address)])
+    let mode = config.mode
+    listData = listData.filter(i => {
+        if (mode === 'Global') {
+            return i.title === 'GLOBAL'
+        } else if (mode === 'Direct') {
+            return i.title === 'DIRECT'
+        }
+        return i.title !== 'GLOBAL' && i.title !== 'DIRECT'
+    })
     $("proxyGroupMenu").items = listData.map(i => i.title)
-    $('mainProxyList').data = listData
+    $("proxyGroupMenu").index = 0
     $('proxyWayBtn').title = config.mode
+    $('mainProxyList').data = listData
+    $('mainProxyList').scrollTo({
+        indexPath: $indexPath(0, 0),
+        animated: true
+    })
 }
 
 let guessAddress = async () => {

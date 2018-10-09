@@ -19,6 +19,7 @@ let genListData = (proxies) => {
                     return {
                         proxyName: { text: pan },
                         checkedIcon: { icon: pan === proxy.now ? $icon("136", $color("tint"), $size(20, 20)) : null },
+                        latencyText: { text: '-- ms'}
                     }
                 })
             })
@@ -27,7 +28,17 @@ let genListData = (proxies) => {
                 title: pn,
                 rows: [{
                     proxyName: { text: proxy.now },
-                    checkedIcon: { icon: $icon("089", $color("tint"), $size(20, 20)) }
+                    checkedIcon: { icon: $icon("089", $color("tint"), $size(20, 20)) },
+                    latencyText: { text: '-- ms'}
+                }]
+            })
+        } else if (proxy.type === 'Direct') {
+            res.push({
+                title: pn,
+                rows: [{
+                    proxyName: { text: pn },
+                    checkedIcon: { icon: $icon("101", $color("tint"), $size(20, 20)) },
+                    latencyText: { text: '-- ms'}
                 }]
             })
         }
