@@ -54,6 +54,32 @@ module.exports.render = async () => {
                 }
             }
         }, {
+            type: 'menu',
+            props: {
+                id: 'proxyGroupMenu',
+                smoothRadius: 8
+            },
+            layout: (make, view) => {
+                make.height.equalTo(40)
+                make.width.equalTo(view.super).offset(-20)
+                make.top.equalTo(view.prev.bottom).offset(10)
+                make.left.equalTo(view.super).offset(10)
+            },
+            events: {
+                changed: sender => {
+                    let index = sender.index
+                    let listData = $("mainProxyList").data.slice(0, index)
+                    console.log('listData', listData);
+                    let secNum = listData.length
+                    let itemNum = 0
+                    listData.forEach(i => {
+                        itemNum += i.rows.length
+                    })
+                    let offset = secNum * 27 + itemNum * 50
+                    $("mainProxyList").scrollToOffset($point(0, offset));
+                }
+            }
+        }, {
             type: 'list',
             props: {
                 id: 'mainProxyList',
@@ -109,7 +135,7 @@ module.exports.render = async () => {
                 make.top.equalTo(view.prev.bottom).offset(10)
                 make.width.equalTo(view.super).offset(-20)
                 make.centerX.equalTo(view.super)
-                make.height.equalTo(view.super).offset(-70 - ($device.isIphoneX ? 40 : 0))
+                make.height.equalTo(view.super).offset(-120 - ($device.isIphoneX ? 40 : 0))
             },
             events: {
                 didSelect: async (sender, indexPath, data) => {
@@ -166,6 +192,7 @@ let modeMenu = async () => {
 let loadData = async () => {
     let address = $("urlInputView").text
     let [listData, config] = await Promise.all([_data.getProxiesInfo(address), _data.getConfig(address)])
+    $("proxyGroupMenu").items = listData.map(i => i.title)
     $('mainProxyList').data = listData
     $('proxyWayBtn').title = config.mode
 }
@@ -180,7 +207,7 @@ let guessAddress = async () => {
             actions: [{
                 title: "取消",
                 handler: () => {
-    
+
                 }
             }, {
                 title: "好的",
