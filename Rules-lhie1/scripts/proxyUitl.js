@@ -241,7 +241,8 @@ function decodeScheme(params) {
                 if (/^(.*?)@(.*?):(.*?)$/.test(mdps)) {
                     hostname = RegExp.$2
                     port = RegExp.$3
-                    let methodAndPass = $text.base64Decode(RegExp.$1)
+                    let methodAndPass = urlsafeBase64Decode(RegExp.$1)
+                    console.log('methodAndPass', methodAndPass);
                     if (/^(.*?):(.*?)$/.test(methodAndPass)) {
                         method = RegExp.$1
                         password = RegExp.$2
