@@ -215,10 +215,10 @@ let loadData = async () => {
     $("proxyGroupMenu").index = 0
     $('proxyWayBtn').title = config.mode
     $('mainProxyList').data = listData
-    $('mainProxyList').scrollTo({
-        indexPath: $indexPath(0, 0),
-        animated: true
-    })
+    // $('mainProxyList').scrollTo({
+    //     indexPath: $indexPath(0, 0),
+    //     animated: true
+    // })
 }
 
 let guessAddress = async () => {
