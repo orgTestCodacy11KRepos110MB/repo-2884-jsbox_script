@@ -348,9 +348,9 @@ function renderUI() {
                     pulled: sender => {
                         let listSections = $("serverEditor").data.filter(i => /^http/.test(i.url))
                         linkHandler(listSections.map(i => i.url).join('\n'), {
-                            handler: (res, name, url) => {
+                            handler: (res, name, url, type) => {
                                 sender.endRefreshing()
-                                nodeImportHandler(res, name, url)
+                                nodeImportHandler(res, name, url, type)
                             }
                         })
                     }
@@ -622,7 +622,8 @@ function renderUI() {
     })
 }
 
-let nodeImportHandler = (res, name, url) => {
+let nodeImportHandler = (res, name, url, type=-1) => {
+    console.log('type', type);
     // 如果是托管，url不为undefined
     // console.log([res, name, url])
     let listData = $("serverEditor").data || []
@@ -646,7 +647,8 @@ let nodeImportHandler = (res, name, url) => {
         section.rows.push({
             proxyName: { text: res[idx].split('=')[0].trim() },
             proxyLink: res[idx],
-            proxyAuto: { hidden: !selected }
+            proxyAuto: { hidden: !selected },
+            proxyType: type
         })
     }
     if (!existsSec) {
@@ -1513,8 +1515,9 @@ function linkHandler(url, params) {
                 proxyUtil.proxyFromConf({
                     urls: servers[k],
                     handler: res => {
+                        console.log('res', res);
                         loading(false)
-                        params.handler(emojiSet ? res.servers.map(i => addEmoji(emojiSet, i)) : res.servers, res.filename, res.url)
+                        params.handler(emojiSet ? res.servers.map(i => addEmoji(emojiSet, i)) : res.servers, res.filename, res.url, res.type)
                     }
                 })
             } else if (k === 'vmess') {
@@ -2664,9 +2667,11 @@ function makeConf(params) {
                     let type = sourceTypeParam.match(/\s*source-type\s*=\s*([0-7])/)[1] * 1;
                     sourceType = `${type & 4 ? 'true' : 'false'}, ${type & 2 ? 'true' : 'false'}, ${type & 1 ? 'true' : 'false'}`
                 }
+                console.log(serverEditorData)
                 prototype += genQuanPart('SOURCE', serverEditorData.filter(i => {
-                    let isSSR = i.rows.find(l => /^.*?=\s*(?=shadowsocksr|vmess)/.test(l.proxyLink))
-                    return isSSR !== undefined
+                    // let isSSR = i.rows.find(l => /^.*?=\s*(?=shadowsocksr|vmess)/.test(l.proxyLink))
+                    // return isSSR !== undefined
+                    return i.rows.find(i => i.proxyType > 0)
                 }).map(i => {
                     return `${i.title}, server, ${i.url}, ${sourceType}, ${i.title}`
                 }).join('\n') + (rulesReplacement ? "" : "\nlhie1, filter, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult.conf, true\nlhie1_extra, filter, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_Extra.conf, true\nlhie1, blacklist, https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_URL.conf, true\n"))

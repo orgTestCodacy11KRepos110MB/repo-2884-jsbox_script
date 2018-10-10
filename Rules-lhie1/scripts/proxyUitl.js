@@ -48,7 +48,8 @@ function promiseConf(url) {
                     // Surge托管
                     resolve({
                         servers: RegExp.$1,
-                        filename: filename
+                        filename: filename,
+                        type: 0
                     })
                 } else if (/^ssr:\/\//.test(decodedData)) {
                     // SSR订阅
@@ -56,7 +57,8 @@ function promiseConf(url) {
                     let res = decodeSSR(rawLinks);
                     resolve({
                         servers: res.servers.join('\n'),
-                        filename: res.sstag || filename
+                        filename: res.sstag || filename,
+                        type: 1
                     })
                 } else if (/^ss:\/\//.test(decodedData)) {
                     // SS订阅
@@ -66,7 +68,8 @@ function promiseConf(url) {
                         handler: serInfo => {
                             resolve({
                                 servers: serInfo.servers.join('\n'),
-                                filename: serInfo.sstag || filename
+                                filename: serInfo.sstag || filename,
+                                type: 2
                             })
                         }
                     });
@@ -77,7 +80,8 @@ function promiseConf(url) {
                     console.log('res', res);
                     resolve({
                         servers: res.servers.join('\n'),
-                        filename: res.sstag || filename
+                        filename: res.sstag || filename,
+                        type: 3
                     })
                 } else {
                     resolve()
@@ -152,10 +156,10 @@ function getServersFromConfFile(params) {
     Promise.all(promiseArray).then(confs => {
         for (let idx in confs) {
             let res = confs[idx]
+            let type = res ? res.type : -1
             let filename = res ? res.filename : '';
             let servers = res ? res.servers.split(/[\n\r]+/).filter(item => item !== '').map(i => i.strictTrim()) : [];
-            console.log('{ servers: servers, filename: filename, url: params.urls[idx] }', { servers: servers, filename: filename, url: params.urls[idx] });
-            params.handler({ servers: servers, filename: filename, url: params.urls[idx] })
+            params.handler({ servers: servers, filename: filename, url: params.urls[idx], type: type })
         }
     }).catch(reason => {
         console.error(reason.stack)
