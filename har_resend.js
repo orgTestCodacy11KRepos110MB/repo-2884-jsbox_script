@@ -31,7 +31,7 @@ let handleRequest = async () => {
     }
 
     if ($app.env === $env.siri) {
-        siriIntent(`重放状态码依次为：${resArr.map(i => i.response.statusCode).join(' - ')}`);
+        siriIntent(resArr[resArr.length -1].data);
     } else {
         $ui.alert({
             title: `共${resArr.length}个请求，最后响应体如下`,
