@@ -19,16 +19,37 @@ let handleRequest = async () => {
         return
     }
     let infoJson = JSON.parse($file.read('thor.json').string)
-    let firstEntriy = infoJson.log.entries[0]
-    let firstRequest = firstEntriy.request
-    let httpOptions = {
-        method: firstRequest.method,
-        url: firstRequest.url,
-        header: genJsonHeaders(firstRequest.headers)
+    let requestArr = infoJson.log.entries.sort((e1, e2) => {
+        return e1.startedDateTime > e2.startedDateTime
+    })
+
+    let resArr = []
+
+    for (const req of requestArr) {
+        let resp = await requestWithInof(req)
+        resArr.push(resp)
     }
-    if (firstRequest.bodySize > 0) {
-        let contentType = firstRequest.postData.mimeType
-        let bodyText = firstRequest.postData.text
+
+    if ($app.env === $env.siri) {
+        siriIntent(`重放状态码依次为：${resArr.map(i => i.response.statusCode).join(' - ')}`);
+    } else {
+        $ui.alert({
+            title: `共${resArr.length}个请求，最后响应体如下`,
+            message: resArr[resArr.length -1].data
+        })
+    }
+}
+
+let requestWithInof = async (req) => {
+    let requestInof = req.request
+    let httpOptions = {
+        method: requestInof.method,
+        url: requestInof.url,
+        header: genJsonHeaders(requestInof.headers)
+    }
+    if (requestInof.bodySize > 0) {
+        let contentType = requestInof.postData.mimeType
+        let bodyText = requestInof.postData.text
         if (contentType === 'application/x-www-form-urlencoded') {
             httpOptions.body = genJsonBody(bodyText)
         } else if (contentType === 'application/json') {
@@ -41,14 +62,7 @@ let handleRequest = async () => {
         }
     }
     let resp = await $http.request(httpOptions)
-    if ($app.env === $env.siri) {
-        siriIntent(resp.response.statusCode == 200 ? '重放成功了' : '重放失败了');
-    } else {
-        $ui.alert({
-            title: "重放结果",
-            message: resp.data
-        })
-    }
+    return resp
 }
 
 let genJsonHeaders = (arr) => {
