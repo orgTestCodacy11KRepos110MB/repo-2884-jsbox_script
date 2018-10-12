@@ -20,7 +20,7 @@ let handleRequest = async () => {
     }
     let infoJson = JSON.parse($file.read('thor.json').string)
     let requestArr = infoJson.log.entries.sort((e1, e2) => {
-        return e1.startedDateTime > e2.startedDateTime
+        return new Date(e1.startedDateTime).getTime() > new Date(e2.startedDateTime).getTime()
     })
 
     let resArr = []
