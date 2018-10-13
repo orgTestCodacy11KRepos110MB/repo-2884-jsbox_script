@@ -68,6 +68,7 @@ let requestWithInof = async (req) => {
 let genJsonHeaders = (arr) => {
     let headers = {}
     arr.forEach(e => {
+        if (e.name === 'Cookie') return
         headers[e.name] = e.value
     });
     return headers
