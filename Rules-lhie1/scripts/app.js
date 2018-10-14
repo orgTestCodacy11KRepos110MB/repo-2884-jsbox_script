@@ -622,8 +622,7 @@ function renderUI() {
     })
 }
 
-let nodeImportHandler = (res, name, url, type=-1) => {
-    console.log('type', type);
+let nodeImportHandler = (res, name, url, type = -1) => {
     // 如果是托管，url不为undefined
     // console.log([res, name, url])
     let listData = $("serverEditor").data || []
