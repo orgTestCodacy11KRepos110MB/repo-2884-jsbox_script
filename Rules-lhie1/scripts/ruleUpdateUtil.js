@@ -14,6 +14,20 @@ function getRulesReplacement(content = '') {
     return null;
 }
 
+function getSoftwareType() {
+    let file = JSON.parse($file.read(FILE).string)
+    let workspace = file.workspace
+    let outputFormat = workspace.outputFormat
+    if (outputFormat === 'Surge 3 TF') {
+        return 0
+    } else if (outputFormat === 'Surge 2') {
+        return 2
+    } else if (outputFormat === 'Quantumult') {
+        return 3
+    }
+    return 1
+}
+
 function checkUpdate(oldSha, newSha) {
     return Object.keys(newSha).some(i => oldSha[i] !== newSha[i])
 }
@@ -55,6 +69,13 @@ function getRepoInfo() {
     let owner = 'lhie1';
     let repoName = 'Rules';
     let filePath = 'Auto';
+    let softwareType = getSoftwareType()
+    if (softwareType === 0) {
+        filePath = 'Auto_New'
+    } else if (softwareType === 3) {
+        filePath = 'Quantumult'
+    }
+    console.log(filePath)
     let rulesRep = getRulesReplacement();
     if (rulesRep) {
         let reg = rulesRep.match(githubRawReg);
