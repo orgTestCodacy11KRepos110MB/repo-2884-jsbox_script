@@ -101,8 +101,8 @@ function widgetSettings(file) {
     return items.map(i => {
         let p = i.split(/=/)
         return {
-            name: p[0],
-            url: p.slice(1).join('=')
+            name: p[0].trim(),
+            url: p.slice(1).join('=').trim()
         }
     })
 }
@@ -125,10 +125,10 @@ function renderTodayUI() {
                     text: `${groupNames[idx]}`
                 },
                 usageProgress: {
-                    value: usage.download / usage.total
+                    value: (usage.download + usage.upload) / usage.total
                 },
                 usageDetail: {
-                    text: `↑ ${(usage.upload / GB).toFixed(2)}GB   ↓ ${(usage.download / GB).toFixed(2)}GB   ≡ ${((usage.total - usage.download) / GB).toFixed(2)}GB`
+                    text: `↑ ${(usage.upload / GB).toFixed(2)}GB   ↓ ${(usage.download / GB).toFixed(2)}GB   ≡ ${((usage.total - usage.download - usage.upload) / GB).toFixed(2)}GB`
                 },
                 usageDetail2: {
                     text: `${groupNames[idx]} ( ${(usage.total / GB).toFixed(2)}GB )`

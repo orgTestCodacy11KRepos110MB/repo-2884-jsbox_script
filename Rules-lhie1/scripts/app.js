@@ -72,6 +72,20 @@ function renderUI() {
                 make.width.equalTo(view.super)
             },
             views: [{
+                type: "lottie",
+                props: {
+                    id: "navLoadingIcon",
+                    loop: false,
+                    speed: 3,
+                    src: "assets/balloons.json"
+                },
+                layout: (make, view) => {
+                    make.size.equalTo($size(screenWidth, screenHeight))
+                    make.bottom.equalTo(navBarHeight + statusBarHeight + 80)
+                    // make.right.equalTo(view.prev.left).offset(-15)
+                    // make.bottom.equalTo(view.super).offset(100)
+                }
+            }, {
                 type: "label",
                 props: {
                     text: "lhie1规则",
@@ -117,21 +131,7 @@ function renderUI() {
                         $app.openURL("https://qr.alipay.com/c1x047207ryk0wiaj6m6ye3")
                     }
                 }
-            }, {
-                type: "image",
-                props: {
-                    id: "navLoadingIcon",
-                    hidden: true,
-                    icon: $icon("218", colorUtil.getColor("navIconLoading"), $size(25, 25)),
-                    bgcolor: $color("clear"),
-                    info: false
-                },
-                layout: (make, view) => {
-                    make.right.equalTo(view.prev.left).offset(-15)
-                    make.height.width.equalTo(25)
-                    make.bottom.equalTo(view.super).offset(-10)
-                }
-            }]
+            }, ]
         }, {
             type: "view",
             props: {
@@ -675,19 +675,13 @@ function formatListData(data) {
     return data
 }
 
-let iconViewAnimator = null
 
 function loading(on) {
     let iconView = $("navLoadingIcon")
-    if (iconViewAnimator === null) iconViewAnimator = iconView.animator
     if (on) {
-        if (iconView.hidden) {
-            iconView.hidden = false
-            iconViewAnimator.rotateZ(-42000).animate(100)
-        }
+        // iconView.play()
     } else {
-        iconView.hidden = true
-        iconViewAnimator.stop()
+        // iconView.pause()
     }
 }
 
@@ -1393,7 +1387,7 @@ function getAutoRules(url, done, hint = '') {
 }
 
 function importMenu(params) {
-    let staticItems = ['剪贴板导入', '二维码导入', '更新节点']
+    let staticItems = ['剪贴板', '二维码']
     $ui.menu({
         items: staticItems,
         handler: function (title, idx) {
@@ -2079,12 +2073,16 @@ let filePartReg = function (name) {
 function setUpWorkspace() {
     $app.listen({
         ready: function () {
+            $("navLoadingIcon").play({
+                fromProgress: 0,
+                toProgress: 0.6,
+            })
             $app.notify({
                 name: 'loadData'
             })
         },
         resume: () => {
-            iconViewAnimator = $("navLoadingIcon").animator
+
         },
         loadData: () => {
             let file = JSON.parse($file.read(FILE).string)
