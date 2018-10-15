@@ -1116,6 +1116,7 @@ function archivesHandler() {
                                 path: ARCHIVES + '/' + text
                             })
                             if (success) {
+                                $cache.set('currentArchive', text)
                                 sender.prev.data = getFiles()
                             }
                         }
