@@ -29,7 +29,7 @@ setDefaultSettings()
 let screenHeight = $device.info.screen.height
 const screenWidth = $device.info.screen.width
 
-const iPhoneX = screenWidth == 375 && screenHeight == 812
+const iPhoneX = $device.isIphoneX
 if (iPhoneX) {
     screenHeight -= 48
 }
