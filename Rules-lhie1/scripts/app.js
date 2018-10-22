@@ -951,14 +951,16 @@ function archivesHandler() {
   if (!$drive.exists(ARCHIVES)) {
     $drive.mkdir(ARCHIVES)
   }
+  console.log($drive.list(ARCHIVES))
+  let latestVersion = ($app.info.build * 1) > 335
   let getFiles = function () {
     return $drive.list(ARCHIVES).map(i => {
       let path = i.runtimeValue().invoke('pathComponents').rawValue()
-      let absPath = i.runtimeValue().invoke('absoluteString').rawValue()
+      let name = latestVersion ? i : path[path.length - 1]
       return {
         archiveName: {
-          text: path[path.length - 1],
-          textColor: path[path.length - 1] === $cache.get('currentArchive') ? $color("red") : $color("black")
+          text: name,
+          textColor: name === $cache.get('currentArchive') ? $color("red") : $color("black")
         }
       }
     })
