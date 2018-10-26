@@ -45,6 +45,9 @@
 
 #### 2. [JSBox cli 完善版](https://jsboxbbs.com/d/579-jsbox-cli)
     加强版jsbox-cli，可以直接开启Jsbox Logger
+    
+### 打赏名单
+[以上的一切都离不开各位的支持](https://github.com/Fndroid/jsbox_script/blob/master/Rules-lhie1/donate.md)
 
 ### 许可
 
