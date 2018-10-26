@@ -2,6 +2,7 @@
 
 > 仅日期排序，支付宝打赏为保障隐私，不留ID不会直接出现姓名，请私聊我加上
 
+- Tartarus
 - Ceo sun
 - Qing
 - Cheung leung
