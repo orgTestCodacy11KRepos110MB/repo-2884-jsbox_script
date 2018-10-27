@@ -34,7 +34,7 @@ function updateScript(version) {
                 if (success) {
                     let donateList = $file.read("donate.md").string
                     let names = donateList.split(/[\r\n]+/).filter(i => i!== '')
-                    $ui.toast(`静默更新完成，感谢${names.length - 3}位老板`)
+                    $ui.toast(`静默更新完成，感谢${names.length - 4}位老板`)
                     if (restart) {
                         $delay(0.3, () => {
                             $addin.run(scriptName)

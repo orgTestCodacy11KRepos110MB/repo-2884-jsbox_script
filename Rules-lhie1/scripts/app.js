@@ -2015,7 +2015,13 @@ function renderAboutUI() {
         events: {
           didSelect: (sender, indexPath, data) => {
             if (indexPath.row === 0) {
-              previewMD(data, 'donate.md')
+              $http.get('https://raw.githubusercontent.com/Fndroid/sponsor_list/master/sponsors.md').then(res => {
+                let success = $file.write({
+                  data: $data({string: res.data}),
+                  path: 'donate.md'
+                })
+                success && previewMD(data, 'donate.md')
+              })
             } else if (indexPath.row === 1) {
               $ui.alert({
                 title: '感谢支持',
