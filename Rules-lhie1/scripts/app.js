@@ -2480,7 +2480,7 @@ function makeConf(params) {
 
     let promiseArray = [
       getAutoRules(pu.prototype, onPgs, '成功取回配置模板'), // 0
-      rulesReplacement ? getAutoRules(rulesReplacement, onPgs, '成功取回替换配置') : getAutoRules(isQuan || testflight ? pu.localhost : pu.apple, onPgs, '成功取回APPLE规则'), // 1
+      rulesReplacement ? getAutoRules(rulesReplacement, onPgs, '成功取回替换配置') : getAutoRules(isQuan || testflight ? pu.direct : pu.apple, onPgs, '成功取回APPLE规则'), // 1
       !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan || testflight ? pu.localhost : pu.reject, onPgs, '成功取回Reject规则'),  // 2
       rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan || testflight ? pu.quanretcp : pu.proxy, onPgs, '成功取回Proxy规则'), // 3
       rulesReplacement ? emptyPromise(onPgs) : getAutoRules(isQuan || testflight ? pu.quanextra : pu.direct, onPgs, '成功取回Direct规则'), // 4
@@ -2511,7 +2511,9 @@ function makeConf(params) {
         if (!ads) {
           tcpRules = tcpRules.filter(i => !/^.*?,\s*REJECT\s*$/.test(i))
         }
+        let surgeLan = v[1].split(/[\r\n]/g).filter(i => /.*?,\s*DIRECT/.test(i))
         tcpRules = tcpRules.map(r => {
+          if (surgeLan.indexOf(r) > -1) return r
           r = r.replace(/(^.*?,.*?,\s*)选择YouTube Music的Policy(.*$)/, '$1🍃 Proxy$2')
           r = r.replace(/(^.*?,.*?,\s*)选择TVB\/Viu的Policy(.*$)/, '$1🍃 Proxy$2')
           r = r.replace(/(^.*?,.*?,\s*)选择BBC的Policy(.*$)/, '$1🍃 Proxy$2')
