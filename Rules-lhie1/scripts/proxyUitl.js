@@ -209,6 +209,7 @@ function decodeScheme(params) {
     let urls = params.ssURL
     let result = []
     let tag
+    let group = ''
 
     for (let idx in urls) {
         let url = urls[idx]
@@ -233,11 +234,14 @@ function decodeScheme(params) {
             port = htpr.split(':')[1]
             let ps = $text.URLDecode(url.match(/\?(.*?)#/)[1])
             let obfsMatcher = ps.match(/obfs=(.*?)(;|$)/)
-            let obfsHostMatcher = ps.match(/obfs-host=(.*?)(;|$)/)
+            let obfsHostMatcher = ps.match(/obfs-host=(.*?)(&|;|$)/)
             if (obfsMatcher) {
                 let obfs = obfsMatcher[1]
                 let obfsHost = obfsHostMatcher ? obfsHostMatcher[1] : 'cloudfront.net'
                 plugin = `obfs=${obfs}, obfs-host=${obfsHost}`
+            }
+            if (/group=(.*)(&|;|$)/.test(ps)) {
+              group = $text.base64Decode(RegExp.$1.trim())
             }
         } else {
             if (/ss:\/\/([^#]*)/.test(url)) {
@@ -271,8 +275,15 @@ function decodeScheme(params) {
         }
         result[idx] = proxy
     }
-
-    params.handler({ servers: result, sstag: result.length > 1 ? `批量ss节点（${result.length}）` : tag })
+    let outName = ''
+    if (group) {
+      outName = group
+    } else if (result.length === 1) {
+      outName = tag
+    } else {
+      outName = `批量ss节点（${result.length}）`
+    }
+    params.handler({ servers: result, sstag: outName })
 }
 
 module.exports = {
