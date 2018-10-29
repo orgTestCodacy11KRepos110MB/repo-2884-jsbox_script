@@ -2641,7 +2641,7 @@ function makeConf(params) {
       }
 
       if (isQuan) {
-        prototype = prototype.replace(/FINAL,/, `${prettyInsert(customRules.add)}\nFINAL,`)
+        prototype = prototype.replace(/\/\/ Detect local network/, `${prettyInsert(customRules.add)}\n`)
       } else {
         prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
       }
