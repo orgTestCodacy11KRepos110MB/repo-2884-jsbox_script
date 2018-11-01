@@ -1410,7 +1410,7 @@ function getAutoRules(url, done, hint = '') {
 }
 
 function importMenu(params) {
-  let staticItems = ['剪贴板', '二维码']
+  let staticItems = ['剪贴板', '二维码', '空节点']
   $ui.menu({
     items: staticItems,
     handler: function (title, idx) {
@@ -1424,8 +1424,7 @@ function importMenu(params) {
           }
         })
       } else if (title === staticItems[2]) {
-        let listSections = $("serverEditor").data.filter(i => /^http/.test(i.url))
-        linkHandler(listSections.map(i => i.url).join('\n'), params)
+        params.handler(['Empty Node = '], 'Default', '')
       }
     }
   })
@@ -1468,7 +1467,7 @@ function linkHandler(url, params) {
       servers.shadowsocks.push(item)
     } else if (/^https?:\/\//.test(item)) {
       servers.online.push(item)
-    } else if (/[\S\s]+=[\s]*(custom|http|https|socks5|socks5-tls|external)/.test(item)) {
+    } else if (/[\S\s]+=[\s]*(custom|ss|http|https|socks5|socks5-tls|external)/.test(item)) {
       servers.surge.push(item)
     } else if (/^vmess:\/\//.test(item)) {
       servers.vmess.push(item)
