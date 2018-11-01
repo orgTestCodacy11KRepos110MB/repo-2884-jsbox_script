@@ -1424,7 +1424,7 @@ function importMenu(params) {
           }
         })
       } else if (title === staticItems[2]) {
-        params.handler(['Empty Node = '], 'Default', '')
+        params.handler(['Empty Node = '], 'Default', `emptynode${new Date().getTime()}`)
       }
     }
   })
