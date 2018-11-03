@@ -2390,7 +2390,7 @@ function makeConf(params) {
       hostname: 'https://raw.githubusercontent.com/lhie1/Rules/master/Auto/Hostname.conf',
       mitm: 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge/MITM.conf',
       quanretcp: 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult.conf',
-      quanextra: 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_Extra.conf',
+      quanextra: 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_Extra_JS.conf',
       quanrejection: 'https://raw.githubusercontent.com/lhie1/Rules/master/Quantumult/Quantumult_URL.conf',
       localhost: 'http://127.0.0.1/fndroid'
     }
@@ -2515,7 +2515,6 @@ function makeConf(params) {
           if (surgeLan.indexOf(r) > -1) return r
           r = r.replace(/(^.*?,.*?,\s*)选择YouTube Music的策略(.*$)/, '$1🍃 Proxy$2')
           r = r.replace(/(^.*?,.*?,\s*)选择TVB\/Viu的策略(.*$)/, '$1🍃 Proxy$2')
-          r = r.replace(/(^.*?,.*?,\s*)选择BBC的策略(.*$)/, '$1🍃 Proxy$2')
           r = r.replace(/(^.*?,.*?,\s*)选择Vidol的策略(.*$)/, '$1🍃 Proxy$2')
           r = r.replace(/(^.*?,.*?,\s*)选择Hulu的策略(.*$)/, '$1🍃 Proxy$2')
           r = r.replace(/(^.*?,.*?,\s*)选择Spotify的策略(.*$)/, '$1🍃 Proxy$2')
@@ -2524,6 +2523,7 @@ function makeConf(params) {
           r = r.replace(/(^.*?,.*?,\s*)选择PayPal的策略，不懂就选择DIRECT(.*$)/, '$1🍂 Domestic$2')
           r = r.replace(/(^.*?,.*?,\s*)选择Apple的策略，不懂就选择DIRECT(.*$)/, '$1🍎 Only$2')
           r = r.replace(/(^.*?,.*?,\s*)选择Netflix的策略，不懂就不选(.*$)/, '$1🍃 Proxy$2')
+          r = r.replace(/(^.*?,.*?,\s*)选择国外流媒体的策略(.*$)/, '$1🍃 Proxy$2')
           r = r.replace(/(^.*?,.*?,\s*)DIRECT(.*$)/i, '$1🍂 Domestic$2')
           r = r.replace(/(^.*?,.*?,\s*)PROXY(.*$)/i, '$1🍃 Proxy$2')
           r = r.replace(/^DOMAIN(.*?)🍃 Proxy\s*$/, 'DOMAIN$1🍃 Proxy,force-remote-dns')
