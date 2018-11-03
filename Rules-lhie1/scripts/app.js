@@ -2748,7 +2748,7 @@ function makeConf(params) {
       }
 
       if (isQuan) {
-        prototype = prototype.replace(/☁️ Others,dns-failed/, '☁️ Others')
+        prototype = prototype.replace(/☁️ Others, dns-failed/, '☁️ Others')
         let proxyGroup = prototype.match(filePartReg('Proxy Group'))
         if (proxyGroup && proxyGroup[1]) {
           let policies = genQuanPolices(proxyGroup[1])
