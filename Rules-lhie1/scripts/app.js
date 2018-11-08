@@ -2452,6 +2452,9 @@ function makeConf(params) {
         i.proxyLink += `,${notExistSuffix.join(',')}`
       }
       return i.proxyLink.replace('http://omgib13x8.bkt.clouddn.com/SSEncrypt.module', 'https://github.com/lhie1/Rules/blob/master/SSEncrypt.module?raw=true')
+    }).filter((item, idx, self) => {
+      let proxyName = item.split(/=/)[0].trim()
+      return self.findIndex(i => i.trim().startsWith(proxyName)) === idx
     })
     proxies = proxies.join('\n')
     let proxyHeaders = flatServerData.map(i => i.proxyName.text).join(', ')
