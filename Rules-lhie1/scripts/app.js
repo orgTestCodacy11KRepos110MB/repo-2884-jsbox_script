@@ -2451,7 +2451,7 @@ function makeConf(params) {
       } else if (notExistSuffix.length > 0) {
         i.proxyLink += `,${notExistSuffix.join(',')}`
       }
-      return i.proxyLink
+      return i.proxyLink.replace('http://omgib13x8.bkt.clouddn.com/SSEncrypt.module', 'https://github.com/lhie1/Rules/blob/master/SSEncrypt.module?raw=true')
     })
     proxies = proxies.join('\n')
     let proxyHeaders = flatServerData.map(i => i.proxyName.text).join(', ')
@@ -2631,7 +2631,7 @@ function makeConf(params) {
         let proxyList = proxies.split(/\n/);
         let res = proxyList.map(proxy => {
           if (/=\s*shadowsocksr/.test(proxy)) {
-            return proxy.replace(/=\s*shadowsocksr/g, '= custom').replace(/"/g, '').replace(/,\s*(protocol|protocol_param|obfs|obfs_param)[^,$]+/g, '') + ', http://omgib13x8.bkt.clouddn.com/SSEncrypt.module'
+            return proxy.replace(/=\s*shadowsocksr/g, '= custom').replace(/"/g, '').replace(/,\s*(protocol|protocol_param|obfs|obfs_param)[^,$]+/g, '') + ', https://github.com/lhie1/Rules/blob/master/SSEncrypt.module?raw=true'
           } else {
             return proxy
           }

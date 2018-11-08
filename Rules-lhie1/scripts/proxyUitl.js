@@ -269,7 +269,7 @@ function decodeScheme(params) {
                 }
             }      
         }
-        let proxy = `${tag} = custom, ${hostname}, ${port}, ${method}, ${password}, http://omgib13x8.bkt.clouddn.com/SSEncrypt.module`
+        let proxy = `${tag} = custom, ${hostname}, ${port}, ${method}, ${password}, https://github.com/lhie1/Rules/blob/master/SSEncrypt.module?raw=true`
         if (plugin != undefined) {
             proxy += `, ${plugin}`
         }
