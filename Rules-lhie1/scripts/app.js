@@ -54,10 +54,11 @@ function renderUI() {
     },
     events: {
       appeared: function (sender) {
-        $("bodyView").runtimeValue().$viewController().$navigationController().$interactivePopGestureRecognizer().$delegate()
-        $("bodyView").runtimeValue().$viewController().$navigationController().$interactivePopGestureRecognizer().$setDelegate(null)
+        // $("bodyView").runtimeValue().$viewController().$navigationController().$interactivePopGestureRecognizer().$delegate()
+        // $("bodyView").runtimeValue().$viewController().$navigationController().$interactivePopGestureRecognizer().$setDelegate(null)
         if (typeof $ui.window.next !== 'undefined') {
           console.error('警告：正在调试模式运行，界面可能会被遮挡，请从JSBox主界面运行此脚本！')
+          $addin.restart()
         }
       }
     },
@@ -128,7 +129,26 @@ function renderUI() {
           tapped: sender => {
             // $clipboard.text = 'GxsAtS84U7'
             // $app.openURL("alipay://")
-            $app.openURL("https://qr.alipay.com/c1x047207ryk0wiaj6m6ye3")
+            // $app.openURL("https://qr.alipay.com/c1x047207ryk0wiaj6m6ye3")
+            $ui.alert({
+              title: '感谢支持',
+              message: '作者投入大量时间和精力对脚本进行开发和完善，你愿意给他赏杯咖啡支持一下吗？',
+              actions: [{
+                title: "支付宝",
+                handler: () => {
+                  $app.openURL($qrcode.decode($file.read("assets/thankyou2.jpg").image))
+                }
+              }, {
+                title: "微信",
+                handler: () => {
+                  $quicklook.open({
+                    image: $file.read("assets/thankyou.jpg").image
+                  })
+                }
+              }, {
+                title: "返回"
+              }]
+            })
           }
         }
       },]
@@ -2003,13 +2023,13 @@ function renderAboutUI() {
       }, {
         type: "list",
         props: {
-          data: ["🙏  捐献打赏名单", "👍  赏杯咖啡支持作者", "🎟  支付宝红包领取"],
+          data: ["🙏  捐献打赏名单", "👍  赏杯咖啡支持作者"],
           scrollEnabled: false
         },
         layout: (make, view) => {
           make.width.equalTo(view.super)
           make.top.equalTo(view.prev.bottom).offset(0)
-          make.height.equalTo(140)
+          make.height.equalTo(90)
         },
         events: {
           didSelect: (sender, indexPath, data) => {
@@ -2749,6 +2769,19 @@ function makeConf(params) {
         return items
       }
 
+      function genQuanRewriteTinyPng(reject, rewrite) {
+        let rejects = reject.split(/[\n\r]/g).filter(i => /.*?\s*-\s*reject/.test(i)).map(i => i.replace(/(.*?)\s*-\s*reject\s*$/, '$1'))
+        let items = rejects.map(i => `${i} url simple-response SFRUUC8xLjEgMjAwIE9LDQpTZXJ2ZXI6IG5naW54DQpDb250ZW50LVR5cGU6IGltYWdlL3BuZw0KQ29udGVudC1MZW5ndGg6IDU2DQpDb25uZWN0aW9uOiBjbG9zZQ0KDQqJUE5HDQoaCgAAAA1JSERSAAAAAQAAAAEIBgAAAB8VxIkAAAALSURBVHicY2AAAgAABQABel6rPw==`)
+        items = items.concat(rewrite.split(/[\n\r]+/).filter(i => i !== '' && /^(?!\/\/|#)/.test(i)).map(i => {
+          if (/^(.*?)\s+(.*?)\s+(.*?)\s*$/.test(i)) {
+            let type = RegExp.$3
+            return `${RegExp.$1} url ${type === 'header' ? 'modify' : type} ${RegExp.$2}`
+          }
+          return ''
+        }))
+        return items.join('\n')
+      }
+
       function genQuanPart(name, content) {
         return `\n[${name}]\n${content}\n`
       }
@@ -2767,8 +2800,9 @@ function makeConf(params) {
             urlRewrite += `\n${i}\n`
           }
         })
-        prototype += genQuanPart('URL-REJECTION', urlReject)
-        prototype += genQuanPart('REWRITE', genQuanRewrite(urlRewrite))
+        // prototype += genQuanPart('URL-REJECTION', urlReject)
+        // prototype += genQuanPart('REWRITE', genQuanRewrite(urlRewrite))
+        prototype += genQuanPart('REWRITE', genQuanRewriteTinyPng(urlReject, urlRewrite))
         prototype += genQuanPart('HOST', host + prettyInsert(userHost.add))
         let sourceType = 'false, true, false';
         let sourceTypeParam = proxySuffix.find(x => /\s*source-type\s*=\s*[0-7]\s*(?:,|$)/.test(x))
