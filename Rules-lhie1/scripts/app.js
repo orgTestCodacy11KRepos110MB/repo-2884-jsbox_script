@@ -207,7 +207,7 @@ function renderUI() {
         type: "matrix",
         props: {
           id: "serverControl",
-          columns: 4,
+          columns: 3,
           scrollEnabled: false,
           itemHeight: 40,
           bgcolor: $color("#f0f5f5"),
@@ -271,21 +271,6 @@ function renderUI() {
                 section.title = newSec
                 sender.data = formatListData(od)
                 saveWorkspace()
-              })
-            }
-          }, {
-            title: "特殊代理",
-            handler: (sender, indexPath) => {
-              let proxyName = sender.object(indexPath).proxyName.text;
-              let videoReg = require('scripts/videoReg')
-              $ui.menu({
-                items: Object.keys(videoReg),
-                handler: function (title, idx) {
-                  let videoProxy = sender.info
-                  videoProxy[title] = proxyName
-                  sender.info = videoProxy
-                  saveWorkspace()
-                }
               })
             }
           }],
@@ -1159,44 +1144,44 @@ function archivesHandler() {
   })
 }
 
-function specialProxyGroup() {
-  if (getRulesReplacement()) {
-    $ui.alert('检测到有规则替换，无法使用特殊代理设置')
-    return
-  }
-  let groups = getProxyGroups();
-  const menuItems = groups.concat(['🚀 Direct', '查看设置', '清除设置']);
-  $ui.menu({
-    items: menuItems,
-    handler: function (mTitle, idx) {
-      if (idx === menuItems.length - 1) {
-        $("serverEditor").info = {};
-        saveWorkspace();
-      }
-      else if (idx === menuItems.length - 2) {
-        let videoProxy = $("serverEditor").info;
-        let output = [];
-        for (let k in videoProxy) {
-          output.push(`${k} - ${videoProxy[k]}`);
-        }
-        $ui.alert(output.length > 0 ? output.join('\n') : "无设置特殊代理");
-      }
-      else {
-        let videoReg = require('scripts/videoReg')
-        $ui.menu({
-          items: Object.keys(videoReg),
-          handler: function (title, idx) {
-            let proxyName = mTitle;
-            let videoProxy = $("serverEditor").info;
-            videoProxy[title] = proxyName;
-            $("serverEditor").info = videoProxy;
-            saveWorkspace();
-          }
-        });
-      }
-    }
-  });
-}
+// function specialProxyGroup() {
+//   if (getRulesReplacement()) {
+//     $ui.alert('检测到有规则替换，无法使用特殊代理设置')
+//     return
+//   }
+//   let groups = getProxyGroups();
+//   const menuItems = groups.concat(['🚀 Direct', '查看设置', '清除设置']);
+//   $ui.menu({
+//     items: menuItems,
+//     handler: function (mTitle, idx) {
+//       if (idx === menuItems.length - 1) {
+//         $("serverEditor").info = {};
+//         saveWorkspace();
+//       }
+//       else if (idx === menuItems.length - 2) {
+//         let videoProxy = $("serverEditor").info;
+//         let output = [];
+//         for (let k in videoProxy) {
+//           output.push(`${k} - ${videoProxy[k]}`);
+//         }
+//         $ui.alert(output.length > 0 ? output.join('\n') : "无设置特殊代理");
+//       }
+//       else {
+//         let videoReg = require('scripts/videoReg')
+//         $ui.menu({
+//           items: Object.keys(videoReg),
+//           handler: function (title, idx) {
+//             let proxyName = mTitle;
+//             let videoProxy = $("serverEditor").info;
+//             videoProxy[title] = proxyName;
+//             $("serverEditor").info = videoProxy;
+//             saveWorkspace();
+//           }
+//         });
+//       }
+//     }
+//   });
+// }
 
 function genControlItems() {
   let currentProxyGroup = PROXY_HEADER
@@ -1207,8 +1192,6 @@ function genControlItems() {
     title: { text: '节点倒序' }
   }, {
     title: { text: currentProxyGroup }
-  }, {
-    title: { text: '特殊代理' }
   }, {
     title: { text: '删除分组' }
   }]
@@ -2246,7 +2229,6 @@ function setUpWorkspace() {
           return item
         })
         $("usualSettings").data = nd
-        $("serverEditor").info = workspace.videoProxy || {}
         $("serverControl").info = {
           deleteKeywords: workspace.deleteKeywords || '',
           customProxyGroup: customProxyGroup,
@@ -2288,7 +2270,6 @@ function saveWorkspace() {
     }),
     outputFormat: $("outputFormatType").text,
     serverSuffix: $("serverSuffixEditor").text,
-    videoProxy: $("serverEditor").info || {},
     deleteKeywords: $("serverControl").info.deleteKeywords || '',
     customProxyGroup: $("serverControl").info.customProxyGroup || {}
   }
@@ -2564,11 +2545,10 @@ function makeConf(params) {
 
       if (testflight) {
         let autoNewPrefix = 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge3'
-        let timestamp = `?t=${new Date().getTime()}`
-        v[1] = `RULE-SET,SYSTEM,DIRECT\nRULE-SET,${autoNewPrefix}/apple.list${timestamp},🍎 Only`
-        v[2] = ads ? `RULE-SET,${autoNewPrefix}/reject.list${timestamp},REJECT` : ''
-        v[3] = `RULE-SET,${autoNewPrefix}/china_media.list${timestamp},🍂 Domestic\nRULE-SET,${autoNewPrefix}/global_media.list${timestamp},🍃 Proxy\nRULE-SET,${autoNewPrefix}/proxy.list${timestamp},🍃 Proxy`
-        v[4] = `RULE-SET,${autoNewPrefix}/domestic.list${timestamp},🍂 Domestic\nRULE-SET,LAN,DIRECT`
+        v[1] = `RULE-SET,SYSTEM,DIRECT\nRULE-SET,${autoNewPrefix}/apple.list,🍎 Only`
+        v[2] = ads ? `RULE-SET,${autoNewPrefix}/reject.list,REJECT` : ''
+        v[3] = `RULE-SET,${autoNewPrefix}/china_media.list,🍂 Domestic\nRULE-SET,${autoNewPrefix}/global_media.list,🍃 Proxy\nRULE-SET,${autoNewPrefix}/proxy.list,🍃 Proxy`
+        v[4] = `RULE-SET,${autoNewPrefix}/domestic.list,🍂 Domestic\nRULE-SET,LAN,DIRECT`
       }
 
       rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 || isQuan ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
@@ -2611,12 +2591,12 @@ function makeConf(params) {
       }
       // 配置自定义规则
       let customRules = seperateLines(advanceSettings.customSettings)
-      customRules.add = customRules.add.map(i => {
-        if (/RULE-SET\s*,\s*(http.*?\.list)\s*,(.*?)$/.test(i)) {
-          return `RULE-SET, ${RegExp.$1}?t=${new Date().getTime()}, ${RegExp.$2}`
-        }
-        return i
-      })
+      // customRules.add = customRules.add.map(i => {
+      //   if (/RULE-SET\s*,\s*(http.*?\.list)\s*,(.*?)$/.test(i)) {
+      //     return `RULE-SET, ${RegExp.$1}, ${RegExp.$2}`
+      //   }
+      //   return i
+      // })
       customRules.delete.forEach(i => rules = rules.replace(i, ''))
       // 配置本地DNS映射
       let userHost = seperateLines(advanceSettings.hostSettings)
@@ -2639,19 +2619,6 @@ function makeConf(params) {
           hostName.splice(hostName.indexOf(i), 1)
         }
       })
-
-      // 视频代理处理
-      let videoProxy = workspace.videoProxy
-      let videoReg = require('scripts/videoReg')
-      for (let videoType in videoProxy) {
-        let proxyName = videoProxy[videoType]
-        if (!proxyNameLegal(proxyName)) continue
-        (rules.match(videoReg[videoType]) || []).forEach(i => {
-          if (/(^.*?,.*?,)[^,]*(.*$)/.test(i)) {
-            rules = rules.replace(i, `${RegExp.$1}${proxyName}${RegExp.$2}`)
-          }
-        })
-      }
 
       function ssr2ss(proxies) {
         let proxyList = proxies.split(/\n/);
