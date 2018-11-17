@@ -7,8 +7,6 @@ const scriptName = $addin.current.name
 
 const FILE = 'data.js'
 
-const sw = $device.info.screen.width
-
 let pm = function (method) {
     return new Promise((resolve, reject) => {
         method({
@@ -201,7 +199,8 @@ function renderTodayUI() {
             },
             layout: (make, view) => {
                 make.height.equalTo(110)
-                make.width.equalTo(view.super).offset(0)
+                make.width.equalTo(view.super).offset(-60)
+                make.centerX.equalTo(view.super)
             },
             views: [{
                 type: "label",
@@ -256,7 +255,9 @@ function renderTodayUI() {
                 layout: (make, view) => {
                     make.width.height.equalTo(55)
                     make.centerY.equalTo(view.super).offset(-10)
-                    make.left.equalTo(view.prev.left).offset(-(sw / 3.5))
+                    // make.left.equalTo(view.prev.left).offset(-(sw / 3.5))
+                    make.left.equalTo(view.super)
+                    console.log('width', $widget.width)
                 },
                 events: {
                     tapped: sender => {
@@ -301,7 +302,8 @@ function renderTodayUI() {
                 layout: (make, view) => {
                     make.width.height.equalTo(50)
                     make.centerY.equalTo(view.super).offset(-10)
-                    make.right.equalTo(view.prev.prev.right).offset((sw / 3.5))
+                    // make.right.equalTo(view.prev.prev.right).offset((sw / 3.5))
+                    make.right.equalTo(view.super)
                 },
                 events: {
                     tapped: sender => {

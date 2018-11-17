@@ -2019,7 +2019,7 @@ function renderAboutUI() {
             if (indexPath.row === 0) {
               $http.get('https://raw.githubusercontent.com/Fndroid/sponsor_list/master/sponsors.md').then(res => {
                 let success = $file.write({
-                  data: $data({string: res.data}),
+                  data: $data({ string: res.data }),
                   path: 'donate.md'
                 })
                 success && previewMD(data, 'donate.md')
@@ -2497,6 +2497,23 @@ function makeConf(params) {
       !ads || rulesReplacement ? emptyPromise(onPgs) : getAutoRules(pu.hostname, onPgs, '成功取回MITM Hostname'), // 9
     ]
 
+    // 获取RULE-SET
+    let ruleSets = []
+    if (!testflight) {
+      ruleSets = advanceSettings.customSettings.split(/[\r\n]/g).map(i => {
+        if (/RULE-SET\s*,\s*(.*?)\s*,\s*(.*)/.test(i)) {
+          return {
+            url: RegExp.$1,
+            policy: RegExp.$2
+          }
+        }
+        return null
+      }).filter(i => i)
+    }
+    console.log('ruleSets', ruleSets);
+
+    promiseArray = promiseArray.concat(ruleSets.map(i => getAutoRules(i.url)))
+
     Promise.all(promiseArray).then(v => {
       prototype = v[0]
       if (rulesReplacement) {
@@ -2559,10 +2576,18 @@ function makeConf(params) {
       hostName = v[9].split('\n')
 
       let seperateLines = function (content) {
-        return {
-          add: content.split('\n').filter(i => !/^-/.test(i)).map(i => i.trim()),
+        let addRules = content.split('\n').filter(i => !/^-/.test(i)).map(i => i.trim())
+        if (!testflight && promiseArray.length > 10) {
+          for (let i = 10; i < promiseArray.length; i++) {
+            let policy = ruleSets[i - 10].policy
+            addRules = addRules.concat(v[i].split(/[\r\n]/g).map(i => `${i},${policy}`))
+          }
+        }
+        let res = {
+          add: addRules,
           delete: content.split("\n").filter(i => /^-/.test(i)).map(i => i.replace(/^-/, '').trim())
         }
+        return res
       }
 
       let prettyInsert = function (lines) {
@@ -2591,12 +2616,15 @@ function makeConf(params) {
       }
       // 配置自定义规则
       let customRules = seperateLines(advanceSettings.customSettings)
-      // customRules.add = customRules.add.map(i => {
-      //   if (/RULE-SET\s*,\s*(http.*?\.list)\s*,(.*?)$/.test(i)) {
-      //     return `RULE-SET, ${RegExp.$1}, ${RegExp.$2}`
-      //   }
-      //   return i
-      // })
+      let rulesList = rules.split(/[\r\n]/g)
+      let deleteList = customRules.add.map(i => {
+        if (/^(.*?),(.*?),/.test(i)) {
+          let type = RegExp.$1
+          let content = RegExp.$2
+          return `${type},${content}`
+        }
+      })
+      rules = rulesList.filter(i => deleteList.findIndex(d => i.startsWith(d)) === -1).join('\n')
       customRules.delete.forEach(i => rules = rules.replace(i, ''))
       // 配置本地DNS映射
       let userHost = seperateLines(advanceSettings.hostSettings)
@@ -2632,11 +2660,11 @@ function makeConf(params) {
         return res.join('\n')
       }
 
-      if (isQuan) {
-        prototype = prototype.replace(/\/\/ Detect local network/, `${prettyInsert(customRules.add)}\n`)
-      } else {
-        prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
-      }
+      // if (isQuan) {
+      //   prototype = prototype.replace(/\/\/ Detect local network/, `${prettyInsert(customRules.add)}\n`)
+      // } else {
+      prototype = prototype.replace('# Custom', prettyInsert(customRules.add))
+      // }
       prototype = prototype.replace('Proxys', isQuan ? proxies : ssr2ss(proxies))
       if (rulesReplacement) {
         prototype = prototype.replace(/\[Rule\][\s\S]*FINAL\s*,[^\r\n]+/, `[Rule]\n${prettyInsert(customRules.add)}\n${rules}\n`)
