@@ -2580,7 +2580,7 @@ function makeConf(params) {
         if (!testflight && promiseArray.length > 10) {
           for (let i = 10; i < promiseArray.length; i++) {
             let policy = ruleSets[i - 10].policy
-            addRules = addRules.concat(v[i].split(/[\r\n]/g).map(i => `${i},${policy}`))
+            addRules = addRules.concat(v[i].split(/[\r\n]/g).map(i => `${i},${policy},force-remote-dns`))
           }
         }
         let res = {
