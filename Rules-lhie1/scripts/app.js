@@ -2529,7 +2529,7 @@ function makeConf(params) {
         repHostName && repHostName[1] && (v[9] = repHostName[1])
       }
 
-      if (isQuan && !rulesReplacement) {
+      if (isQuan && !rulesReplacement && /\[TCP\]([\s\S]*)\/\/ Detect local network/.test(v[3])) {
         let tcpRules = `${v[4]}\n${RegExp.$1}`.split(/[\n\r]+/g)
         if (!ads) {
           tcpRules = tcpRules.filter(i => !/^.*?,\s*REJECT\s*$/.test(i))
@@ -2558,7 +2558,7 @@ function makeConf(params) {
         v[3] = ''
         v[4] = ''
         v[7] = v[7].replace(/hostname = /, '# hostname = ')
-      }
+      }      
 
       if (testflight && !rulesReplacement) {
         let autoNewPrefix = 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge3'
@@ -2575,12 +2575,17 @@ function makeConf(params) {
       headerRewrite = v[8]
       hostName = v[9].split('\n')
 
-      let seperateLines = function (content) {
+      let seperateLines = function (content, rules=false) {
         let addRules = content.split('\n').filter(i => !/^-/.test(i)).map(i => i.trim())
-        if (!testflight && promiseArray.length > 10) {
+        if (rules && !testflight && promiseArray.length > 10) {
           for (let i = 10; i < promiseArray.length; i++) {
             let policy = ruleSets[i - 10].policy
-            addRules = addRules.concat(v[i].split(/[\r\n]/g).map(i => `${i},${policy},force-remote-dns`))
+            addRules = addRules.concat(v[i].split(/[\r\n]/g).map(i => {
+              if (/^.+?,.+/.test(i)) {
+                return `${i},${policy}${isQuan? ',force-remote-dns':''}`
+              }
+              return i
+            }))
           }
         }
         let res = {
@@ -2615,7 +2620,7 @@ function makeConf(params) {
         prototype = prototype.replace(/\[General\][\s\S]+\[Proxy\]/, advanceSettings.generalSettings + '\n\n[Proxy]')
       }
       // 配置自定义规则
-      let customRules = seperateLines(advanceSettings.customSettings)
+      let customRules = seperateLines(advanceSettings.customSettings, true)
       let rulesList = rules.split(/[\r\n]/g)
       let deleteList = customRules.add.map(i => {
         if (/^(.*?),(.*?),/.test(i)) {
