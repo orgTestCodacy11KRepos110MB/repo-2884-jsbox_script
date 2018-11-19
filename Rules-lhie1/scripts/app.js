@@ -2529,7 +2529,7 @@ function makeConf(params) {
         repHostName && repHostName[1] && (v[9] = repHostName[1])
       }
 
-      if (isQuan && /\[TCP\]([\s\S]*)\/\/ Detect local network/.test(v[3])) {
+      if (isQuan && !rulesReplacement) {
         let tcpRules = `${v[4]}\n${RegExp.$1}`.split(/[\n\r]+/g)
         if (!ads) {
           tcpRules = tcpRules.filter(i => !/^.*?,\s*REJECT\s*$/.test(i))
@@ -2560,7 +2560,7 @@ function makeConf(params) {
         v[7] = v[7].replace(/hostname = /, '# hostname = ')
       }
 
-      if (testflight) {
+      if (testflight && !rulesReplacement) {
         let autoNewPrefix = 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge3'
         v[1] = `RULE-SET,SYSTEM,DIRECT\nRULE-SET,${autoNewPrefix}/apple.list,🍎 Only`
         v[2] = ads ? `RULE-SET,${autoNewPrefix}/reject.list,REJECT` : ''
