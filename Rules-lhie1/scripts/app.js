@@ -2578,6 +2578,7 @@ function makeConf(params) {
       let seperateLines = function (content, rules=false) {
         let addRules = content.split('\n').filter(i => !/^-/.test(i)).map(i => i.trim())
         if (rules && !testflight && promiseArray.length > 10) {
+          addRules = addRules.filter(i => !/^\s*RULE-SET/.test(i))
           for (let i = 10; i < promiseArray.length; i++) {
             let policy = ruleSets[i - 10].policy
             addRules = addRules.concat(v[i].split(/[\r\n]/g).map(i => {
