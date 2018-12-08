@@ -68,7 +68,7 @@ module.exports.switchMode = async (address, mode) => {
     let url = `http://${address}/configs`
     let resp = await $http.request({
         url: url,
-        method: 'PUT',
+        method: 'PATCH',
         body: {
             mode: mode
         }
