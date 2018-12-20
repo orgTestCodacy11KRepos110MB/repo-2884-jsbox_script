@@ -2501,7 +2501,7 @@ function makeConf(params) {
     let ruleSets = []
     if (!testflight) {
       ruleSets = advanceSettings.customSettings.split(/[\r\n]/g).map(i => {
-        if (/RULE-SET\s*,\s*(.*?)\s*,\s*(.*)/.test(i)) {
+        if (/^RULE-SET\s*,\s*(.*?)\s*,\s*(.*)/.test(i)) {
           return {
             url: RegExp.$1,
             policy: RegExp.$2
@@ -2583,7 +2583,7 @@ function makeConf(params) {
             let policy = ruleSets[i - 10].policy
             addRules = addRules.concat(v[i].split(/[\r\n]/g).map(i => {
               if (/^.+?,.+/.test(i)) {
-                return `${i},${policy}${isQuan? ',force-remote-dns':''}`
+                return `${i},${policy}${!testflight? ',force-remote-dns':''}`
               }
               return i
             }))
