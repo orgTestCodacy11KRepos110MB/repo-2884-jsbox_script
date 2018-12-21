@@ -1513,12 +1513,8 @@ function linkHandler(url, params) {
         continue
       }
       if (k === 'shadowsocks') {
-        proxyUtil.proxyFromURL({
-          ssURL: servers[k],
-          handler: res => {
-            params.handler(emojiSet ? res.servers.map(i => addEmoji(emojiSet, i)) : res.servers, res.sstag, servers[k].join('\n'))
-          }
-        })
+        let res = proxyUtil.proxyFromURL(servers[k])
+        params.handler(emojiSet ? res.servers.map(i => addEmoji(emojiSet, i)) : res.servers, res.sstag, servers[k].join('\n'))
       } else if (k === 'surge') {
         let urls = servers[k].map(i => i.replace(/,[\s]*udp-relay=true/, ''))
         let result = []
@@ -2558,7 +2554,7 @@ function makeConf(params) {
         v[3] = ''
         v[4] = ''
         v[7] = v[7].replace(/hostname = /, '# hostname = ')
-      }      
+      }
 
       if (testflight && !rulesReplacement) {
         let autoNewPrefix = 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge3'
@@ -2575,7 +2571,7 @@ function makeConf(params) {
       headerRewrite = v[8]
       hostName = v[9].split('\n')
 
-      let seperateLines = function (content, rules=false) {
+      let seperateLines = function (content, rules = false) {
         let addRules = content.split('\n').filter(i => !/^-/.test(i)).map(i => i.trim())
         if (rules && !testflight && promiseArray.length > 10) {
           addRules = addRules.filter(i => !/^\s*RULE-SET/.test(i))
@@ -2583,7 +2579,7 @@ function makeConf(params) {
             let policy = ruleSets[i - 10].policy
             addRules = addRules.concat(v[i].split(/[\r\n]/g).map(i => {
               if (/^.+?,.+/.test(i)) {
-                return `${i},${policy}${!testflight? ',force-remote-dns':''}`
+                return `${i},${policy}${!testflight ? ',force-remote-dns' : ''}`
               }
               return i
             }))
