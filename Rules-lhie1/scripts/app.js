@@ -1625,7 +1625,8 @@ function renderAdvanceUI() {
           props: {
             alwaysBounceHorizontal: true,
             alwaysBounceVertical: false,
-            showsHorizontalIndicator: false
+            showsHorizontalIndicator: false,
+            // contentSize: $size(placeHolders.reduce(i => i.length * 10, 0), 0)
           },
           views: placeHolders.map((i, idx) => {
             return {
@@ -1640,7 +1641,7 @@ function renderAdvanceUI() {
                 textColor: $color('#000')
               },
               layout: (make, view) => {
-                make.size.equalTo($size(i.length * 9 + 10, 34))
+                make.size.equalTo($size(i.length * 10, 34))
                 make.centerY.equalTo(view.super)
                 make.top.equalTo(view.suepr).offset(5)
                 if (idx > 0) {
@@ -2869,8 +2870,9 @@ function makeConf(params) {
   function globalRename(rename, prototype) {
     let renamePat = rename[1].split(/\s*,\s*/g).filter(i => i.indexOf('=') > -1).map(i => {
       let sp = i.reverse().split(/\s*=(?!\\)\s*/g);
-      return sp.map(i => i.reverse().trim()).reverse();
+      return sp.map(i => i.reverse().trim().replace(">", ',')).reverse();
     });
+    console.log(renamePat)
     renamePat.forEach(i => {
       let oldName = i[0];
       let newName = i[1].replace(/\\=/g, '=');
