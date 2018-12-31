@@ -2579,13 +2579,18 @@ function makeConf(params) {
           for (let i = 10; i < promiseArray.length; i++) {
             let policy = ruleSets[i - 10].policy
             addRules = addRules.concat(v[i].split(/[\r\n]/g).map(i => {
-              if (/^.+?,.+/.test(i)) {
+              console.log('i', i);
+              if (/^(.+?),(.+?),(.+)$/.test(i)) {
+                return `${RegExp.$1 + ',' + RegExp.$2},${policy},${RegExp.$3}${!testflight ? ',force-remote-dns' : ''}`
+              }else if (/^(.+?),(.+)$/.test(i)) {
                 return `${i},${policy}${!testflight ? ',force-remote-dns' : ''}`
               }
               return i
             }))
           }
         }
+        console.log('adru', addRules)
+
         let res = {
           add: addRules,
           delete: content.split("\n").filter(i => /^-/.test(i)).map(i => i.replace(/^-/, '').trim())
