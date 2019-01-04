@@ -1596,6 +1596,7 @@ function renderAdvanceUI() {
         }
       }
     }
+    let phWidth = placeHolders.reduce((pre, cur) => (cur.length * 10 + pre), 0) + (placeHolders.length + 1) * 5
     if (idx == 2) {
       view.props.accessoryView = {
         type: "view",
@@ -1626,7 +1627,7 @@ function renderAdvanceUI() {
             alwaysBounceHorizontal: true,
             alwaysBounceVertical: false,
             showsHorizontalIndicator: false,
-            // contentSize: $size(placeHolders.reduce(i => i.length * 10, 0), 0)
+            contentSize: $size(phWidth, 34)
           },
           views: placeHolders.map((i, idx) => {
             return {
@@ -1643,7 +1644,7 @@ function renderAdvanceUI() {
               layout: (make, view) => {
                 make.size.equalTo($size(i.length * 10, 34))
                 make.centerY.equalTo(view.super)
-                make.top.equalTo(view.suepr).offset(5)
+                // make.top.equalTo(view.suepr).offset(5)
                 if (idx > 0) {
                   make.left.equalTo(view.prev.right).offset(5)
                 } else {
