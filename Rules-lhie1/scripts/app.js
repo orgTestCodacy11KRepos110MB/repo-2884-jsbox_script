@@ -2583,8 +2583,8 @@ function makeConf(params) {
               console.log('i', i);
               if (/^(.+?),(.+?),(.+)$/.test(i)) {
                 return `${RegExp.$1 + ',' + RegExp.$2},${policy},${RegExp.$3}${!testflight ? ',force-remote-dns' : ''}`
-              }else if (/^(.+?),(.+)$/.test(i)) {
-                return `${i},${policy}${!testflight ? ',force-remote-dns' : ''}`
+              }else if (/^(.+?),(.+?)(?=$|\/\/|\#)/.test(i)) {
+                return `${RegExp.$1},${RegExp.$2},${policy}${!testflight ? ',force-remote-dns' : ''}`
               }
               return i
             }))
