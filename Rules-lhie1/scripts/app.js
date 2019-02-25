@@ -2562,7 +2562,7 @@ function makeConf(params) {
         let autoNewPrefix = 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge3'
         v[1] = `RULE-SET,SYSTEM,DIRECT\nRULE-SET,${autoNewPrefix}/apple.list,🍎 Only`
         v[2] = ads ? `RULE-SET,${autoNewPrefix}/reject.list,REJECT` : ''
-        v[3] = `RULE-SET,${autoNewPrefix}/china_media.list,🍂 Domestic\nRULE-SET,${autoNewPrefix}/global_media.list,🍃 Proxy\nRULE-SET,${autoNewPrefix}/proxy.list,🍃 Proxy`
+        v[3] = `RULE-SET,${autoNewPrefix}/domestic_media.list,🍂 Domestic\nRULE-SET,${autoNewPrefix}/foreign_media.list,🍃 Proxy\nRULE-SET,${autoNewPrefix}/proxy.list,🍃 Proxy`
         v[4] = `RULE-SET,${autoNewPrefix}/domestic.list,🍂 Domestic\nRULE-SET,LAN,DIRECT`
       }
 

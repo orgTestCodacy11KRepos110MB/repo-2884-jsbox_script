@@ -270,7 +270,7 @@ function decodeScheme(urls) {
     } else {
       if (/ss:\/\/([^#]*)/.test(url)) {
         let mdps = RegExp.$1
-        if (/^(.*?)@(.*?):(.*?)$/.test(mdps)) {
+        if (/^(.*)@(.*?):(.*?)$/.test(mdps)) {
           hostname = RegExp.$2
           port = RegExp.$3
           let methodAndPass = urlsafeBase64Decode(RegExp.$1)
@@ -284,7 +284,7 @@ function decodeScheme(urls) {
           if (padding < 4) {
             mdps += Array(padding + 1).join('=')
           }
-          if (/^(.*?):(.*?)@(.*?):(.*?)$/.test($text.base64Decode(mdps))) {
+          if (/^(.*?):(.*)@(.*?):(.*?)$/.test($text.base64Decode(mdps))) {
             method = RegExp.$1
             password = RegExp.$2
             hostname = RegExp.$3
