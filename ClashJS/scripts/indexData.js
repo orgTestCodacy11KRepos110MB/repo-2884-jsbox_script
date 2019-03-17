@@ -23,7 +23,7 @@ let genListData = (proxies) => {
                     }
                 })
             })
-        } else if (proxy.type === 'URLTest') {
+        } else if (proxy.type === 'URLTest' || proxy.type === 'Fallback') {
             res.push({
                 title: pn,
                 rows: [{
@@ -55,7 +55,7 @@ module.exports.switchProxy = async (address, group, proxy) => {
             name: proxy
         }
     })
-    console.log(resp)
+    return resp.response.statusCode === 204
 }
 
 module.exports.getConfig = async (address) => {

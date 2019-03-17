@@ -149,10 +149,22 @@ module.exports.render = async () => {
             },
             events: {
                 didSelect: async (sender, indexPath, data) => {
+                    let oldData = sender.data
                     if (data.checkedIcon.icon === null) {
-                        let sec = sender.data[indexPath.section].title
-                        await _data.switchProxy($("urlInputView").text, sec, data.proxyName.text)
-                        await loadData()
+                        let sec = oldData[indexPath.section].title
+                        let success = await _data.switchProxy($("urlInputView").text, sec, data.proxyName.text)
+                        if (success) {
+                          oldData[indexPath.section].rows = oldData[indexPath.section].rows.map(row => {
+                            let copy = row
+                            if (row.proxyName.text === data.proxyName.text) {
+                              copy.checkedIcon.icon = $icon("136", $color("tint"), $size(20, 20))
+                            } else {
+                              copy.checkedIcon.icon = null
+                            }
+                            return copy
+                          })
+                          sender.data = oldData
+                        }
                     }
                 },
                 forEachItem: (view, indexPath) => {
@@ -176,7 +188,7 @@ module.exports.render = async () => {
                         rows = rows.map(node => {
                             let delay = nodeLat.find(n => n.name === node.proxyName.text).delay
                             node.latencyText = {
-                                text: delay ? `${delay} ms` : 'Offline'
+                                text: delay ? `${delay} ms` : 'Timeout'
                             }
                             return node
                         })
