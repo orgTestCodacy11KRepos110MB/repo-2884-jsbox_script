@@ -2763,6 +2763,19 @@ function makeConf(params) {
         })
       }
 
+      function seperateRejection(reject) {
+        let lines = reject.split(/[\r\n]+/)
+        let res = { reject: [], rewrite: []}
+        lines.forEach(l => {
+          if (/(.*?\s+\-\s+reject)/.test(l)) {
+            res.reject.push(RegExp.$1)
+          } else if (/(.*?\s+url\s(302|307|modify|simple\-response)\s.*$)/.test(l)) {
+            res.rewrite.push(RegExp.$1)
+          }
+        })
+        return res
+      }
+
       function genQuanRewrite(content) {
         let items = content.split(/[\n\r]+/).filter(i => i !== '' && /^(?!\/\/|#)/.test(i)).map(i => {
           if (/^(.*?)\s+(.*?)\s+(.*?)\s*$/.test(i)) {
@@ -2805,9 +2818,11 @@ function makeConf(params) {
             urlRewrite += `\n${i}\n`
           }
         })
-        // prototype += genQuanPart('URL-REJECTION', urlReject)
-        // prototype += genQuanPart('REWRITE', genQuanRewrite(urlRewrite))
-        prototype += genQuanPart('REWRITE', genQuanRewriteTinyPng(urlReject, urlRewrite))
+        let quanRe = seperateRejection(urlReject)
+        console.log('quanRe:', quanRe)
+        prototype += genQuanPart('URL-REJECTION', quanRe.reject.join('\n'))
+        prototype += genQuanPart('REWRITE', quanRe.rewrite.join('\n'))
+        // prototype += genQuanPart('REWRITE', genQuanRewriteTinyPng(urlReject, urlRewrite))
         prototype += genQuanPart('HOST', host + prettyInsert(userHost.add))
         let sourceType = 'false, true, false';
         let sourceTypeParam = proxySuffix.find(x => /\s*source-type\s*=\s*[0-7]\s*(?:,|$)/.test(x))
