@@ -2686,7 +2686,7 @@ function makeConf(params) {
       prototype = prototype.replace('# SSID', '[SSID Setting]\n' + userSSID)
       prototype = prototype.replace('# Header Rewrite', headerRewrite + prettyInsert(userHeader.add))
       //fix by shenqinci 2019年03月20日：当只有userHostName时，配置文件出现第一行为空的问题
-      let finalHostNames = hostName.filter(indexHostName => indexHostName != '').concat(userHostname.add.filter(indexHostName => indexHostName != '')).join(', ')
+      let finalHostNames =  hostName.concat(userHostname.add).filter(i => i).join(', ')
       if (finalHostNames !== '') {
         prototype = prototype.replace('// Hostname', 'hostname = ' + finalHostNames)
       }
