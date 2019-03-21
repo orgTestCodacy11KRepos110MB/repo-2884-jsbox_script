@@ -2812,14 +2812,14 @@ function makeConf(params) {
           prototype += genQuanPart('POLICY', policies.join('\n'))
         }
         userUrl.add.forEach(i => {
-          if (/reject\s*$/.test(i)) {
-            urlReject += `\n${i}\n`
-          } else {
-            urlRewrite += `\n${i}\n`
-          }
+          // if (/reject\s*$/.test(i)) {
+          //   urlReject += `\n${i}\n`
+          // } else {
+          //   urlRewrite += `\n${i}\n`
+          // }
+          urlReject += `\n${i}\n`
         })
         let quanRe = seperateRejection(urlReject)
-        console.log('quanRe:', quanRe)
         prototype += genQuanPart('URL-REJECTION', quanRe.reject.join('\n'))
         prototype += genQuanPart('REWRITE', quanRe.rewrite.join('\n'))
         // prototype += genQuanPart('REWRITE', genQuanRewriteTinyPng(urlReject, urlRewrite))
