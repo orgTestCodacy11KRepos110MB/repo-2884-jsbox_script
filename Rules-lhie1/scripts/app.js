@@ -2817,7 +2817,17 @@ function makeConf(params) {
           // } else {
           //   urlRewrite += `\n${i}\n`
           // }
-          urlReject += `\n${i}\n`
+          let rule = i
+          if (/(.*?)\s+(.*?)\s+(307|302|header|reject)\s*$/.test(i)) {
+            if (RegExp.$3 === 'reject') {
+              rule = i
+            } else if (RegExp.$3 === 'header') {
+              rule = `${RegExp.$1} url modify ${RegExp.$2}`
+            } else {
+              rule = `${RegExp.$1} url ${RegExp.$3} ${RegExp.$2}`
+            }
+          }
+          urlReject = `\n${rule}\n${urlReject}`
         })
         let quanRe = seperateRejection(urlReject)
         prototype += genQuanPart('URL-REJECTION', quanRe.reject.join('\n'))
