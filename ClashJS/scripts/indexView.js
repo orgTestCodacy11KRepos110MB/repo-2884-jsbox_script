@@ -1,5 +1,6 @@
 const _data = require('./indexData')
 const _logView = require('./logView')
+const _latencyView = require('./latencyView')
 
 module.exports.render = async () => {
     $ui.render({
@@ -139,13 +140,22 @@ module.exports.render = async () => {
                             make.height.equalTo(14)
                         }
                     },]
-                }
+                },
+                actions: [{
+                  title: '延迟历史',
+                  color: $color("tint"),
+                  handler: (sender, idxPath) => {
+                    let data = sender.object(idxPath)
+                    console.log('sender:', data)
+                    _latencyView.render($("urlInputView").text, data.proxyName.text)
+                  }
+                }]
             },
             layout: (make, view) => {
                 make.top.equalTo(view.prev.bottom).offset(0)
                 make.width.equalTo(view.super).offset(-20)
                 make.centerX.equalTo(view.super)
-                make.height.equalTo(view.super).offset(-110 - ($device.isIphoneX ? 40 : 0))
+                make.height.equalTo(view.super).offset(-150 - ($device.isIphoneX ? 40 : 0))
             },
             events: {
                 didSelect: async (sender, indexPath, data) => {
@@ -172,31 +182,28 @@ module.exports.render = async () => {
                     view.borderColor = $rgba(40, 40, 40, 0.1)
                 },
                 pulled: async sender => {
-                    let listData = $("mainProxyList").data
-                    let nodeNames = []
-                    listData.forEach(sec => {
-                        sec.rows.forEach(node => {
-                            let t = node.proxyName.text
-                            if (nodeNames.indexOf(t) === -1) {
-                                nodeNames.push(t)
-                            }
-                        })
-                    })
-                    let nodeLat = await _data.latencyTest($("urlInputView").text, nodeNames)
-                    $("mainProxyList").data = listData.map(sec => {
-                        let rows = sec.rows
-                        rows = rows.map(node => {
-                            let delay = nodeLat.find(n => n.name === node.proxyName.text).delay
-                            node.latencyText = {
-                                text: delay ? `${delay} ms` : 'Timeout'
-                            }
-                            return node
-                        })
-                        return sec
-                    })
-                    sender.endRefreshing()
+                    await testLatency(true);
                 }
             }
+        }, {
+          type: 'button',
+          props: {
+            id: 'latencyBtn',
+            title: 'Test Latency',
+            bgcolor: $rgba(255, 255, 255)
+          },
+          layout: (make, view) => {
+            make.top.equalTo(view.prev.bottom).offset(5)
+            make.height.equalTo(35)
+            make.width.equalTo(view.super).offset(-20)
+            make.centerX.equalTo(view.super)
+          },
+          events: {
+            tapped: async sender => {
+              await testLatency()
+            }
+          },
+          views: []
         },]
     })
     $("urlInputView").text === '' && guessAddress()
@@ -259,4 +266,32 @@ let guessAddress = async () => {
 
 
 
+
+async function testLatency(pull=false) {
+  !pull && $ui.loading("测试中...")
+  let listData = $("mainProxyList").data;
+  let nodeNames = [];
+  listData.forEach(sec => {
+    sec.rows.forEach(node => {
+      let t = node.proxyName.text;
+      if (nodeNames.indexOf(t) === -1) {
+        nodeNames.push(t);
+      }
+    });
+  });
+  let nodeLat = await _data.latencyTest($("urlInputView").text, nodeNames);
+  $("mainProxyList").data = listData.map(sec => {
+    let rows = sec.rows;
+    rows = rows.map(node => {
+      let delay = nodeLat.find(n => n.name === node.proxyName.text).delay;
+      node.latencyText = {
+        text: delay ? `${delay} ms` : 'Timeout'
+      };
+      return node;
+    });
+    return sec;
+  });
+  pull && $("mainProxyList").endRefreshing();
+  !pull && $ui.loading(false)
+}
 
