@@ -5,7 +5,7 @@ const demoView = require('scripts/demoView')
 
 if ($app.env !== $env.action) {
   $ui.menu({
-    items: ['使用GIF 🌄', '运行DEMO 🏖', '打赏作者 🍗'],
+    items: ['使用演示 🌄', '运行DEMO 🏖', '打赏作者 🍗'],
     handler: (t, idx) => {
       if (idx === 0) {
         demoView.render()
@@ -43,7 +43,7 @@ function main() {
     response: req => {
       console.log('req:', req.url)
       let fileName = "Quantumult"
-      if (/:9090\/(.*?)$/.test(req.url)) {
+      if (/:9090\/(.+?)$/.test(req.url)) {
         fileName = RegExp.$1
       }
       return {
