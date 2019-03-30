@@ -170,15 +170,16 @@ function policyModify(policies, serverNames) {
       }
     }
     console.error(`"${policy}" could not be converted!`)
-  })
+    return null
+  }).filter(i => i)
 }
 
 function filterModify(filters) {
   return filters.map(filter => {
     if (/FINAL,([^,]+)/.test(filter)) {
       return "MATCH," + RegExp.$1
-    } else if (/HOST\-([^,]+?),([^,]+?),([^,]+)/.test(filter)) {
-      return `DOMAIN-${RegExp.$1},${RegExp.$2},${RegExp.$3}`
+    } else if (/HOST(\-*[^,]*?),([^,]+?),([^,]+)/.test(filter)) {
+      return `DOMAIN${RegExp.$1},${RegExp.$2},${RegExp.$3}`
     } else if (/([^,]+?),([^,]+?),([^,]+)/.test(filter)) {
       return `${RegExp.$1},${RegExp.$2},${RegExp.$3}`
     }
