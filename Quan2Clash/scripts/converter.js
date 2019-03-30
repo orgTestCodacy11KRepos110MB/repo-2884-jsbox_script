@@ -180,7 +180,7 @@ function filterModify(filters) {
       return "MATCH," + RegExp.$1
     } else if (/HOST(\-*[^,]*?),([^,]+?),([^,]+)/.test(filter)) {
       return `DOMAIN${RegExp.$1},${RegExp.$2},${RegExp.$3}`
-    } else if (/([^,]+?),([^,]+?),([^,]+)/.test(filter)) {
+    } else if (/(IP-CIDR|GEOIP)\s*,([^,]+?),([^,]+)/.test(filter)) {
       return `${RegExp.$1},${RegExp.$2},${RegExp.$3}`
     }
     console.error(`"${filter}" could not be converted!`)
