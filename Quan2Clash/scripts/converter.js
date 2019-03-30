@@ -184,7 +184,8 @@ function filterModify(filters) {
       return `${RegExp.$1},${RegExp.$2},${RegExp.$3}`
     }
     console.error(`"${filter}" could not be converted!`)
-  })
+    return null
+  }).filter(i => i)
 }
 
 module.exports = {
