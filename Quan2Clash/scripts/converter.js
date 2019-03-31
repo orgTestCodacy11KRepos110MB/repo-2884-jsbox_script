@@ -87,7 +87,7 @@ function clashVmess(name, paramsStr) {
       port: params[1],
       cipher: cipher,
       uuid: params[3].replace(/"/g, ''),
-      alterId: 32
+      alterId: 0
     }
     let overTls = paramByKey("over-tls", params)
     if (overTls === true) {
