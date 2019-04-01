@@ -90,12 +90,12 @@ function clashVmess(name, paramsStr) {
       alterId: 0
     }
     let overTls = paramByKey("over-tls", params)
-    if (overTls === true) {
+    if (overTls === 'true') {
       vmessObj['tls'] = true
     }
     let skipCert = paramByKey("certificate", params)
     if (skipCert) {
-      vmessObj['skip-cert-verify'] = skipCert === 0
+      vmessObj['skip-cert-verify'] = skipCert === '0'
     }
     let obfs = paramByKey('obfs', params)
     if (obfs === 'ws') {
