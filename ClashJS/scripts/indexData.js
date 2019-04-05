@@ -31,21 +31,35 @@ let genListData = (proxies) => {
         })
       })
     } else if (proxy.type === 'URLTest' || proxy.type === 'Fallback') {
+      let latency = '-- ms'
+      try {
+        let p = proxies[proxy.now]
+        if (p && p.history.length > 0) {
+          latency = `${p.history[p.history.length - 1].delay} ms`
+        }
+      }catch(_) {}
       res.push({
         title: pn,
         rows: [{
           proxyName: { text: proxy.now },
           checkedIcon: { icon: $icon("089", $color("tint"), $size(20, 20)) },
-          latencyText: { text: '-- ms' }
+          latencyText: { text: latency }
         }]
       })
     } else if (proxy.type === 'Direct') {
+      let latency = '-- ms'
+      try {
+        let p = proxies[pn]
+        if (p && p.history.length > 0) {
+          latency = `${p.history[p.history.length - 1].delay} ms`
+        }
+      }catch(_) {}
       res.push({
         title: pn,
         rows: [{
           proxyName: { text: pn },
           checkedIcon: { icon: $icon("101", $color("tint"), $size(20, 20)) },
-          latencyText: { text: '-- ms' }
+          latencyText: { text: latency }
         }]
       })
     }
