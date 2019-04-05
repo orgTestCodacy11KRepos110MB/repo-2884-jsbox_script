@@ -17,10 +17,12 @@ let genListData = (proxies) => {
         title: pn,
         rows: proxy.all.map(pan => {
           let latency = '-- ms'
-          let p = proxies[pan]
-          if (p && p.history.length > 0) {
-            latency = `${p.history[p.history.length - 1].delay} ms`
-          }
+          try {
+            let p = proxies[pan]
+            if (p && p.history.length > 0) {
+              latency = `${p.history[p.history.length - 1].delay} ms`
+            }
+          }catch(_) {}
           return {
             proxyName: { text: pan },
             checkedIcon: { icon: pan === proxy.now ? $icon("136", $color("tint"), $size(20, 20)) : null },
