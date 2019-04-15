@@ -1295,7 +1295,7 @@ function groupShortcut() {
             let headers = customProxyGroup[title]
             let editorData = $("serverEditor").data
             editorData.map(section => {
-              section.rows = section.rows.filter(item => headers.every(k => item.proxyName.text.indexOf(k) === -1))
+              section.rows = section.rows.filter(item => headers.indexOf(item.proxyName.text) === -1)
               return section
             })
             $("serverEditor").data = editorData
