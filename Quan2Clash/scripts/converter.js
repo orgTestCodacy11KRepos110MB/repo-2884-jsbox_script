@@ -6,32 +6,45 @@ function convert(iniObj) {
   let clashFilters = filterModify(filters)
   let clashServers = serverModify(servers).filter(s => s)
 
-  let serverNames = clashServers.map(server => server.name)
+  let serverNames = clashServers.map(server => server.name).concat(['DIRECT', 'REJECT'])
   let policyNames = policies.map(policy => {
     if (/(.*?):/.test(policy)) {
       return RegExp.$1.trim()
     }
   })
   let clashPolicies = policyModify(policies, serverNames.concat(policyNames))
-  clashPolicies.unshift({
-    type: 'select',
-    name: 'PROXY',
-    proxies: serverNames
-  })
-  // console.log(clashServers)
+  let hasDefaultProxy = clashFilters.find(f => /,\s*PROXY$/.test(f))
+  if (hasDefaultProxy) {
+    clashPolicies.unshift({
+      type: 'select',
+      name: 'PROXY',
+      proxies: serverNames
+    })
+  }
 
   return {
     "Proxy": clashServers,
-    "Proxy Group": clashPolicies.sort((a, b) => {
-      if (a.proxies.indexOf(b.name) > -1) {
-        return 1
-      } else if (b.proxies.indexOf(a.name) > -1) {
-        return -1
-      } 
-      return 0
-    }),
+    "Proxy Group": sortPolicies(clashPolicies),
     "Rule": clashFilters
   }
+}
+
+// 拓扑排序
+function sortPolicies(p) {
+  let policies = JSON.parse(JSON.stringify(p))
+  // 计算节点度
+  function pn(polices, policy) {
+    return polices.filter(p => p.proxies.indexOf(policy.name) > -1).length
+  }
+
+  let result = []
+  while (policies.length > 0) {
+    let nodeIdx = policies.findIndex(p => pn(policies, p) === 0)
+    result.unshift(policies[nodeIdx])
+    policies.splice(nodeIdx, 1)
+  }
+
+  return result
 }
 
 function serverModify(servers) {
