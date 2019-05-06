@@ -2560,10 +2560,10 @@ function makeConf(params) {
 
       if (testflight && !rulesReplacement) {
         let autoNewPrefix = 'https://raw.githubusercontent.com/lhie1/Rules/master/Surge3'
-        v[1] = `RULE-SET,SYSTEM,DIRECT\nRULE-SET,${autoNewPrefix}/apple.list,🍎 Only`
-        v[2] = ads ? `RULE-SET,${autoNewPrefix}/reject.list,REJECT` : ''
-        v[3] = `RULE-SET,${autoNewPrefix}/asiantv.list,🍂 Domestic\nRULE-SET,${autoNewPrefix}/globaltv.list,🍃 Proxy\nRULE-SET,${autoNewPrefix}/proxy.list,🍃 Proxy`
-        v[4] = `RULE-SET,${autoNewPrefix}/domestic.list,🍂 Domestic\nRULE-SET,LAN,DIRECT`
+        v[1] = `RULE-SET,SYSTEM,DIRECT\nRULE-SET,${autoNewPrefix}/Apple.list,🍎 Only`
+        v[2] = ads ? `RULE-SET,${autoNewPrefix}/Reject.list,REJECT` : ''
+        v[3] = `RULE-SET,${autoNewPrefix}/AsianTV.list,🍂 Domestic\nRULE-SET,${autoNewPrefix}/GlobalTV.list,🍃 Proxy\nRULE-SET,${autoNewPrefix}/Proxy.list,🍃 Proxy`
+        v[4] = `RULE-SET,${autoNewPrefix}/Domestic.list,🍂 Domestic\nRULE-SET,LAN,DIRECT`
       }
 
       rules += `\n${v[1]}\n${v[2].replace(/REJECT/g, surge2 || isQuan ? "REJECT" : "REJECT-TINYGIF")}\n${v[3]}\n${v[4]}\n`
