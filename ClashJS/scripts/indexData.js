@@ -22,7 +22,7 @@ let genListData = (proxies) => {
             if (p && p.history.length > 0) {
               latency = `${p.history[p.history.length - 1].delay} ms`
             }
-          }catch(_) {}
+          } catch (_) { }
           return {
             proxyName: { text: pan },
             checkedIcon: { icon: pan === proxy.now ? $icon("136", $color("tint"), $size(20, 20)) : null },
@@ -37,7 +37,7 @@ let genListData = (proxies) => {
         if (p && p.history.length > 0) {
           latency = `${p.history[p.history.length - 1].delay} ms`
         }
-      }catch(_) {}
+      } catch (_) { }
       res.push({
         title: pn,
         rows: [{
@@ -53,7 +53,7 @@ let genListData = (proxies) => {
         if (p && p.history.length > 0) {
           latency = `${p.history[p.history.length - 1].delay} ms`
         }
-      }catch(_) {}
+      } catch (_) { }
       res.push({
         title: pn,
         rows: [{
@@ -69,14 +69,35 @@ let genListData = (proxies) => {
 
 module.exports.switchProxy = async (address, group, proxy) => {
   let url = `http://${address}/proxies/${encodeURI(group)}`
-  let resp = await $http.request({
-    url: url,
-    method: 'PUT',
-    body: {
-      name: proxy
-    }
-  })
-  return resp.response.statusCode === 204
+  try {
+    let resp = await $http.request({
+      url: url,
+      method: 'PUT',
+      body: {
+        name: proxy
+      }
+    })
+    return resp.response.statusCode === 204
+  } catch(e) {
+    return false
+  }
+}
+
+module.exports.proxyNow = async (address) => {
+  let url = `http://${address}/proxies`
+  let resp = await $http.get(url)
+  if (resp.response.statusCode === 200) {
+    let proxies = resp.data.proxies
+    let selectors = Object.keys(proxies).map(k => {
+      if (proxies[k].type !== 'Selector') return null
+      let obj = {}
+      obj.name = k
+      obj.now = proxies[k].now
+      return obj
+    }).filter(proxy => proxy)
+    return selectors
+  }
+  return []
 }
 
 module.exports.getConfig = async (address) => {
@@ -94,7 +115,6 @@ module.exports.switchMode = async (address, mode) => {
       mode: mode
     }
   })
-  console.log(resp)
 }
 
 module.exports.latencyTest = async (address, nodes) => {
@@ -123,7 +143,6 @@ module.exports.sniffAddress = async () => {
         timeout: 2
       })
     }))
-    console.log('嗅探完毕')
     let idx = res.findIndex(i => i.response)
     return idx === -1 ? '' : addr.replace(/.(\d*?)$/, `.${idx + 1}`) + ':8080'
   } catch (e) {
