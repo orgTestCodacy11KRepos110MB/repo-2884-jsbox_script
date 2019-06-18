@@ -47,22 +47,7 @@ function getFilesSha() {
 }
 
 function getGitHubFilesSha(params) {
-    let { owner, repoName, filePath } = getRepoInfo();
-    $http.get({
-        url: `https://api.github.com/repos/${owner}/${repoName}/contents/${filePath}`,
-        handler: function (resp) {
-            if (resp.response.statusCode === 200) {
-                let res = {}
-                let respData = Array.isArray(resp.data) ? resp.data: [resp.data]
-                respData.forEach(i => {
-                    res[i.name] = i.sha
-                })
-                params.handler(res)
-            } else {
-                params.handler({})
-            }
-        }
-    })
+  params.handler({})
 }
 
 function getRepoInfo() {
@@ -89,17 +74,7 @@ function getRepoInfo() {
 }
 
 function getLatestCommitMessage(params) {
-    let { owner, repoName, filePath } = getRepoInfo()
-    $http.get({
-        url: `https://api.github.com/repos/${owner}/${repoName}/commits?path=${filePath}&sha=master`,
-        handler: function(resp) {
-            if (resp.response.statusCode === 200 && resp.data.length > 0) {
-                params.handler(resp.data[0])
-            } else {
-                params.handler(null)
-            }
-        }
-    })
+    params.handler(null)
 }
 
 module.exports = {
