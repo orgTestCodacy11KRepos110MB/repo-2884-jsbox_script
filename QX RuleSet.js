@@ -33,7 +33,7 @@ let render = () => {
           let links = $detector.link(text)
           if (links.length > 0) {
             $file.write({
-              data: $data({url: links[0]}),
+              data: $data({ url: links[0] }),
               path: DATAFILE
             })
             render()
@@ -54,7 +54,7 @@ let render = () => {
         id: "mainList",
         bgcolor: $color("clear"),
         // separatorHidden: true,
-        rowHeight: 75,
+        rowHeight: 65,
         reorder: true,
         data: loadDBData(),
         separatorColor: $rgba(50, 50, 50, 0.2),
@@ -110,7 +110,7 @@ let render = () => {
             props: {
               id: "url",
               lines: 1,
-              font: $font(16),
+              font: $font('Menlo-Regular', 13),
             },
             layout: (make, view) => {
               make.left.equalTo(view.super).offset(SI.padding)
@@ -121,7 +121,7 @@ let render = () => {
             type: "label",
             props: {
               id: "policy",
-              font: $font(16)
+              font: $font('Menlo-Regular', 13)
             },
             layout: (make, view) => {
               make.left.equalTo(view.super).offset(SI.padding)
@@ -131,7 +131,7 @@ let render = () => {
             type: "label",
             props: {
               id: "note",
-              font: $font(12)
+              font: $font('Menlo-Regular', 11.5)
             },
             layout: (make, view) => {
               make.left.equalTo(view.super).offset(SI.padding)
@@ -240,13 +240,15 @@ function updateData() {
 }
 
 function rawToTemplete(values) {
+  const SI = screenInfo()
+  const count = SI.screenWidth * 740 / 6400 - 7
   let url = values.url
   if (!values.hasOwnProperty('enable')) {
     values.enable = true
   }
-  if (/^(https?:\/\/).+(\/.+)$/.test(url)) {
-    url = `${RegExp.$1}...${RegExp.$2}`
-  }
+  const l = url.length
+  const part = count / 2
+  url = url.slice(0, part) + '...' + url.slice(l - part, l)
   const gray = $color("gray")
   const black = $color("black")
   let itemData = {
@@ -311,13 +313,18 @@ async function generateRules() {
         {
           title: "QuantumultX",
           handler: function () {
-            // $app.openURL("quantumultx://")
+            // $app.openURL("quantumult-x://")
+            open_app('com.crossutility.quantumult-x')
           }
         }
       ]
     })
   })
 
+}
+
+function open_app(appid) {
+  $objc("LSApplicationWorkspace").invoke("defaultWorkspace").invoke("openApplicationWithBundleID", appid)
 }
 
 async function downloadAll(urls) {
