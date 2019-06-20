@@ -53,12 +53,21 @@ let render = () => {
       props: {
         id: "mainList",
         bgcolor: $color("clear"),
-        // separatorHidden: true,
+        separatorHidden: true,
         rowHeight: 65,
         reorder: true,
         data: loadDBData(),
-        separatorColor: $rgba(50, 50, 50, 0.2),
         actions: [{
+          title: "Preview",
+          color: $color("tint"),
+          handler: (sender, indexPath) => {
+            const item = sender.object(indexPath).raw
+            $ui.preview({
+              title: item.policy,
+              url: item.url
+            })
+          }
+        },{
           title: "Remove",
           color: $color("#e10601"),
           handler: (sender, indexPath) => {
@@ -75,31 +84,30 @@ let render = () => {
             sender.data = oldData
             updateData()
           }
-        }, {
-          title: "View",
-          color: $color("tint"),
-          handler: (sender, indexPath) => {
-            const item = sender.object(indexPath).raw
-            $ui.preview({
-              title: item.policy,
-              url: item.url
-            })
-          }
         }],
         footer: {
-          type: "label",
+          type: "view",
           props: {
             height: 100,
-            text: "为了吃饭！",
-            textColor: $color("#AAAAAA"),
-            align: $align.center,
-            font: $font(13)
           },
           events: {
             tapped: sender => {
               showGiftDialog()
             }
-          }
+          },
+          views: [{
+            type: "label",
+            props: {
+              text: "为了吃饭!",
+              textColor: $color("#AAAAAA"),
+              align: $align.center,
+              font: $font(13)
+            },
+            layout: (make, view) => {
+              make.width.equalTo(view.super).offset(-140)
+              make.height.equalTo(view.super)
+            }
+          }]
         },
         template: {
           props: {
@@ -115,27 +123,34 @@ let render = () => {
             layout: (make, view) => {
               make.left.equalTo(view.super).offset(SI.padding)
               make.width.equalTo(view.super).offset(- (SI.padding * 2))
-              make.top.equalTo(view.super).offset(5)
+              make.top.equalTo(view.super).offset(15)
             }
           }, {
             type: "label",
             props: {
               id: "policy",
+              radius: 2,
               font: $font('Menlo-Regular', 13)
             },
             layout: (make, view) => {
               make.left.equalTo(view.super).offset(SI.padding)
               make.top.equalTo(view.prev.bottom).offset(5)
+              make.height.equalTo(20)
             }
           }, {
             type: "label",
             props: {
               id: "note",
+              borderColor: $color('tint'),
+              borderWidth: 1,
+              bgcolor: $color('white'),
+              radius: 2,
               font: $font('Menlo-Regular', 11.5)
             },
             layout: (make, view) => {
-              make.left.equalTo(view.super).offset(SI.padding)
-              make.top.equalTo(view.prev.bottom).offset(5)
+              make.left.equalTo(view.prev.right).offset(-10)
+              make.top.equalTo(view.prev.prev.bottom).offset(5)
+              make.height.equalTo(20)
             }
           }]
         }
@@ -169,7 +184,7 @@ let render = () => {
       layout: (make, view) => {
         make.height.width.equalTo(50)
         make.bottom.equalTo(SI.screenHeight).offset(-20)
-        make.left.equalTo(view.super).offset(20)
+        make.right.equalTo(view.super).offset(-80)
       },
       events: {
         tapped: sender => {
@@ -241,21 +256,25 @@ function updateData() {
 
 function rawToTemplete(values) {
   const SI = screenInfo()
-  const count = SI.screenWidth * 740 / 6400 - 7
+  const count = SI.screenWidth * 76 / 640 - 3
   let url = values.url
   if (!values.hasOwnProperty('enable')) {
     values.enable = true
   }
   const l = url.length
   const part = count / 2
-  url = url.slice(0, part) + '...' + url.slice(l - part, l)
+  if (url.length > count) {
+    url = url.slice(0, part) + '...' + url.slice(l - part, l)
+  }
   const gray = $color("gray")
   const black = $color("black")
+  const white = $color("white")
+  const tint = $color('tint')
   let itemData = {
     raw: values,
-    url: { text: `URL: ${url}`, textColor: values.enable ? black : gray },
-    policy: { text: `Policy: ${values.policy}`, textColor: values.enable ? black : gray },
-    note: { text: `Note: ${values.note}`, textColor: values.enable ? black : gray }
+    url: { text: `${url}`, textColor: values.enable ? black : gray },
+    policy: { text: ` ${values.policy}  `, textColor: values.enable ? white : white, bgcolor: values.enable ? tint : gray },
+    note: { text: ` ${values.note} `, textColor: values.enable ? black : gray, borderColor: values.enable ? tint : gray }
   }
   return itemData
 }
@@ -296,28 +315,22 @@ async function generateRules() {
   const result = newContentsWithPolicy.map(c => c.join('\n')).join('\n')
   serveContent(result, async url => {
     $ui.loading(false)
-
-    $clipboard.text = url
     await $http.get(url)
+    const msg = emptyURLs.length === 0 ? 'RuleSet下载成功，进入QuantumultX更新引用即可' : `如下链接下载失败：\n${emptyURLs.join('\n')}`
     $ui.alert({
-      title: "引用地址已复制至粘贴板",
-      message: `如下链接下载失败：\n${emptyURLs.join('\n')}`,
-      actions: [
-        {
-          title: "OK",
-          disabled: false, // Optional
-          handler: function () {
-
-          }
-        },
-        {
-          title: "QuantumultX",
-          handler: function () {
-            // $app.openURL("quantumult-x://")
-            open_app('com.crossutility.quantumult-x')
-          }
+      title: "完成",
+      message: msg,
+      actions: [{
+        title: "Cancel",
+        disabled: false,
+        handler: null
+      }, {
+        title: "Copy & Go",
+        handler: function () {
+          $clipboard.text = url
+          open_app('com.crossutility.quantumult-x')
         }
-      ]
+      }]
     })
   })
 
@@ -347,6 +360,9 @@ function modifyRules(raw) {
   let result = lines.map(l => {
     if (/^(#|\/\/|;)/.test(l)) return null
     if (/^(USER\-AGENT|DOMAIN|DOMAIN\-SUFFIX|DOMAIN\-KEYWORD|IP\-CIDR|FINAL|GEOIP)\s*,(.+?)(?:,|$)/.test(l)) {
+      if (RegExp.$1.trim() === 'FINAL') {
+        return RegExp.$1
+      }
       return `${RegExp.$1.trim()}, ${RegExp.$2.trim()}`
     }
     return null
